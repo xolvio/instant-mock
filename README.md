@@ -1,8 +1,11 @@
-# Instant Mock - GraphQL Mocking Server POC
+# Instant Mock
 
-Instant Mock is a proof-of-concept GraphQL mocking server for development and testing.
+Current State: POC showing support for mocking multiple GraphQL supergraphs and 
+with persisted seed storage.
 
 ## Local Deployment
+
+Make sure a `backend/.env` is provided with the `APOLLO_API_KEY` var set.
 
 1. **Install Node Version Manager (nvm):**
    ```bash
@@ -26,10 +29,9 @@ Instant Mock is a proof-of-concept GraphQL mocking server for development and te
      npm run dev
      ```
 
-4. **Environment Variables:**
-   * An `APOLLO_API_KEY` is required in a `.env` file.
-
 ## Docker Deployment
+
+Make sure a `backend/.env` is provided with the `APOLLO_API_KEY` var set.
 
 1. **Build Image:**
 
@@ -40,7 +42,7 @@ Instant Mock is a proof-of-concept GraphQL mocking server for development and te
 2. **Run Container:**
 
    ```bash
-   docker run xolvio/instant-mock
+   docker run -d -p 3001:3001 xolvio/instant-mock                                                                           
    ```
 
 *Note: Docker Compose is not supported due to networking limitations.*
