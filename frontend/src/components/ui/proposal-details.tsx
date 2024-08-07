@@ -55,7 +55,7 @@ import {Seed} from '@/models/Seed';
 import {HoverCard, HoverCardContent, HoverCardTrigger} from './hover-card';
 
 const ProposalDetails = () => {
-  const port = process.env.PORT || 3000;
+  const port = process.env.PORT || 3001;
   const navigate = useNavigate();
   const {toast} = useToast();
   const {proposalId} = useParams();
