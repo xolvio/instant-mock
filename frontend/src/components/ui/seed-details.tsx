@@ -1,6 +1,7 @@
 import React from "react";
 import {useLocation} from "react-router-dom";
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "./card";
+import {Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbSeparator} from "./breadcrumb";
 
 const SeedDetails = () => {
     const location = useLocation();
@@ -12,8 +13,23 @@ const SeedDetails = () => {
     const seedResponse = state?.seedResponse ? JSON.parse(state.seedResponse) : {};
 
     return (
-        <div className="flex justify-center items-start p-4 h-screen">
+        <div className="flex justify-center items-start p-4 h-screen bg-muted/40">
             <div className="w-full max-w-4xl space-y-4">
+                <Breadcrumb className="hidden md:flex">
+                    <BreadcrumbList>
+                        <BreadcrumbItem>
+                            Dashboard
+                        </BreadcrumbItem>
+                        <BreadcrumbSeparator/>
+                        <BreadcrumbItem>
+                            Proposal Details
+                        </BreadcrumbItem>
+                        <BreadcrumbSeparator/>
+                        <BreadcrumbItem>
+                            Seed Details
+                        </BreadcrumbItem>
+                    </BreadcrumbList>
+                </Breadcrumb>
                 <Card x-chunk="dashboard-07-chunk-5" className="mb-4">
                     <CardHeader>
                         <CardTitle>Seed details</CardTitle>
