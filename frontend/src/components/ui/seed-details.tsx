@@ -1,7 +1,7 @@
 import React from "react";
-import {useLocation} from "react-router-dom";
+import {Link as RouterLink, useLocation} from "react-router-dom";
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "./card";
-import {Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbSeparator} from "./breadcrumb";
+import {Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbSeparator} from "./breadcrumb";
 
 const SeedDetails = () => {
     const location = useLocation();
@@ -18,11 +18,15 @@ const SeedDetails = () => {
                 <Breadcrumb className="hidden md:flex">
                     <BreadcrumbList>
                         <BreadcrumbItem>
-                            Dashboard
+                            <BreadcrumbLink asChild>
+                                <RouterLink to="/">Proposals Dashboard</RouterLink>
+                            </BreadcrumbLink>
                         </BreadcrumbItem>
                         <BreadcrumbSeparator/>
                         <BreadcrumbItem>
-                            Proposal Details
+                            <BreadcrumbLink asChild>
+                                <RouterLink to="/">Proposal details</RouterLink>
+                            </BreadcrumbLink>
                         </BreadcrumbItem>
                         <BreadcrumbSeparator/>
                         <BreadcrumbItem>

@@ -23,7 +23,7 @@ import {
   DropdownMenuTrigger,
 } from './dropdown-menu';
 import {Button} from './button';
-import {MoreHorizontal, Link, Bean} from 'lucide-react';
+import {MoreHorizontal, Link} from 'lucide-react';
 import {
   Dialog,
   DialogClose,
@@ -50,9 +50,19 @@ import {Toaster} from './toaster';
 import {useToast} from './use-toast';
 import {Textarea} from './textarea';
 import {useNavigate, useParams} from 'react-router';
-import {ProposalCard} from '@/components/ui/proposal-card';
 import {Seed} from '@/models/Seed';
 import {HoverCard, HoverCardContent, HoverCardTrigger} from './hover-card';
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbSeparator,
+} from './breadcrumb';
+
+import {Link as RouterLink} from 'react-router-dom';
+import {Switch} from './switch';
+import {Label} from './label';
 
 const ProposalDetails = () => {
   const port = process.env.PORT || 3001;
@@ -62,6 +72,7 @@ const ProposalDetails = () => {
   // State to manage dialog open state
   const [seeds, setSeeds] = useState<Seed[]>([]); // Use Seed type for state
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [seedWithArguments, setSeedWithArguments] = useState(false);
   // Fetch seeds
   useEffect(() => {
     fetchSeeds();
@@ -80,7 +91,7 @@ const ProposalDetails = () => {
   };
 
   // Define a custom validation for JSON strings
-  const jsonString = z.string().refine(
+  const jsonValidator = z.string().refine(
     (value) => {
       try {
         JSON.parse(value);
@@ -94,18 +105,21 @@ const ProposalDetails = () => {
     }
   );
 
+  const nonEmptyStringValidator = z
+    .string()
+    .refine((value) => value.trim().length > 0, {
+      message: 'This field cannot be empty or consist only of whitespace',
+    });
+
   const formSchema = z.object({
-    operationName: z.string().min(1, 'Operation name is required'),
-    sequenceId: z.string().min(1, 'Sequence id is required'),
-    operationMatchArguments: jsonString,
-    seedResponse: jsonString,
+    operationName: nonEmptyStringValidator,
+    sequenceId: nonEmptyStringValidator,
+    operationMatchArguments: jsonValidator,
+    seedResponse: jsonValidator,
   });
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      operationMatchArguments: '{}',
-    },
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
@@ -150,13 +164,20 @@ const ProposalDetails = () => {
   }
 
   return (
-    <div className="flex justify-center items-start p-4 h-screen">
+    <div className="flex justify-center items-start p-4 h-screen bg-muted/40">
       <div className="w-full max-w-4xl space-y-4">
-        {' '}
-        {/* Increased width and added spacing */}
+        <Breadcrumb className="hidden md:flex">
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <RouterLink to="/">Proposals Dashboard</RouterLink>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>Proposal Details</BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
         <Card x-chunk="dashboard-07-chunk-5" className="mb-4">
-          {' '}
-          {/* Added margin-bottom */}
           <CardHeader>
             <CardTitle>Proposal details</CardTitle>
             <CardDescription>
@@ -190,7 +211,7 @@ const ProposalDetails = () => {
             </div>
           </CardContent>
         </Card>
-        <Card x-chunk="dashboard-06-chunk-0" className="xl:col-span-2 h-96">
+        <Card x-chunk="dashboard-06-chunk-0" className="xl:col-span-2 flex flex-col min-h-[300px]">
           {' '}
           {/* Added margin-bottom */}
           <CardHeader className="flex flex-row items-center">
@@ -201,13 +222,13 @@ const ProposalDetails = () => {
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
                 <Button
-                  className="ml-auto gap-1"
-                  onClick={() => setIsDialogOpen(true)}
+                    className="ml-auto gap-1"
+                    onClick={() => setIsDialogOpen(true)}
                 >
                   Create seed
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-2xl">
+              <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>Create new seed</DialogTitle>
                   <DialogDescription>
@@ -216,92 +237,110 @@ const ProposalDetails = () => {
                 </DialogHeader>
                 <Form {...form}>
                   <form
-                    onSubmit={form.handleSubmit(onSubmit)}
-                    className="space-y-4"
+                      onSubmit={form.handleSubmit(onSubmit)}
+                      className="space-y-4"
                   >
                     <FormField
-                      control={form.control}
-                      name="operationName"
-                      render={({field}) => (
-                        <FormItem>
-                          <FormLabel>Operation name</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Operation name..." {...field} />
-                          </FormControl>
-                          <FormDescription>
-                            Name of the GraphQL operation that will be sent to
-                            the mock
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
+                        control={form.control}
+                        name="operationName"
+                        render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Operation name</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Operation name..." {...field} />
+                              </FormControl>
+                              <FormDescription>
+                                Name of the GraphQL operation that will be sent to the mock
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                        )}
                     />
                     <FormField
-                      control={form.control}
-                      name="sequenceId"
-                      render={({field}) => (
-                        <FormItem>
-                          <FormLabel>Sequence id</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Sequence id..." {...field} />
-                          </FormControl>
-                          <FormDescription>
-                            A unique string used to match GraphQL requests with
-                            registered seed. This id must be included in the
-                            request as 'mocking-sequence-id' header.
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
+                        control={form.control}
+                        name="sequenceId"
+                        render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Sequence id</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Sequence id..." {...field} />
+                              </FormControl>
+                              <FormDescription>
+                                A unique string used to match GraphQL requests with registered seed. This id must be included in the request as 'mocking-sequence-id' header.
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                        )}
                     />
+
+                    {/* Switch to control the visibility of operationMatchArguments */}
+                    <FormItem>
+                      <FormControl>
+                        <div className="flex items-center space-x-2">
+                          <Switch
+                              id="seed-with-arguments"
+                              checked={seedWithArguments}
+                              onCheckedChange={() =>
+                                  setSeedWithArguments(!seedWithArguments)
+                              }
+                          />
+                          <Label htmlFor="seed-with-arguments">
+                            Seed with arguments
+                          </Label>
+                        </div>
+                      </FormControl>
+                    </FormItem>
+                      <FormField
+                          control={form.control}
+                          name="operationMatchArguments"
+                          render={({ field }) => (
+                              <FormItem
+                                  className={`transition-all duration-500 ease-in-out ${
+                                      seedWithArguments ? 'max-h-[500px] opacity-100 visible' : 'max-h-0 opacity-0 invisible'
+                                  }`}
+                              >
+                                <FormLabel>Matching arguments (JSON)</FormLabel>
+                                <FormControl>
+                                  <Textarea
+                                      placeholder="Matching arguments ..."
+                                      {...field}
+                                      className="h-48"
+                                  />
+                                </FormControl>
+                                <FormDescription>
+                                  Parameters used for matching a seed with GraphQL operations.
+                                </FormDescription>
+                                <FormMessage />
+                              </FormItem>
+                          )}
+                      />
+
                     <FormField
-                      control={form.control}
-                      name="operationMatchArguments"
-                      render={({field}) => (
-                        <FormItem>
-                          <FormLabel>Matching arguments (JSON)</FormLabel>
-                          <FormControl>
-                            <Textarea
-                              placeholder="Matching arguments ..."
-                              {...field}
-                              className="h-48"
-                            />
-                          </FormControl>
-                          <FormDescription>
-                            Parameters used for matching a seed with GraphQL
-                            operations.
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="seedResponse"
-                      render={({field}) => (
-                        <FormItem>
-                          <FormLabel>Response (JSON)</FormLabel>
-                          <FormControl>
-                            <Textarea
-                              placeholder="Response..."
-                              {...field}
-                              className="h-48"
-                            />
-                          </FormControl>
-                          <FormDescription>
-                            Data to be returned for the combination of the
-                            defined operation name, sequence id and parameters
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
+                        control={form.control}
+                        name="seedResponse"
+                        render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Response (JSON)</FormLabel>
+                              <FormControl>
+                                <Textarea
+                                    placeholder="Response..."
+                                    {...field}
+                                    className="h-48"
+                                />
+                              </FormControl>
+                              <FormDescription>
+                                Data to be returned for the combination of the defined operation name, sequence id and parameters
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                        )}
                     />
                     <div className="sm:justify-start flex space-x-2">
                       <DialogClose asChild>
                         <Button
-                          type="button"
-                          variant="secondary"
-                          onClick={() => setIsDialogOpen(false)}
+                            type="button"
+                            variant="secondary"
+                            onClick={() => setIsDialogOpen(false)}
                         >
                           Discard
                         </Button>
