@@ -1,70 +1,94 @@
-import {Request, Response} from "express";
-import {SeedRepository} from "../repositories/seedRepository";
-import {Seed} from "../models/seed";
-import {MockService} from "../service/mockService";
+import {Request, Response} from 'express';
+import {SeedRepository} from '../repositories/seedRepository';
+import {Seed} from '../models/seed';
+import {MockService} from '../service/mockService';
 
 export default class SeedController {
+  private seedRepository: SeedRepository;
+  private mockService: MockService;
 
-    private seedRepository: SeedRepository;
-    private mockService: MockService;
+  constructor() {
+    this.seedRepository = new SeedRepository();
+    this.mockService = MockService.getInstance();
+    this.getSeeds = this.getSeeds.bind(this);
+    this.createSeed = this.createSeed.bind(this);
+    this.deleteSeed = this.deleteSeed.bind(this);
+  }
 
-    constructor() {
-        this.seedRepository = new SeedRepository();
-        this.mockService = new MockService();
-        this.getSeeds = this.getSeeds.bind(this);
-        this.createSeed = this.createSeed.bind(this);
+  async getSeeds(req: Request, res: Response) {
+    const variantName = req.query.variantName as string;
+
+    if (!variantName) {
+      return res.status(400).send('Variant name is required');
     }
 
-    async getSeeds(req: Request, res: Response) {
-        const variantName = req.query.variantName as string;
+    try {
+      const seeds: Seed[] =
+        await this.seedRepository.findAllByVariantName(variantName);
+      await this.mockService.startNewMockInstanceIfNeeded(variantName);
+      res.json(seeds);
+    } catch (error) {
+      console.error('Error fetching seeds:', error);
+      res.status(500).send('Error fetching seeds');
+    }
+  }
 
-        if (!variantName) {
-            return res.status(400).send("Variant name is required");
-        }
+  async createSeed(req: Request, res: Response) {
+    const variantName = req.query.variantName as string;
+    const {seedResponse, operationName, operationMatchArguments, sequenceId} =
+      req.body;
+    const seed: Seed = {
+      variantName,
+      seedResponse,
+      operationName,
+      operationMatchArguments, // ensure the correct field name is used here
+      sequenceId,
+    };
 
-        try {
-            const seeds: Seed[] = await this.seedRepository.findAllByVariantName(variantName);
-            await this.mockService.startNewMockInstanceIfNeeded(variantName);
-            res.json(seeds);
-        } catch (error) {
-            console.error("Error fetching seeds:", error);
-            res.status(500).send("Error fetching seeds");
-        }
+    if (!variantName) {
+      return res.status(400).send('Proposal ID is required');
     }
 
-    async createSeed(req: Request, res: Response) {
-        const variantName = req.query.variantName as string;
-        const { seedResponse, operationName, operationMatchArguments, sequenceId } = req.body;
-        const seed: Seed = {
-            variantName,
-            seedResponse,
-            operationName,
-            operationMatchArguments, // ensure the correct field name is used here
-            sequenceId,
-        };
+    const mockInstance =
+      await this.mockService.startNewMockInstanceIfNeeded(variantName);
 
-        if (!variantName) {
-            return res.status(400).send("Proposal ID is required");
-        }
+    try {
+      // Save seed to SQLite
+      await this.seedRepository.createSeed(seed);
 
-        const mockInstance = await this.mockService.startNewMockInstanceIfNeeded(variantName);
+      const context = mockInstance.service.createContext(seed.sequenceId);
+      await context.operation(
+        operationName,
+        seedResponse,
+        operationMatchArguments
+      );
 
-        try {
-            // Save seed to SQLite
-            await this.seedRepository.createSeed(seed);
+      res.send({message: `Seed registered successfully`});
+    } catch (error) {
+      console.error('Error registering seed:', error);
+      res.status(500).send('Error registering seed');
+    }
+  }
 
-            const context = mockInstance.service.createContext(seed.sequenceId);
-            await context.operation(
-                operationName,
-                seedResponse,
-                operationMatchArguments,
-            );
+  async deleteSeed(req: Request, res: Response): Promise<void> {
+    const {id} = req.params;
 
-            res.send({ message: `Seed registered successfully` });
-        } catch (error) {
-            console.error("Error registering seed:", error);
-            res.status(500).send("Error registering seed");
-        }
+    const numericId = Number(id);
+
+    if (isNaN(numericId)) {
+      res.status(400).json({message: 'Invalid ID'});
     }
 
+    try {
+      const result = await this.seedRepository.deleteSeedById(numericId);
+      if (result) {
+        await this.mockService.restartMockInstance(result.variantName);
+        res.status(200).json({message: 'Seed deleted successfully'});
+      } else {
+        res.status(404).json({message: 'Seed not found'});
+      }
+    } catch (error) {
+      res.status(500).json({message: 'Error deleting seed', error: error});
+    }
+  }
 }

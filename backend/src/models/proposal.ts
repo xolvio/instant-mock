@@ -2,9 +2,9 @@
 export interface Proposal {
     id: string;
     title: string;
-    author: string;
-    created: string;
-    status: ProposalStatus;
+    author?: string;
+    created?: string;
+    status?: ProposalStatus;
     port: number;
 }
 

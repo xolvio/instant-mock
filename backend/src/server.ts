@@ -24,7 +24,7 @@ app.use(express.static(path.join(__dirname, "../../frontend/build")));
 app.use("/api", seedsRoutes);
 app.use("/api", proposalsRoutes);
 app.use("/api", mocksRoutes);
-const mockService = new MockService();
+const mockService = MockService.getInstance();
 const proposalService = new ProposalService();
 
 // Proxy setup to route requests dynamically based on proposal ID in the path

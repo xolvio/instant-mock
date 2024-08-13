@@ -1,11 +1,11 @@
-import {ApolloClient, InMemoryCache, HttpLink, ApolloLink} from "@apollo/client";
+import {ApolloClient, ApolloLink, HttpLink, InMemoryCache} from "@apollo/client";
 import {setContext} from "@apollo/client/link/context";
 import {GET_PROPOSALS} from "./queries/getProposals";
 import {GET_SCHEMA} from "./queries/getSchema";
 import {GRAPH_ID} from "../server";
 import {Proposal, ProposalStatus} from "../models/proposal";
 import proposals from "../proposals";
-import {getPortPromise} from "portfinder";
+import {basePort, getPortPromise} from "portfinder";
 
 export default class Client {
     private apolloClient: ApolloClient<any>;
@@ -39,11 +39,20 @@ export default class Client {
             variables: {graphId: GRAPH_ID, filterBy: {}}, // Adjust filterBy as needed
         });
 
+        const port = await getPortPromise();
+        proposals['dev'] = {
+            id: 'dev',
+            title: 'dev',
+            port: port
+        };
+
         return Promise.all(
             data.graph.proposals.proposals
                 .filter((p: any) => p.backingVariant?.name)
                 .map(async (p: any): Promise<Proposal> => {
-                    const port = await getPortPromise();
+                    const port = await getPortPromise({
+                        port: 8001,    // minimum port
+                    });
                     const proposal: Proposal = {
                         id: p.backingVariant.name,
                         title: p.displayName,

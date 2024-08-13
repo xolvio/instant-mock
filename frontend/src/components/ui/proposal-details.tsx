@@ -63,6 +63,10 @@ import {
 import {Link as RouterLink} from 'react-router-dom';
 import {Switch} from './switch';
 import {Label} from './label';
+import {createGraphiQLFetcher} from '@graphiql/toolkit';
+import {GraphiQL} from 'graphiql';
+import 'graphiql/graphiql.css';
+import '../../graphiql.css';
 
 const ProposalDetails = () => {
   const port = process.env.PORT || 3001;
@@ -78,6 +82,10 @@ const ProposalDetails = () => {
     fetchSeeds();
   }, [proposalId]);
 
+  const fetcher = createGraphiQLFetcher({
+    url: `http://localhost:${port}/${proposalId}/graphql`,
+  });
+
   const fetchSeeds = async () => {
     try {
       const response = await fetch(
@@ -89,6 +97,9 @@ const ProposalDetails = () => {
       console.error('Error fetching seeds:', error);
     }
   };
+
+  const defaultHeaders =
+    '{\n' + '  "mocking-sequence-id": "your-mocking-sequence-id"\n' + '}';
 
   // Define a custom validation for JSON strings
   const jsonValidator = z.string().refine(
@@ -120,7 +131,47 @@ const ProposalDetails = () => {
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
+    defaultValues: {
+      operationMatchArguments: '{}',
+    },
   });
+
+  async function deleteSeed(seedId: number) {
+    try {
+      const response = await fetch(
+        `http://localhost:3001/api/seeds/${seedId}`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to delete seed with ID ${seedId}`);
+      }
+
+      const result = await response.json();
+      console.log(`Seed with ID ${seedId} deleted successfully`, result);
+
+      return result; // Assuming the API returns the deleted seed or a confirmation message
+    } catch (error) {
+      console.error('Error deleting seed:', error);
+      throw error; // Re-throw the error to handle it elsewhere if needed
+    }
+  }
+
+  const handleDelete = async (seedId: number) => {
+    try {
+      const result = await deleteSeed(seedId);
+      fetchSeeds();
+      console.log('Deleted seed:', result);
+      // Optionally, update the state to remove the seed from your UI
+    } catch (error) {
+      console.error('Failed to delete seed:', error);
+    }
+  };
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
@@ -164,7 +215,7 @@ const ProposalDetails = () => {
   }
 
   return (
-    <div className="flex justify-center items-start p-4 h-screen bg-muted/40">
+    <div className="flex justify-center items-start p-4 bg-muted/40">
       <div className="w-full max-w-4xl space-y-4">
         <Breadcrumb className="hidden md:flex">
           <BreadcrumbList>
@@ -211,7 +262,10 @@ const ProposalDetails = () => {
             </div>
           </CardContent>
         </Card>
-        <Card x-chunk="dashboard-06-chunk-0" className="xl:col-span-2 flex flex-col min-h-[300px]">
+        <Card
+          x-chunk="dashboard-06-chunk-0"
+          className="xl:col-span-2 flex flex-col min-h-[300px]"
+        >
           {' '}
           {/* Added margin-bottom */}
           <CardHeader className="flex flex-row items-center">
@@ -222,8 +276,8 @@ const ProposalDetails = () => {
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
                 <Button
-                    className="ml-auto gap-1"
-                    onClick={() => setIsDialogOpen(true)}
+                  className="ml-auto gap-1"
+                  onClick={() => setIsDialogOpen(true)}
                 >
                   Create seed
                 </Button>
@@ -232,45 +286,62 @@ const ProposalDetails = () => {
                 <DialogHeader>
                   <DialogTitle>Create new seed</DialogTitle>
                   <DialogDescription>
-                    Your seed will be persisted in the database
+                    <div>
+                      1. Go to Apollo Studio or use the embedded GraphiQL to
+                      generate a dummy response for the operation you want to
+                      mock.
+                    </div>
+                    <div>
+                      2. Paste the dummy response in here and adjust it to fit
+                      your specific needs.
+                    </div>
+                    <div>
+                      3. If your operation contains arguments, please define
+                      them. The operation will only match against these
+                      specified arguments.
+                    </div>
+                    <div>4. Define sequence ID.</div>
                   </DialogDescription>
                 </DialogHeader>
                 <Form {...form}>
                   <form
-                      onSubmit={form.handleSubmit(onSubmit)}
-                      className="space-y-4"
+                    onSubmit={form.handleSubmit(onSubmit)}
+                    className="space-y-4"
                   >
                     <FormField
-                        control={form.control}
-                        name="operationName"
-                        render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Operation name</FormLabel>
-                              <FormControl>
-                                <Input placeholder="Operation name..." {...field} />
-                              </FormControl>
-                              <FormDescription>
-                                Name of the GraphQL operation that will be sent to the mock
-                              </FormDescription>
-                              <FormMessage />
-                            </FormItem>
-                        )}
+                      control={form.control}
+                      name="operationName"
+                      render={({field}) => (
+                        <FormItem>
+                          <FormLabel>Operation name</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Operation name..." {...field} />
+                          </FormControl>
+                          <FormDescription>
+                            Name of the GraphQL operation that will be sent to
+                            the mock
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
                     <FormField
-                        control={form.control}
-                        name="sequenceId"
-                        render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Sequence id</FormLabel>
-                              <FormControl>
-                                <Input placeholder="Sequence id..." {...field} />
-                              </FormControl>
-                              <FormDescription>
-                                A unique string used to match GraphQL requests with registered seed. This id must be included in the request as 'mocking-sequence-id' header.
-                              </FormDescription>
-                              <FormMessage />
-                            </FormItem>
-                        )}
+                      control={form.control}
+                      name="sequenceId"
+                      render={({field}) => (
+                        <FormItem>
+                          <FormLabel>Sequence id</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Sequence id..." {...field} />
+                          </FormControl>
+                          <FormDescription>
+                            A unique string used to match GraphQL requests with
+                            registered seed. This id must be included in the
+                            request as 'mocking-sequence-id' header.
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
 
                     {/* Switch to control the visibility of operationMatchArguments */}
@@ -278,11 +349,11 @@ const ProposalDetails = () => {
                       <FormControl>
                         <div className="flex items-center space-x-2">
                           <Switch
-                              id="seed-with-arguments"
-                              checked={seedWithArguments}
-                              onCheckedChange={() =>
-                                  setSeedWithArguments(!seedWithArguments)
-                              }
+                            id="seed-with-arguments"
+                            checked={seedWithArguments}
+                            onCheckedChange={() =>
+                              setSeedWithArguments(!seedWithArguments)
+                            }
                           />
                           <Label htmlFor="seed-with-arguments">
                             Seed with arguments
@@ -290,57 +361,61 @@ const ProposalDetails = () => {
                         </div>
                       </FormControl>
                     </FormItem>
-                      <FormField
-                          control={form.control}
-                          name="operationMatchArguments"
-                          render={({ field }) => (
-                              <FormItem
-                                  className={`transition-all duration-500 ease-in-out ${
-                                      seedWithArguments ? 'max-h-[500px] opacity-100 visible' : 'max-h-0 opacity-0 invisible'
-                                  }`}
-                              >
-                                <FormLabel>Matching arguments (JSON)</FormLabel>
-                                <FormControl>
-                                  <Textarea
-                                      placeholder="Matching arguments ..."
-                                      {...field}
-                                      className="h-48"
-                                  />
-                                </FormControl>
-                                <FormDescription>
-                                  Parameters used for matching a seed with GraphQL operations.
-                                </FormDescription>
-                                <FormMessage />
-                              </FormItem>
-                          )}
-                      />
+                    <FormField
+                      control={form.control}
+                      name="operationMatchArguments"
+                      render={({field}) => (
+                        <FormItem
+                          className={`transition-all duration-500 ease-in-out ${
+                            seedWithArguments
+                              ? 'max-h-[500px] opacity-100 visible'
+                              : 'max-h-0 opacity-0 invisible'
+                          }`}
+                        >
+                          <FormLabel>Matching arguments (JSON)</FormLabel>
+                          <FormControl>
+                            <Textarea
+                              placeholder="Matching arguments ..."
+                              {...field}
+                              className="h-48"
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            Parameters used for matching a seed with GraphQL
+                            operations.
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
                     <FormField
-                        control={form.control}
-                        name="seedResponse"
-                        render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Response (JSON)</FormLabel>
-                              <FormControl>
-                                <Textarea
-                                    placeholder="Response..."
-                                    {...field}
-                                    className="h-48"
-                                />
-                              </FormControl>
-                              <FormDescription>
-                                Data to be returned for the combination of the defined operation name, sequence id and parameters
-                              </FormDescription>
-                              <FormMessage />
-                            </FormItem>
-                        )}
+                      control={form.control}
+                      name="seedResponse"
+                      render={({field}) => (
+                        <FormItem>
+                          <FormLabel>Response (JSON)</FormLabel>
+                          <FormControl>
+                            <Textarea
+                              placeholder="Response..."
+                              {...field}
+                              className="h-48"
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            Data to be returned for the combination of the
+                            defined operation name, sequence id and parameters
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
                     <div className="sm:justify-start flex space-x-2">
                       <DialogClose asChild>
                         <Button
-                            type="button"
-                            variant="secondary"
-                            onClick={() => setIsDialogOpen(false)}
+                          type="button"
+                          variant="secondary"
+                          onClick={() => setIsDialogOpen(false)}
                         >
                           Discard
                         </Button>
@@ -465,6 +540,11 @@ const ProposalDetails = () => {
                               >
                                 View
                               </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => handleDelete(seed.id)}
+                              >
+                                Delete
+                              </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </TableCell>
@@ -481,6 +561,22 @@ const ProposalDetails = () => {
               </CardFooter>
             </>
           )}
+        </Card>
+        <Card x-chunk="dashboard-07-chunk-5" className="mb-4">
+          <CardHeader>
+            <CardTitle>Browse and query your schema</CardTitle>
+            <CardDescription>
+              <span>
+                Use code editor to get the data shape for the operation you want
+                to mock
+              </span>
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <GraphiQL fetcher={fetcher} defaultHeaders={defaultHeaders}>
+              <GraphiQL.Logo>Editor</GraphiQL.Logo>
+            </GraphiQL>
+          </CardContent>
         </Card>
         <Toaster />
       </div>

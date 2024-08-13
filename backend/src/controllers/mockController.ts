@@ -6,7 +6,7 @@ export default class MockController {
   private mockService: MockService;
 
   constructor() {
-    this.mockService = new MockService();
+    this.mockService = MockService.getInstance();
     this.startNewMockInstance = this.startNewMockInstance.bind(this);
   }
 

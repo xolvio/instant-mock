@@ -13,7 +13,7 @@ const SeedDetails = () => {
     const seedResponse = state?.seedResponse ? JSON.parse(state.seedResponse) : {};
 
     return (
-        <div className="flex justify-center items-start p-4 h-screen bg-muted/40">
+        <div className="flex justify-center items-start p-4 bg-muted/40">
             <div className="w-full max-w-4xl space-y-4">
                 <Breadcrumb className="hidden md:flex">
                     <BreadcrumbList>
