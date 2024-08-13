@@ -29,6 +29,7 @@ import {
   DialogClose,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -75,8 +76,10 @@ const ProposalDetails = () => {
   const {proposalId} = useParams();
   // State to manage dialog open state
   const [seeds, setSeeds] = useState<Seed[]>([]); // Use Seed type for state
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [seedWithArguments, setSeedWithArguments] = useState(false);
+  const [selectedSeedId, setSelectedSeedId] = useState(-1);
   // Fetch seeds
   useEffect(() => {
     fetchSeeds();
@@ -173,6 +176,16 @@ const ProposalDetails = () => {
     }
   };
 
+  const handleDeleteClick = (seedId: number) => {
+    setSelectedSeedId(seedId);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    handleDelete(selectedSeedId); // Call your delete function here
+    setIsDeleteDialogOpen(false);
+  };
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       const normalizedValues = {
@@ -203,7 +216,7 @@ const ProposalDetails = () => {
         });
         fetchSeeds();
         // Close the dialog on successful form submission
-        setIsDialogOpen(false);
+        setIsCreateDialogOpen(false);
       }
     } catch (error) {
       toast({
@@ -273,11 +286,11 @@ const ProposalDetails = () => {
               <CardTitle>Seeds</CardTitle>
               <CardDescription>Manage your seeds.</CardDescription>
             </div>
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
               <DialogTrigger asChild>
                 <Button
                   className="ml-auto gap-1"
-                  onClick={() => setIsDialogOpen(true)}
+                  onClick={() => setIsCreateDialogOpen(true)}
                 >
                   Create seed
                 </Button>
@@ -415,7 +428,7 @@ const ProposalDetails = () => {
                         <Button
                           type="button"
                           variant="secondary"
-                          onClick={() => setIsDialogOpen(false)}
+                          onClick={() => setIsCreateDialogOpen(false)}
                         >
                           Discard
                         </Button>
@@ -512,9 +525,9 @@ const ProposalDetails = () => {
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button
-                                aria-haspopup="true"
-                                size="icon"
-                                variant="ghost"
+                                  aria-haspopup="true"
+                                  size="icon"
+                                  variant="ghost"
                               >
                                 <MoreHorizontal className="h-4 w-4" />
                                 <span className="sr-only">Toggle menu</span>
@@ -523,25 +536,24 @@ const ProposalDetails = () => {
                             <DropdownMenuContent align="end">
                               <DropdownMenuLabel>Actions</DropdownMenuLabel>
                               <DropdownMenuItem
-                                onClick={() =>
-                                  navigate(
-                                    `/proposals/${proposalId}/seeds/${seed.id}`,
-                                    {
-                                      state: {
-                                        operationName: seed.operationName,
-                                        sequenceId: seed.sequenceId,
-                                        operationMatchArguments:
-                                          seed.operationMatchArguments,
-                                        seedResponse: seed.seedResponse,
-                                      },
-                                    }
-                                  )
-                                }
+                                  onClick={() =>
+                                      navigate(
+                                          `/proposals/${proposalId}/seeds/${seed.id}`,
+                                          {
+                                            state: {
+                                              operationName: seed.operationName,
+                                              sequenceId: seed.sequenceId,
+                                              operationMatchArguments: seed.operationMatchArguments,
+                                              seedResponse: seed.seedResponse,
+                                            },
+                                          }
+                                      )
+                                  }
                               >
                                 View
                               </DropdownMenuItem>
                               <DropdownMenuItem
-                                onClick={() => handleDelete(seed.id)}
+                                  onClick={() => handleDeleteClick(seed.id)}
                               >
                                 Delete
                               </DropdownMenuItem>
@@ -579,6 +591,24 @@ const ProposalDetails = () => {
           </CardContent>
         </Card>
         <Toaster />
+        <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Confirm Deletion</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to delete this seed? This action cannot be undone.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button variant="secondary">Cancel</Button>
+              </DialogClose>
+              <Button variant="destructive" onClick={handleConfirmDelete}>
+                Delete
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
