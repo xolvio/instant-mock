@@ -186,6 +186,25 @@ const ProposalDetails = () => {
     setIsDeleteDialogOpen(false);
   };
 
+  function getCurrentDateTime(): string {
+    const now = new Date();
+
+    const dateFormatter = new Intl.DateTimeFormat('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+
+    const timeFormatter = new Intl.DateTimeFormat('en-US', {
+      hour: 'numeric',
+      minute: 'numeric',
+      hour12: true,
+    });
+
+    return `${dateFormatter.format(now)} at ${timeFormatter.format(now)}`;
+  }
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       const normalizedValues = {
@@ -193,7 +212,7 @@ const ProposalDetails = () => {
         operationMatchArguments: JSON.parse(values.operationMatchArguments),
         seedResponse: JSON.parse(values.seedResponse),
       };
-      const response = await fetch(
+      const response: Response = await fetch(
         `http://localhost:${port}/api/seeds?variantName=${proposalId}`,
         {
           method: 'POST',
@@ -204,15 +223,16 @@ const ProposalDetails = () => {
         }
       );
       if (!response.ok) {
+        const errorData = await response.json();
         toast({
           variant: 'destructive',
           title: 'There was an error creating the seed!',
-          description: 'Friday, February 10, 2023 at 5:57 PM',
+          description: getCurrentDateTime(),
         });
       } else {
         toast({
           title: 'Seed created successfully!',
-          description: 'Friday, February 10, 2023 at 5:57 PM',
+          description: getCurrentDateTime(),
         });
         fetchSeeds();
         // Close the dialog on successful form submission
@@ -222,7 +242,7 @@ const ProposalDetails = () => {
       toast({
         variant: 'destructive',
         title: 'There was an error creating the seed!',
-        description: 'Friday, February 10, 2023 at 5:57 PM',
+        description: getCurrentDateTime(),
       });
     }
   }
@@ -286,7 +306,10 @@ const ProposalDetails = () => {
               <CardTitle>Seeds</CardTitle>
               <CardDescription>Manage your seeds.</CardDescription>
             </div>
-            <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+            <Dialog
+              open={isCreateDialogOpen}
+              onOpenChange={setIsCreateDialogOpen}
+            >
               <DialogTrigger asChild>
                 <Button
                   className="ml-auto gap-1"
@@ -482,17 +505,11 @@ const ProposalDetails = () => {
                             <HoverCardTrigger>
                               Hover to see arguments
                             </HoverCardTrigger>
-                            <HoverCardContent>
-                              <pre
-                                className="bg-gray-100 p-4 rounded overflow-auto"
-                                style={{
-                                  whiteSpace: 'pre-wrap',
-                                  wordWrap: 'break-word',
-                                }}
-                              >
-                                <code className="text-sm">
+                            <HoverCardContent className="p-0">
+                              <pre className="bg-gray-100 p-4 rounded overflow-auto">
+                                <code className="text-sm overflow-auto">
                                   {JSON.stringify(
-                                    seed.operationMatchArguments,
+                                    JSON.parse(seed.operationMatchArguments),
                                     null,
                                     2
                                   )}
@@ -504,18 +521,16 @@ const ProposalDetails = () => {
                         <TableCell className="hidden md:table-cell">
                           <HoverCard>
                             <HoverCardTrigger>
-                              Hover to see response
+                              Hover to see arguments
                             </HoverCardTrigger>
-                            <HoverCardContent>
-                              <pre
-                                className="bg-gray-100 p-4 rounded overflow-auto"
-                                style={{
-                                  whiteSpace: 'pre-wrap',
-                                  wordWrap: 'break-word',
-                                }}
-                              >
-                                <code className="text-sm">
-                                  {JSON.stringify(seed.seedResponse, null, 2)}
+                            <HoverCardContent className="p-0">
+                              <pre className="bg-gray-100 p-4 rounded overflow-auto">
+                                <code className="text-sm overflow-auto">
+                                  {JSON.stringify(
+                                      JSON.parse(seed.seedResponse),
+                                      null,
+                                      2
+                                  )}
                                 </code>
                               </pre>
                             </HoverCardContent>
@@ -525,9 +540,9 @@ const ProposalDetails = () => {
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button
-                                  aria-haspopup="true"
-                                  size="icon"
-                                  variant="ghost"
+                                aria-haspopup="true"
+                                size="icon"
+                                variant="ghost"
                               >
                                 <MoreHorizontal className="h-4 w-4" />
                                 <span className="sr-only">Toggle menu</span>
@@ -536,24 +551,25 @@ const ProposalDetails = () => {
                             <DropdownMenuContent align="end">
                               <DropdownMenuLabel>Actions</DropdownMenuLabel>
                               <DropdownMenuItem
-                                  onClick={() =>
-                                      navigate(
-                                          `/proposals/${proposalId}/seeds/${seed.id}`,
-                                          {
-                                            state: {
-                                              operationName: seed.operationName,
-                                              sequenceId: seed.sequenceId,
-                                              operationMatchArguments: seed.operationMatchArguments,
-                                              seedResponse: seed.seedResponse,
-                                            },
-                                          }
-                                      )
-                                  }
+                                onClick={() =>
+                                  navigate(
+                                    `/proposals/${proposalId}/seeds/${seed.id}`,
+                                    {
+                                      state: {
+                                        operationName: seed.operationName,
+                                        sequenceId: seed.sequenceId,
+                                        operationMatchArguments:
+                                          seed.operationMatchArguments,
+                                        seedResponse: seed.seedResponse,
+                                      },
+                                    }
+                                  )
+                                }
                               >
                                 View
                               </DropdownMenuItem>
                               <DropdownMenuItem
-                                  onClick={() => handleDeleteClick(seed.id)}
+                                onClick={() => handleDeleteClick(seed.id)}
                               >
                                 Delete
                               </DropdownMenuItem>
@@ -596,7 +612,8 @@ const ProposalDetails = () => {
             <DialogHeader>
               <DialogTitle>Confirm Deletion</DialogTitle>
               <DialogDescription>
-                Are you sure you want to delete this seed? This action cannot be undone.
+                Are you sure you want to delete this seed? This action cannot be
+                undone.
               </DialogDescription>
             </DialogHeader>
             <DialogFooter>
