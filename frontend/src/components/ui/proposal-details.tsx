@@ -85,9 +85,29 @@ const ProposalDetails = () => {
     fetchSeeds();
   }, [proposalId]);
 
-  const fetcher = createGraphiQLFetcher({
-    url: `http://localhost:${port}/${proposalId}/graphql`,
-  });
+  const customFetcher = async (graphQLParams: any) => {
+    const { query, variables } = graphQLParams;
+    console.log(variables);
+    const response = await fetch(`http://localhost:${port}/${proposalId}/graphql`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(graphQLParams),
+    });
+
+    const result = await response.json();
+    const isIntrospectionQuery = query.includes('IntrospectionQuery')
+
+    // Only set the seedResponse if it's not an introspection query
+    if (!isIntrospectionQuery) {
+      setValue('seedResponse', JSON.stringify(result, null, 2));
+      setValue('operationMatchArguments', JSON.stringify(variables, null, 2));
+
+    }
+
+    return result;
+  };
 
   const fetchSeeds = async () => {
     try {
@@ -138,6 +158,8 @@ const ProposalDetails = () => {
       operationMatchArguments: '{}',
     },
   });
+
+  const {setValue} = form;
 
   async function deleteSeed(seedId: number) {
     try {
@@ -527,9 +549,9 @@ const ProposalDetails = () => {
                               <pre className="bg-gray-100 p-4 rounded overflow-auto">
                                 <code className="text-sm overflow-auto">
                                   {JSON.stringify(
-                                      JSON.parse(seed.seedResponse),
-                                      null,
-                                      2
+                                    JSON.parse(seed.seedResponse),
+                                    null,
+                                    2
                                   )}
                                 </code>
                               </pre>
@@ -561,6 +583,7 @@ const ProposalDetails = () => {
                                         operationMatchArguments:
                                           seed.operationMatchArguments,
                                         seedResponse: seed.seedResponse,
+                                        proposalId: proposalId,
                                       },
                                     }
                                   )
@@ -601,7 +624,7 @@ const ProposalDetails = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <GraphiQL fetcher={fetcher} defaultHeaders={defaultHeaders}>
+            <GraphiQL fetcher={customFetcher} defaultHeaders={defaultHeaders}>
               <GraphiQL.Logo>Editor</GraphiQL.Logo>
             </GraphiQL>
           </CardContent>

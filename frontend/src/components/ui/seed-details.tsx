@@ -11,6 +11,7 @@ const SeedDetails = () => {
     const sequenceId = state.sequenceId;
     const operationMatchArguments = state?.operationMatchArguments ? JSON.parse(state.operationMatchArguments) : {};
     const seedResponse = state?.seedResponse ? JSON.parse(state.seedResponse) : {};
+    const proposalId = state?.proposalId;
 
     return (
         <div className="flex justify-center items-start p-4 bg-muted/40">
@@ -25,7 +26,7 @@ const SeedDetails = () => {
                         <BreadcrumbSeparator/>
                         <BreadcrumbItem>
                             <BreadcrumbLink asChild>
-                                <RouterLink to="/">Proposal details</RouterLink>
+                                <RouterLink to={`/proposals/${proposalId}`}>Proposal details</RouterLink>
                             </BreadcrumbLink>
                         </BreadcrumbItem>
                         <BreadcrumbSeparator/>
