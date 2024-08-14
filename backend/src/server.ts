@@ -9,6 +9,9 @@ import mocksRoutes from './routes/mocks.routes';
 import {MockService} from "./service/mockService";
 import {ProposalService} from "./service/proposalService";
 import proposals from "./proposals";
+import swaggerJsdoc from 'swagger-jsdoc';
+
+import swaggerUi from "swagger-ui-express";
 
 var proxy = require("express-http-proxy");
 
@@ -27,7 +30,63 @@ app.use("/api", mocksRoutes);
 const mockService = MockService.getInstance();
 const proposalService = new ProposalService();
 
+const options = {
+    definition: {
+        openapi: '3.0.0',
+        info: {
+            title: 'Instant Mock',
+            version: '1.0.0',
+        },
+    },
+    apis: ['./backend/src/routes/*.ts', './backend/src/server.ts'],
+};
+
+const swaggerSpec = swaggerJsdoc(options);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
 // Proxy setup to route requests dynamically based on proposal ID in the path
+/**
+ * @openapi
+ * /{proposalId}/graphql:
+ *   post:
+ *     summary: Proxy GraphQL requests to the appropriate service
+ *     description: |
+ *       This endpoint dynamically proxies GraphQL requests based on the `proposalId` in the URL. The `proposalId` is used to determine the appropriate backend service to route the request to. The proxy forwards the request to the corresponding GraphQL server running on a different port.
+ *
+ *       **How it works:**
+ *       - The `proposalId` is extracted from the URL.
+ *       - The corresponding backend service for the `proposalId` is identified.
+ *       - The request is forwarded to the backend service.
+ *       - The response from the backend service is returned to the client.
+ *     tags:
+ *       - GraphQL Proxy
+ *     parameters:
+ *       - in: path
+ *         name: proposalId
+ *         required: true
+ *         description: The ID of the proposal to route the request to.
+ *         schema:
+ *           type: string
+ *           example: "dev"
+ *     responses:
+ *       200:
+ *         description: Successfully proxied the request.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               example: { "data": { "field": "value" } }
+ *       500:
+ *         description: Error forwarding the request to the backend service.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Error forwarding request"
+ */
 app.use(
     "/:proposalId/graphql", // Include proposalId as part of the route path
     proxy(

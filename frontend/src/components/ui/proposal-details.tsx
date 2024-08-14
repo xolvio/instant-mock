@@ -85,25 +85,39 @@ const ProposalDetails = () => {
     fetchSeeds();
   }, [proposalId]);
 
-  const customFetcher = async (graphQLParams: any) => {
-    const { query, variables } = graphQLParams;
-    console.log(variables);
-    const response = await fetch(`http://localhost:${port}/${proposalId}/graphql`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(graphQLParams),
-    });
+  const customFetcher = async (graphQLParams: any, headers: any) => {
+    const {query, variables, operationName} = graphQLParams;
+    // Merge custom headers with headers from GraphiQL
+    console.log(headers);
+    const mergedHeaders = {
+      'Content-Type': 'application/json',
+      ...headers.headers, // Include headers from GraphiQL
+    };
+    const response = await fetch(
+      `http://localhost:${port}/${proposalId}/graphql`,
+      {
+        method: 'POST',
+        headers: mergedHeaders,
+        body: JSON.stringify(graphQLParams),
+      }
+    );
+
 
     const result = await response.json();
-    const isIntrospectionQuery = query.includes('IntrospectionQuery')
+    const isIntrospectionQuery = query.includes('IntrospectionQuery');
 
     // Only set the seedResponse if it's not an introspection query
     if (!isIntrospectionQuery) {
       setValue('seedResponse', JSON.stringify(result, null, 2));
-      setValue('operationMatchArguments', JSON.stringify(variables, null, 2));
+      setValue('operationName', operationName);
+    }
 
+    // Check if variables is not an empty object
+    const hasVariables = variables && Object.keys(variables).length > 0;
+
+    if (hasVariables) {
+      setValue('operationMatchArguments', JSON.stringify(variables, null, 2));
+      setSeedWithArguments(true);
     }
 
     return result;

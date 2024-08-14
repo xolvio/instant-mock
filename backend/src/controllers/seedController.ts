@@ -70,6 +70,7 @@ export default class SeedController {
     }
   }
 
+
   async deleteSeed(req: Request, res: Response): Promise<void> {
     const {id} = req.params;
 
