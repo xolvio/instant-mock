@@ -38,7 +38,10 @@ const options = {
             version: '1.0.0',
         },
     },
-    apis: ['./backend/src/routes/*.ts', './backend/src/server.ts'],
+    apis: [
+        path.join(__dirname, './routes/*.js'),
+        path.join(__dirname, 'server.js')
+    ],
 };
 
 const swaggerSpec = swaggerJsdoc(options);
