@@ -14,7 +14,7 @@ import { bootstrap } from 'global-agent';
 import swaggerUi from "swagger-ui-express";
 
 
-bootstrap();
+// bootstrap();
 var proxy = require("express-http-proxy");
 
 require("dotenv").config();

@@ -1,4 +1,4 @@
-import {ApolloClient, ApolloLink, HttpLink, InMemoryCache} from "@apollo/client";
+import {ApolloClient, ApolloLink, createHttpLink, HttpLink, InMemoryCache} from "@apollo/client";
 import {setContext} from "@apollo/client/link/context";
 import {GET_PROPOSALS} from "./queries/getProposals";
 import {GET_SCHEMA} from "./queries/getSchema";
@@ -6,14 +6,22 @@ import {GRAPH_ID} from "../server";
 import {Proposal, ProposalStatus} from "../models/proposal";
 import proposals from "../proposals";
 import {basePort, getPortPromise} from "portfinder";
+import {bootstrap} from "global-agent";
+import { HttpsProxyAgent } from 'https-proxy-agent';
 
 export default class Client {
     private apolloClient: ApolloClient<any>;
 
     constructor() {
-        const httpLink = new HttpLink({
+        // bootstrap();
+        const proxy = process.env.HTTP_PROXY || 'http://internet.ford.com:83';
+        const agent = new HttpsProxyAgent(proxy);
+        const link = createHttpLink({
             uri: "https://api.apollographql.com/api/graphql",
             fetch,
+            fetchOptions: {
+                agent,  // This is where you set the proxy agent
+            },
         });
 
         const authLink = setContext((_, {headers}) => {
@@ -28,7 +36,7 @@ export default class Client {
         });
 
         this.apolloClient = new ApolloClient({
-            link: ApolloLink.from([authLink, httpLink]),
+            link: ApolloLink.from([authLink, link]),
             cache: new InMemoryCache(),
         });
     }
