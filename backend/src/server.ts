@@ -10,9 +10,11 @@ import {MockService} from "./service/mockService";
 import {ProposalService} from "./service/proposalService";
 import proposals from "./proposals";
 import swaggerJsdoc from 'swagger-jsdoc';
-
+import { bootstrap } from 'global-agent';
 import swaggerUi from "swagger-ui-express";
 
+
+bootstrap();
 var proxy = require("express-http-proxy");
 
 require("dotenv").config();

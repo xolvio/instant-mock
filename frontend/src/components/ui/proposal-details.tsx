@@ -71,6 +71,7 @@ import '../../graphiql.css';
 
 const ProposalDetails = () => {
   const port = process.env.PORT || 3001;
+  const baseUrl = process.env.REACT_APP_BASE_URL;
   const navigate = useNavigate();
   const {toast} = useToast();
   const {proposalId} = useParams();
@@ -321,13 +322,13 @@ const ProposalDetails = () => {
             </div>
             <div className="flex items-center mb-2">
               <Link
-                to={`http://localhost:${port}/${proposalId}/graphql`}
+                to={`https://localhost:${port}/${proposalId}/graphql`}
                 className="mr-1.5 h-4 w-4 underline"
               >
                 <span className="mr-1.5 h-4 w-4"></span>{' '}
                 {/* Icon placeholder if needed */}
               </Link>
-              <span>{`Server URL: http://localhost:${port}/${proposalId}/graphql`}</span>
+              <span>{`Server URL: https://${baseUrl}/${proposalId}/graphql`}</span>
             </div>
           </CardContent>
         </Card>
