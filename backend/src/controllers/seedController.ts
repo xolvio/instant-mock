@@ -41,7 +41,7 @@ export default class SeedController {
       variantName,
       seedResponse,
       operationName,
-      operationMatchArguments, // ensure the correct field name is used here
+      operationMatchArguments,
       sequenceId,
     };
 

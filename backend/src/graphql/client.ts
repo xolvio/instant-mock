@@ -16,11 +16,12 @@ export default class Client {
         // bootstrap();
         const proxy = process.env.HTTP_PROXY || 'http://internet.ford.com:83';
         const agent = new HttpsProxyAgent(proxy);
+        console.log(proxy);
         const link = createHttpLink({
             uri: "https://api.apollographql.com/api/graphql",
             fetch,
             fetchOptions: {
-                agent,  // This is where you set the proxy agent
+                agent,
             },
         });
 
@@ -44,7 +45,7 @@ export default class Client {
     async getProposals(): Promise<Proposal[]> {
         const {data} = await this.apolloClient.query({
             query: GET_PROPOSALS,
-            variables: {graphId: GRAPH_ID, filterBy: {}}, // Adjust filterBy as needed
+            variables: {graphId: GRAPH_ID, filterBy: {}},
         });
 
         const port = await getPortPromise();
@@ -59,7 +60,7 @@ export default class Client {
                 .filter((p: any) => p.backingVariant?.name)
                 .map(async (p: any): Promise<Proposal> => {
                     const port = await getPortPromise({
-                        port: 8001,    // minimum port
+                        port: 8001,
                     });
                     const proposal: Proposal = {
                         id: p.backingVariant.name,
@@ -81,7 +82,6 @@ export default class Client {
             variables: {graphId: GRAPH_ID, variantName},
         });
 
-        // Assuming the document exists and is not null
         return data.graph.variant.latestPublication.schema.document;
     }
 

@@ -36,14 +36,13 @@ export class SeedRepository {
         throw new Error(`Seed with ID ${id} does not exist`);
       }
 
-      // Proceed to delete the seed
       const result = await db.run('DELETE FROM seeds WHERE id = ?', id);
 
       // Check if the seed was deleted
       if ((result.changes as number) > 0) {
-        return seed; // Return the deleted seed
+        return seed;
       } else {
-        return null; // Return null if no seed was deleted (this case is rare)
+        return null;
       }
     } catch (error) {
       console.error('Error deleting seed:', error);
