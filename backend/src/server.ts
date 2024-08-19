@@ -98,10 +98,10 @@ app.get('/api/openapi.json', (req, res) => {
  *                   example: "Error forwarding request"
  */
 app.use(
-    "/:proposalId/graphql", // Include proposalId as part of the route path
+    "/:proposalId/graphql",
     proxy(
         (req: { params: { proposalId: string } }) => {
-            const proposalId = req.params.proposalId; // Extract proposalId from the path
+            const proposalId = req.params.proposalId;
 
             const proposal = proposals[proposalId];
             const port = proposal.port;
@@ -137,7 +137,7 @@ app.post("/api/stop-mock", async (req, res) => {
 
     try {
         await instance.service.stop();
-        delete mockInstances[variantName]; // Remove from the map
+        delete mockInstances[variantName];
         res.send({
             message: `Mocking service for proposal ID ${variantName} stopped successfully`,
         });
