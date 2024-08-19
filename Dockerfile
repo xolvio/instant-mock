@@ -1,4 +1,3 @@
-# Stage 1: Build React app
 FROM node:20-alpine AS build
 
 WORKDIR /app
@@ -7,7 +6,7 @@ WORKDIR /app/frontend
 RUN npm install
 RUN npm run build
 
-# Stage 2: Set up Express server with TypeScript
+
 FROM node:20-alpine
 
 WORKDIR /app

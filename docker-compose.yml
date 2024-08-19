@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./frontend:/app/frontend
+      - ./backend:/app/backend
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - PORT=3001
+      - HTTP_PROXY=
+    ports:
+      - "3001:3001"
+    command: npm run start:dev
