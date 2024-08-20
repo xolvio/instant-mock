@@ -32,7 +32,8 @@
     "sqlite": "^5.1.1",
     "sqlite3": "^5.1.7",
     "swagger-jsdoc": "^6.2.8",
-    "swagger-ui-express": "^5.0.1"
+    "swagger-ui-express": "^5.0.1",
+    "undici": "^6.19.8"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
