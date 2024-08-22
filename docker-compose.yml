@@ -3,9 +3,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    volumes:
-      - ./frontend:/app/frontend
-      - ./backend:/app/backend
     environment:
       - NODE_ENV=development
       - PORT=3001
