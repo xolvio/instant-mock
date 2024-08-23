@@ -68,7 +68,6 @@ import {createGraphiQLFetcher} from '@graphiql/toolkit';
 import {GraphiQL} from 'graphiql';
 import 'graphiql/graphiql.css';
 import '../../graphiql.css';
-import process from "node:process";
 
 const ProposalDetails = () => {
   const port = process.env.PORT || 3001;
