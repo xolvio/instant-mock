@@ -21,18 +21,21 @@ import {
 import { Button } from './button';
 import { ProposalCard } from './proposal-card';
 import { SchemaCard } from './schema-card';
+import * as process from "node:process";
 
 const ProposalDashboard = () => {
   const port = process.env.PORT || 3001;
+  const apiUrl = process.env.REACT_APP_API_BASE_URL;
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [filteredProposals, setFilteredProposals] = useState<Proposal[]>([]);
   const [selectedStatuses, setSelectedStatuses] = useState<ProposalStatus[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
+    const apiUrl = process.env.REACT_APP_API_BASE_URL;
     const fetchProposals = async () => {
       try {
-        const response = await fetch(`http://localhost:${port}/api/proposals`);
+        const response = await fetch(`${apiUrl}/api/proposals`);
         const data: Proposal[] = await response.json();
         setProposals(data);
         setFilteredProposals(data);
