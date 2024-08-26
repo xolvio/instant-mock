@@ -20,7 +20,7 @@ export default class MockController {
       return res
         .status(409)
         .send(
-          `A mocking service is already running for variant name ${variantName} on port ${mockInstances[variantName as string].port}`,
+          `A mocking service is already running for variant name ${variantName} on port ${mockInstances[variantName as string]}`,
         );
     }
 

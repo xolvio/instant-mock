@@ -2,6 +2,7 @@ import {Request, Response} from 'express';
 import {SeedRepository} from '../repositories/seedRepository';
 import {Seed} from '../models/seed';
 import {MockService} from '../service/mockService';
+import {SeedType} from "../seed/SeedManager";
 
 export default class SeedController {
   private seedRepository: SeedRepository;
@@ -41,7 +42,7 @@ export default class SeedController {
       variantName,
       seedResponse,
       operationName,
-      operationMatchArguments, // ensure the correct field name is used here
+      operationMatchArguments,
       sequenceId,
     };
 
@@ -49,19 +50,18 @@ export default class SeedController {
       return res.status(400).send('Proposal ID is required');
     }
 
-    const mockInstance =
+    const mockServer =
       await this.mockService.startNewMockInstanceIfNeeded(variantName);
 
     try {
       // Save seed to SQLite
       await this.seedRepository.createSeed(seed);
 
-      const context = mockInstance.service.createContext(seed.sequenceId);
-      await context.operation(
-        operationName,
-        seedResponse,
-        operationMatchArguments
-      );
+      mockServer.seedManager.registerSeed(seed.sequenceId, SeedType.Operation, {
+        operationName: seed.operationName,
+        seedResponse: seedResponse,
+        operationMatchArguments: operationMatchArguments,
+      })
 
       res.send({message: `Seed registered successfully`});
     } catch (error) {
@@ -83,7 +83,7 @@ export default class SeedController {
     try {
       const result = await this.seedRepository.deleteSeedById(numericId);
       if (result) {
-        await this.mockService.restartMockInstance(result.variantName);
+        // await this.mockService.restartMockInstance(result.variantName);
         res.status(200).json({message: 'Seed deleted successfully'});
       } else {
         res.status(404).json({message: 'Seed not found'});
