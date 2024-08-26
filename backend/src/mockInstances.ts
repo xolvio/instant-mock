@@ -1,5 +1,5 @@
-import {MockInstance} from "./models/mockInstance";
+import MockServer from "./MockServer";
 
-const mockInstances: Record<string, MockInstance> = {};
+const mockInstances: Record<string, MockServer> = {};
 
 export default mockInstances;
