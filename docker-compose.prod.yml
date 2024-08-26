@@ -1,0 +1,15 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - HTTP_PROXY=http://internet.gcp.ford.com:83
+      - http_proxy=http://internet.gcp.ford.com:83
+      - HTTPS_PROXY=http://internet.gcp.ford.com:83
+      - https_proxy=http://internet.gcp.ford.com:83
+    ports:
+      - "3001:3001"
+    command: npm run start

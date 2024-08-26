@@ -71,6 +71,7 @@ import '../../graphiql.css';
 
 const ProposalDetails = () => {
   const port = process.env.PORT || 3001;
+  const apiUrl = process.env.REACT_APP_API_BASE_URL;
   const navigate = useNavigate();
   const {toast} = useToast();
   const {proposalId} = useParams();
@@ -94,7 +95,7 @@ const ProposalDetails = () => {
       ...headers.headers, // Include headers from GraphiQL
     };
     const response = await fetch(
-      `http://localhost:${port}/${proposalId}/graphql`,
+      `${apiUrl}/${proposalId}/graphql`,
       {
         method: 'POST',
         headers: mergedHeaders,
@@ -126,7 +127,7 @@ const ProposalDetails = () => {
   const fetchSeeds = async () => {
     try {
       const response = await fetch(
-        `http://localhost:${port}/api/seeds?variantName=${proposalId}`
+        `${apiUrl}/api/seeds?variantName=${proposalId}`
       );
       const seeds: Seed[] = await response.json();
       setSeeds(seeds);
@@ -178,7 +179,7 @@ const ProposalDetails = () => {
   async function deleteSeed(seedId: number) {
     try {
       const response = await fetch(
-        `http://localhost:3001/api/seeds/${seedId}`,
+        `${apiUrl}/api/seeds/${seedId}`,
         {
           method: 'DELETE',
           headers: {
@@ -249,7 +250,7 @@ const ProposalDetails = () => {
         seedResponse: JSON.parse(values.seedResponse),
       };
       const response: Response = await fetch(
-        `http://localhost:${port}/api/seeds?variantName=${proposalId}`,
+        `${apiUrl}/api/seeds?variantName=${proposalId}`,
         {
           method: 'POST',
           headers: {
@@ -311,7 +312,7 @@ const ProposalDetails = () => {
           <CardContent>
             <div className="flex items-center mb-2">
               <a
-                href={`https://studio.apollographql.com/sandbox/explorer?endpoint=http://localhost:${port}/${proposalId}/graphql`}
+                href={`https://studio.apollographql.com/sandbox/explorer?endpoint=${apiUrl}/${proposalId}/graphql`}
                 className="underline ml-1"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -321,13 +322,13 @@ const ProposalDetails = () => {
             </div>
             <div className="flex items-center mb-2">
               <Link
-                to={`http://localhost:${port}/${proposalId}/graphql`}
+                to={`${apiUrl}/${proposalId}/graphql`}
                 className="mr-1.5 h-4 w-4 underline"
               >
                 <span className="mr-1.5 h-4 w-4"></span>{' '}
                 {/* Icon placeholder if needed */}
               </Link>
-              <span>{`Server URL: http://localhost:${port}/${proposalId}/graphql`}</span>
+              <span>{`Server URL: ${apiUrl}/${proposalId}/graphql`}</span>
             </div>
           </CardContent>
         </Card>
