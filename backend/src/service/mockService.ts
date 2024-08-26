@@ -1,12 +1,12 @@
 import Client from '../graphql/client';
-import GraphqlMockingService from '@wayfair/gqmock';
 import {SeedRepository} from '../repositories/seedRepository';
 import mockInstances from '../mockInstances';
 import {Seed} from '../models/seed';
-import {MockInstance} from '../models/mockInstance';
 import {Proposal} from '../models/proposal';
 import proposals from '../proposals';
 import {Mutex} from 'async-mutex';
+import MockServer from '../MockServer';
+import {SeedType} from '../seed/SeedManager';
 
 export class MockService {
   private static instance: MockService;
@@ -27,9 +27,7 @@ export class MockService {
     return MockService.instance;
   }
 
-  async startNewMockInstanceIfNeeded(
-    proposalId: string
-  ): Promise<MockInstance> {
+  async startNewMockInstanceIfNeeded(proposalId: string): Promise<MockServer> {
     const release = await this.mutex.acquire();
     let mockInstance = mockInstances[proposalId];
     if (!mockInstance) {
@@ -39,7 +37,7 @@ export class MockService {
     return mockInstance;
   }
 
-  async startNewMockInstance(proposalId: string): Promise<MockInstance> {
+  async startNewMockInstance(proposalId: string): Promise<MockServer> {
     // Fetch the SDL document for the given variantName
     const schema = await this.client.getSchema(proposalId);
 
@@ -56,35 +54,36 @@ export class MockService {
 
     // Proceed to start the mocking service using the fetched SDL
     const proposal: Proposal = proposals[proposalId];
-    const port = proposal.port;
-    const mockingService = new GraphqlMockingService({port});
-    await mockingService.start();
-    await mockingService.registerSchema(schema, {fakerConfig});
+    const mockServer = new MockServer(schema, {
+      subgraph: false,
+      fakerConfig,
+    });
+    // await mockingService.start();
+    // await mockingService.registerSchema(schema, {fakerConfig});
 
     // Load seeds from the database and register them
     const seeds: Seed[] =
       await this.seedRepository.findAllByVariantName(proposalId);
 
     for (const seed of seeds) {
-      const context = mockingService.createContext(seed.sequenceId);
-      await context.operation(
-        seed.operationName,
-        JSON.parse(seed.seedResponse),
-        JSON.parse(seed.operationMatchArguments)
-      );
+      mockServer.seedManager.registerSeed(seed.sequenceId, SeedType.Operation, {
+        operationName: seed.operationName,
+        seedResponse: JSON.parse(seed.seedResponse),
+        operationMatchArguments: JSON.parse(seed.operationMatchArguments),
+      });
     }
     // Store the instance information in the map
-    const mockInstance = {port, service: mockingService} as MockInstance;
-    mockInstances[proposalId as string] = mockInstance;
-    return mockInstance;
+    // const mockInstance = {port, service: mockingService} as MockInstance;
+    // mockInstances[proposalId as string] = mockInstance;
+    return mockServer;
   }
 
-  async restartMockInstance(proposalId: string): Promise<void> {
-    const mockInstance: MockInstance = mockInstances[proposalId];
-    if (mockInstance) {
-      const service = mockInstance.service.stop();
-      delete mockInstances[proposalId as string];
-      await this.startNewMockInstanceIfNeeded(proposalId);
-    }
-  }
+  // async restartMockInstance(proposalId: string): Promise<void> {
+  //   const mockServer: MockServer = mockInstances[proposalId];
+  //   if (mockServer) {
+  //     const service = mockServer.service.stop();
+  //     delete mockInstances[proposalId as string];
+  //     await this.startNewMockInstanceIfNeeded(proposalId);
+  //   }
+  // }
 }
