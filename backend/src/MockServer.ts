@@ -7,7 +7,7 @@ import {
     GraphQLSchema,
     Kind,
     ObjectTypeDefinitionNode,
-    ObjectTypeExtensionNode,
+    ObjectTypeExtensionNode, OperationDefinitionNode,
     parse,
     print,
     printSchema,
@@ -18,6 +18,7 @@ import {DocumentNode} from 'graphql/language/ast';
 import buildPrivateTypeQuery from './utilities/buildPrivateTypeQuery';
 import {addMocksToSchema, createMockStore} from '@graphql-tools/mock';
 import {faker} from '@faker-js/faker';
+import SeedManager from "./seed/SeedManager";
 
 const GQMOCK_QUERY_PREFIX = 'gqmock';
 
@@ -27,12 +28,11 @@ type SchemaRegistrationOptions = {
 };
 
 export default class MockServer {
-    // @ts-expect-error TODO fix types
     private mockStore;
-    // @ts-expect-error TODO fix types
     private apolloServerInstance;
     private graphQLSchema: GraphQLSchema | null = null;
     private fakerConfig: Record<string, object> = {};
+    seedManager: SeedManager;
     get apolloServer(): ApolloServer | null {
         return this.apolloServerInstance || null;
     }
@@ -45,10 +45,10 @@ export default class MockServer {
         return GQMOCK_QUERY_PREFIX;
     }
 
-    createApolloServer(
+    constructor(
         schemaSource: string,
         options: SchemaRegistrationOptions
-    ): void {
+    ) {
         const augmentedSchemaAst = this.getAugmentedSchema(schemaSource);
         if (options.subgraph) {
             this.graphQLSchema = buildSubgraphSchema(augmentedSchemaAst);
@@ -72,7 +72,10 @@ export default class MockServer {
             }),
         });
 
+        // @ts-expect-error TODO fix types
         this.apolloServerInstance.e
+
+        this.seedManager = new SeedManager();
     }
 
     private createCustomMocks(fakerConfig: Record<string, any>) {
@@ -392,4 +395,5 @@ export default class MockServer {
 
         return [];
     }
+
 }
