@@ -12,6 +12,8 @@ import proposals from './proposals';
 import swaggerJsdoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import * as Undici from 'undici';
+import {parse} from "graphql";
+import {SeededOperationResponse} from "./seed/types";
 
 var proxy = require('express-http-proxy');
 
@@ -59,115 +61,92 @@ app.get('/api/openapi.json', (req, res) => {
   res.send(swaggerSpec);
 });
 
-// Proxy setup to route requests dynamically based on proposal ID in the path
-/**
- * @openapi
- * /{proposalId}/graphql:
- *   post:
- *     summary: Proxy GraphQL requests to the appropriate service
- *     description: |
- *       This endpoint dynamically proxies GraphQL requests based on the `proposalId` in the URL. The `proposalId` is used to determine the appropriate backend service to route the request to. The proxy forwards the request to the corresponding GraphQL server running on a different port.
- *
- *       **How it works:**
- *       - The `proposalId` is extracted from the URL.
- *       - The corresponding backend service for the `proposalId` is identified.
- *       - The request is forwarded to the backend service.
- *       - The response from the backend service is returned to the client.
- *     tags:
- *       - GraphQL Proxy
- *     parameters:
- *       - in: path
- *         name: proposalId
- *         required: true
- *         description: The ID of the proposal to route the request to.
- *         schema:
- *           type: string
- *           example: "dev"
- *     responses:
- *       200:
- *         description: Successfully proxied the request.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               example: { "data": { "field": "value" } }
- *       500:
- *         description: Error forwarding the request to the backend service.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Error forwarding request"
- */
-app.use(
-  '/:proposalId/graphql', // Include proposalId as part of the route path
-  proxy(
-    (req: {params: {proposalId: string}}) => {
-      const proposalId = req.params.proposalId; // Extract proposalId from the path
-
-      const proposal = proposals[proposalId];
-      const port = proposal.port;
-      mockService
-        .startNewMockInstanceIfNeeded(proposalId)
-        .then((r) => console.log(`Proxy to port ${port}`));
-      return `http://localhost:${port}`;
-    },
-    {
-      proxyReqPathResolver: () => {
-        return '/graphql';
-      },
-      userResDecorator: (proxyRes: any, proxyResData: any) => {
-        // Optionally modify the response before sending it back to the client
-        return proxyResData;
-      },
-    }
-  )
-);
-
-// Optionally, create an endpoint to stop a mocking service
-app.post('/api/stop-mock', async (req, res) => {
-  const variantName = req.query.variantName as string;
-
-  if (!variantName) {
-    return res.status(400).send('Proposal ID is required');
+app.use('/:proposalId/graphql', async (req, res) => {
+  // TODO handle invalid
+  const { proposalId } = req.params;
+  const {query = '', variables = {}} = req.body;
+  const operationName = req.body.operationName
+  const sequenceId = req.headers['mocking-sequence-id'] as string;
+  if (!operationName) {
+    res.status(400);
+    res.json({
+      message: 'GraphQL operation name is required',
+    });
+    return;
   }
 
-  const instance = mockInstances[variantName];
-  if (!instance) {
-    return res
-      .status(404)
-      .send(`No active mocking service for proposal ID ${variantName}`);
-  }
+  const mockServer = await mockService.startNewMockInstanceIfNeeded(proposalId)
+  // const mockServer = mockInstances[proposalId];
 
   try {
-    await instance.service.stop();
-    delete mockInstances[variantName]; // Remove from the map
-    res.send({
-      message: `Mocking service for proposal ID ${variantName} stopped successfully`,
-    });
+    // verify the query is valid
+    parse(query);
   } catch (error) {
-    console.error('Error stopping mocking service:', error);
-    res.status(500).send('Error stopping mocking service');
+    // GraphqlMockingContextLogger.error(
+    //     `Invalid GraphQL Query: ${(error as Error).message}`,
+    //     sequenceId
+    // );
+    res.status(422);
+    res.json({
+      message: 'Invalid GraphQL Query',
+      error,
+    });
+    return;
+  }
+  const queryWithoutFragments = mockServer.expandFragments(query);
+  const typenamedQuery = mockServer.addTypenameFieldsToQuery(
+      queryWithoutFragments
+  );
+
+  let operationResult;
+  try {
+    const apolloServer = mockServer.apolloServer;
+    if (apolloServer) {
+      operationResult = await mockServer.executeOperation({
+        query: typenamedQuery,
+        variables,
+        operationName,
+      });
+    }
+  } catch (error) {
+    res.status(500);
+    res.json({
+      message: 'GraphQL operation execution error',
+      error,
+    });
+    return;
+  }
+
+  const {operationResponse, statusCode} =
+      await mockServer.seedManager.mergeOperationResponse({
+        operationName,
+        variables,
+        // @ts-expect-error TODO fix types
+        operationMock: operationResult,
+        sequenceId,
+        mockServer,
+        query: typenamedQuery,
+      });
+
+  res.status(statusCode);
+
+  if (operationResponse === null) {
+    res.end();
+  } else if (operationResponse instanceof Object) {
+    if ('warnings' in operationResponse) {
+      (operationResponse as SeededOperationResponse).warnings?.forEach(
+          (warning) => {
+            // GraphqlMockingContextLogger.warning(warning, sequenceId);
+            console.warn(warning);
+          }
+      );
+    }
+    res.json(operationResponse);
+  } else {
+    res.send(operationResponse);
   }
 });
 
-app.get('/api/server-status', (req, res) => {
-  const variantName = req.query.variantName as string;
-
-  if (!variantName) {
-    return res.status(400).send('Variant name is required');
-  }
-
-  const status = variantName in mockInstances ? 'running' : 'stopped';
-  res.json({status: status});
-});
-
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../../frontend/build', 'index.html'));
-});
 
 initializeDatabase()
   .then(() => {
