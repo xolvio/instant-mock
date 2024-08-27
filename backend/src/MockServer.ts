@@ -66,6 +66,7 @@ export default class MockServer {
         });
 
         this.apolloServerInstance = new ApolloServer({
+            introspection: true,
             schema: addMocksToSchema({
                 schema: this.graphQLSchema,
                 store: this.mockStore,
