@@ -589,19 +589,7 @@ const ProposalDetails = () => {
                               <DropdownMenuLabel>Actions</DropdownMenuLabel>
                               <DropdownMenuItem
                                 onClick={() =>
-                                  navigate(
-                                    `/proposals/${proposalId}/seeds/${seed.id}`,
-                                    {
-                                      state: {
-                                        operationName: seed.operationName,
-                                        sequenceId: seed.sequenceId,
-                                        operationMatchArguments:
-                                          seed.operationMatchArguments,
-                                        seedResponse: seed.seedResponse,
-                                        proposalId: proposalId,
-                                      },
-                                    }
-                                  )
+                                  navigate(`/proposals/${proposalId}/seeds/${seed.id}`)
                                 }
                               >
                                 View
