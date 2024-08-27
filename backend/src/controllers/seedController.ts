@@ -12,6 +12,7 @@ export default class SeedController {
     this.seedRepository = new SeedRepository();
     this.mockService = MockService.getInstance();
     this.getSeeds = this.getSeeds.bind(this);
+    this.findSeedById = this.findSeedById.bind(this);
     this.createSeed = this.createSeed.bind(this);
     this.deleteSeed = this.deleteSeed.bind(this);
   }
@@ -31,6 +32,29 @@ export default class SeedController {
     } catch (error) {
       console.error('Error fetching seeds:', error);
       res.status(500).send('Error fetching seeds');
+    }
+  }
+
+  async findSeedById(req: Request, res: Response) {
+    const { id } = req.params;
+
+    const numericId = Number(id);
+
+    if (isNaN(numericId)) {
+      res.status(400).json({ message: 'Invalid ID' });
+      return;
+    }
+
+    try {
+      const seed = await this.seedRepository.findSeedById(numericId);
+      if (seed) {
+        res.status(200).json(seed);
+      } else {
+        res.status(404).json({ message: 'Seed not found' });
+      }
+    } catch (error) {
+      console.error('Error finding seed:', error);
+      res.status(500).json({ message: 'Error finding seed', error: error });
     }
   }
 
