@@ -11,6 +11,17 @@ export class SeedRepository {
     );
   }
 
+  async findSeedById(id: number): Promise<Seed | null> {
+    try {
+      const db = getDatabase();
+      const seed = await db.get<Seed>('SELECT * FROM seeds WHERE id = ?', id);
+      return seed || null;
+    } catch (error) {
+      console.error('Error finding seed by ID:', error);
+      throw new Error('Could not find seed');
+    }
+  }
+
   async createSeed(seed: Seed) {
     await getDatabase().run(
       `INSERT INTO seeds (variantName, operationName, seedResponse, operationMatchArguments, sequenceId)
