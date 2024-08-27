@@ -54,6 +54,9 @@ const seedController = new SeedController(); // Initialize SeedController
  *         description: Server error while fetching seeds.
  */
 router.get('/seeds', seedController.getSeeds);
+
+router.get('/seeds/:id', seedController.findSeedById);
+
 /**
  * @openapi
  * /api/seeds:
