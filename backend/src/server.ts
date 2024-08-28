@@ -28,7 +28,7 @@ if (process.env.HTTP_PROXY)
 
 const app = express();
 const port = process.env.PORT || 3001;
-export const GRAPH_ID = 'dev-federation-x02qb';
+export const GRAPH_ID = process.env.GRAPH_ID || 'dev-federation-x02qb';
 
 app.use(cors());
 app.use(express.json());
