@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@apollo/explorer": "^3.7.0",
+    "@apollo/sandbox": "^2.6.0",
     "@hookform/resolvers": "^3.9.0",
     "@microlink/react-json-view": "^1.23.1",
     "@radix-ui/react-alert-dialog": "^1.1.1",
