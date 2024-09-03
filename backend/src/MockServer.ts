@@ -10,7 +10,7 @@ import {
     ObjectTypeExtensionNode, OperationDefinitionNode,
     parse,
     print,
-    printSchema,
+    printSchema, ScalarTypeDefinitionNode,
     SelectionNode,
     visit,
 } from 'graphql';
@@ -50,15 +50,34 @@ export default class MockServer {
         options: SchemaRegistrationOptions
     ) {
         const schema = parse(schemaSource);
+
+        const scalars: string[] = [];
+        visit(schema, {
+            ScalarTypeDefinition: (node: ScalarTypeDefinitionNode) => scalars.push(node.name.value),
+        });
+
+        const fakerConfig = {};
+
+        scalars.forEach((scalar) => {
+            // @ts-expect-error TODO fix types
+            fakerConfig[scalar] = {
+                method: () => 'Hello World',
+                args: [],
+            };
+        });
+
+        this.fakerConfig = fakerConfig;
+
+
         if (options.subgraph) {
             this.graphQLSchema = buildSubgraphSchema(schema);
         } else {
             this.graphQLSchema = buildASTSchema(schema);
         }
 
-        if (options.fakerConfig) {
-            this.fakerConfig = options.fakerConfig;
-        }
+        // if (options.fakerConfig) {
+        //     this.fakerConfig = options.fakerConfig;
+        // }
 
         this.mockStore = createMockStore({
             schema: this.graphQLSchema,
