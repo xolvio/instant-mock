@@ -150,24 +150,15 @@ async function deepMerge(
                             if (!(item instanceof Object)) {
                                 source[targetKey].push(item);
                             } else {
-                                // build a new query to fetch an array item at path
-                                // this should happen regardless of overrides
-                                const newSourceItemData = await mockServer.getNewMock({
-                                    query,
-                                    variables,
-                                    typeName: sourceItem.__typename,
-                                    operationName,
-                                    rollingKey: newRollingKey,
-                                });
                                 if (Object.entries(item).length) {
                                     source[targetKey].push(
-                                        await merge(cloneDeep(newSourceItemData), item, {
+                                        await merge(cloneDeep(sourceItem), item, {
                                             rollingKey: newRollingKey,
                                             metaPropertyPrefix,
                                         })
                                     );
                                 } else {
-                                    source[targetKey].push(newSourceItemData);
+                                    source[targetKey].push(sourceItem);
                                 }
                             }
                         }
