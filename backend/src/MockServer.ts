@@ -49,11 +49,11 @@ export default class MockServer {
         schemaSource: string,
         options: SchemaRegistrationOptions
     ) {
-        const augmentedSchemaAst = this.getAugmentedSchema(schemaSource);
+        const schema = parse(schemaSource);
         if (options.subgraph) {
-            this.graphQLSchema = buildSubgraphSchema(augmentedSchemaAst);
+            this.graphQLSchema = buildSubgraphSchema(schema);
         } else {
-            this.graphQLSchema = buildASTSchema(augmentedSchemaAst);
+            this.graphQLSchema = buildASTSchema(schema);
         }
 
         if (options.fakerConfig) {
@@ -157,50 +157,6 @@ export default class MockServer {
         // @ts-expect-error If we got here, it's either a function or undefined
         return fakerMethod;
     }
-
-        private getAugmentedSchema(schemaSource: string): DocumentNode {
-            const newFields = new Set();
-            // @ts-expect-error TODO fix types
-            let queryType;
-
-            const extractTypes = (
-                node: ObjectTypeDefinitionNode | ObjectTypeExtensionNode
-            ) => {
-                // @ts-expect-error TODO fix types
-                if (node.name.value === 'Query' && !queryType) {
-                    queryType = node;
-                } else {
-                    newFields.add(node.name.value);
-                }
-                return node;
-            };
-
-            const newAst = visit(parse(schemaSource), {
-                ObjectTypeDefinition: extractTypes,
-                ObjectTypeExtension: extractTypes,
-            });
-            // @ts-expect-error TODO fix types
-            queryType.fields = [
-                // @ts-expect-error TODO fix types
-                ...queryType.fields,
-                ...Array.from(newFields).map((typeName) => ({
-                    kind: Kind.FIELD_DEFINITION,
-                    name: {
-                        kind: Kind.NAME,
-                        value: this.getFieldName(typeName as string),
-                    },
-                    type: {
-                        kind: Kind.NAMED_TYPE,
-                        name: {
-                            kind: Kind.NAME,
-                            value: typeName,
-                        },
-                    },
-                })),
-            ];
-
-            return newAst;
-        }
 
     getFieldName(__typename: string): string {
         return `${this.privateQueryPrefix}_${__typename}`;
