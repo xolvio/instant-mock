@@ -74,7 +74,7 @@ export class MockService {
     }
     // Store the instance information in the map
     // const mockInstance = {port, service: mockingService} as MockInstance;
-    // mockInstances[proposalId as string] = mockInstance;
+    mockInstances[proposalId as string] = mockServer;
     return mockServer;
   }
 
