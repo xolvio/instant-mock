@@ -70,3 +70,23 @@
     font-family: sans-serif;
   }
 }
+
+.sandbox-container {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.apollo-sandbox {
+  width: 100%; /* Use full width */
+  height: 1000px; /* Adjust height automatically based on content */
+  overflow: visible; /* Ensure no overflow is hidden or scrollable */
+}
+
+.sandbox-container {
+  width: 100vw; /* Full viewport width */
+  margin: 0 auto; /* Center the content if needed */
+  padding: 0; /* Remove any padding that may cause overflow */
+}
