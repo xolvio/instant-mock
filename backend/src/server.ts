@@ -12,8 +12,8 @@ import proposals from './proposals';
 import swaggerJsdoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import * as Undici from 'undici';
-import {parse} from "graphql";
-import {SeededOperationResponse} from "./seed/types";
+import {parse} from 'graphql';
+import {SeededOperationResponse} from './seed/types';
 
 var proxy = require('express-http-proxy');
 
@@ -63,9 +63,9 @@ app.get('/api/openapi.json', (req, res) => {
 
 app.use('/:proposalId/graphql', async (req, res) => {
   // TODO handle invalid
-  const { proposalId } = req.params;
+  const {proposalId} = req.params;
   const {query = '', variables = {}} = req.body;
-  const operationName = req.body.operationName
+  const operationName = req.body.operationName;
   const sequenceId = req.headers['mocking-sequence-id'] as string;
   if (!operationName) {
     res.status(400);
@@ -75,7 +75,7 @@ app.use('/:proposalId/graphql', async (req, res) => {
     return;
   }
 
-  const mockServer = await mockService.startNewMockInstanceIfNeeded(proposalId)
+  const mockServer = await mockService.startNewMockInstanceIfNeeded(proposalId);
   // const mockServer = mockInstances[proposalId];
 
   try {
@@ -93,17 +93,13 @@ app.use('/:proposalId/graphql', async (req, res) => {
     });
     return;
   }
-  const queryWithoutFragments = mockServer.expandFragments(query);
-  const typenamedQuery = mockServer.addTypenameFieldsToQuery(
-      queryWithoutFragments
-  );
 
   let operationResult;
   try {
     const apolloServer = mockServer.apolloServer;
     if (apolloServer) {
       operationResult = await mockServer.executeOperation({
-        query: typenamedQuery,
+        query: query,
         variables,
         operationName,
       });
@@ -118,15 +114,15 @@ app.use('/:proposalId/graphql', async (req, res) => {
   }
 
   const {operationResponse, statusCode} =
-      await mockServer.seedManager.mergeOperationResponse({
-        operationName,
-        variables,
-        // @ts-expect-error TODO fix types
-        operationMock: operationResult,
-        sequenceId,
-        mockServer,
-        query: typenamedQuery,
-      });
+    await mockServer.seedManager.mergeOperationResponse({
+      operationName,
+      variables,
+      // @ts-expect-error TODO fix types
+      operationMock: operationResult,
+      sequenceId,
+      mockServer,
+      query: query,
+    });
 
   res.status(statusCode);
 
@@ -135,10 +131,10 @@ app.use('/:proposalId/graphql', async (req, res) => {
   } else if (operationResponse instanceof Object) {
     if ('warnings' in operationResponse) {
       (operationResponse as SeededOperationResponse).warnings?.forEach(
-          (warning) => {
-            // GraphqlMockingContextLogger.warning(warning, sequenceId);
-            console.warn(warning);
-          }
+        (warning) => {
+          // GraphqlMockingContextLogger.warning(warning, sequenceId);
+          console.warn(warning);
+        }
       );
     }
     res.json(operationResponse);
@@ -146,7 +142,6 @@ app.use('/:proposalId/graphql', async (req, res) => {
     res.send(operationResponse);
   }
 });
-
 
 initializeDatabase()
   .then(() => {
