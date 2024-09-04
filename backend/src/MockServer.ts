@@ -6,9 +6,6 @@ import {
   FragmentDefinitionNode,
   GraphQLSchema,
   Kind,
-  ObjectTypeDefinitionNode,
-  ObjectTypeExtensionNode,
-  OperationDefinitionNode,
   parse,
   print,
   printSchema,
@@ -35,6 +32,7 @@ export default class MockServer {
   private graphQLSchema: GraphQLSchema | null = null;
   private fakerConfig: Record<string, object> = {};
   seedManager: SeedManager;
+
   get apolloServer(): ApolloServer | null {
     return this.apolloServerInstance || null;
   }
@@ -50,34 +48,13 @@ export default class MockServer {
   constructor(schemaSource: string, options: SchemaRegistrationOptions) {
     const schema = parse(schemaSource);
 
-    const scalars: string[] = [];
-    visit(schema, {
-      ScalarTypeDefinition: (node: ScalarTypeDefinitionNode) =>
-        scalars.push(node.name.value),
-    });
-
-    const fakerConfig = {};
-
-    scalars.forEach((scalar) => {
-      // @ts-expect-error TODO fix types
-      fakerConfig[scalar] = {
-        method: 'random.word',
-        // method: () => 'Hello World',
-        args: [],
-      };
-    });
-
-    this.fakerConfig = fakerConfig;
+    this.fakerConfig = this.getCustomScalarsConfig(schema);
 
     if (options.subgraph) {
       this.graphQLSchema = buildSubgraphSchema(schema);
     } else {
       this.graphQLSchema = buildASTSchema(schema);
     }
-
-    // if (options.fakerConfig) {
-    //     this.fakerConfig = options.fakerConfig;
-    // }
 
     this.mockStore = createMockStore({
       schema: this.graphQLSchema,
@@ -370,5 +347,57 @@ export default class MockServer {
     }
 
     return [];
+  }
+
+  private getCustomScalarsConfig(schema: DocumentNode) {
+    const scalars: string[] = [];
+    visit(schema, {
+      ScalarTypeDefinition: (node: ScalarTypeDefinitionNode) =>
+        scalars.push(node.name.value),
+    });
+
+    const fakerConfig = {
+      BigDecimal: {
+        method: 'number.int',
+        args: [],
+      },
+      Long: {
+        method: 'number.int',
+        args: [],
+      },
+      Float: {
+        method: 'number.float',
+        args: [],
+      },
+      Date: {
+        method: 'date.recent',
+        args: [],
+      },
+      DateTime: {
+        method: 'date.recent',
+        args: [],
+      },
+    };
+
+    // Filter scalars to include only those not already in fakerConfig
+    const customScalars = scalars.filter((scalar) => !(scalar in fakerConfig));
+
+    customScalars.forEach((scalar) => {
+      if (scalar.toLowerCase().endsWith('id')) {
+        // @ts-expect-error TODO fix types
+        fakerConfig[scalar] = {
+          method: 'string.uuid',
+          args: [],
+        };
+      } else {
+        // @ts-expect-error TODO fix types
+        fakerConfig[scalar] = {
+          method: 'random.word',
+          args: [],
+        };
+      }
+    });
+
+    return fakerConfig;
   }
 }
