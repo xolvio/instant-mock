@@ -247,6 +247,36 @@ export default class MockServer {
     }>;
   }
 
+  addTypenameFieldsToQuery(query: string): string {
+    const newQuery = visit(parse(query), {
+      SelectionSet: (node) => {
+        if (
+          !node.selections.find((selection) => {
+            if ('name' in selection) {
+              return selection.name.value === '__typename';
+            }
+
+            return false;
+          })
+        ) {
+          node.selections = [
+            ...node.selections,
+            {
+              kind: Kind.FIELD,
+              name: {
+                kind: Kind.NAME,
+                value: '__typename',
+              },
+            },
+          ];
+        }
+        return node;
+      },
+    });
+
+    return print(newQuery);
+  }
+
   expandFragments(query: string): string {
     const queryAst = parse(query);
     const definitions = queryAst.definitions;
@@ -340,25 +370,5 @@ export default class MockServer {
     }
 
     return [];
-  }
-
-  private getCustomScalarsConfig(schema: DocumentNode) {
-    const wellKnownScalars: string[] = ['Date', 'DateTime'];
-    const scalars: string[] = [];
-    visit(schema, {
-      ScalarTypeDefinition: (node: ScalarTypeDefinitionNode) =>
-        scalars.push(node.name.value),
-    });
-
-    const fakerConfig = {};
-
-    scalars.forEach((scalar) => {
-      // @ts-expect-error TODO fix types
-      fakerConfig[scalar] = {
-        method: 'random.word',
-        // method: () => 'Hello World',
-        args: [],
-      };
-    });
   }
 }
