@@ -22,7 +22,7 @@ require('dotenv').config();
 const ProxyAgent = Undici.ProxyAgent;
 const setGlobalDispatcher = Undici.setGlobalDispatcher;
 console.log('process.env.HTTP_PROXY: ', process.env.HTTP_PROXY);
-console.log('process.env.APOLLO_API_KEY: ', process.env.APOLLO_API_KEY);
+console.log('process.env.APOLLO_API_KEY is present: ', !!process.env.APOLLO_API_KEY);
 if (process.env.HTTP_PROXY)
   setGlobalDispatcher(new ProxyAgent(process.env.HTTP_PROXY));
 
