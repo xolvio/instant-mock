@@ -29,7 +29,10 @@ export default class SeedController {
     try {
       // TODO add graphId to the method
       const seeds: Seed[] =
-        await this.seedRepository.findAllByVariantName(variantName);
+        await this.seedRepository.findByGraphIdAndVariantName(
+          graphId,
+          variantName
+        );
       await this.mockService.getOrStartNewMockServer(graphId, variantName);
       res.json(seeds);
     } catch (error) {
@@ -73,6 +76,7 @@ export default class SeedController {
       operationName,
       operationMatchArguments,
       sequenceId,
+      graphId,
     };
 
     if (!variantName) {
