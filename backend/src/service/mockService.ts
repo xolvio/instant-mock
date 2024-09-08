@@ -44,25 +44,16 @@ export class MockService {
   ): Promise<MockServer> {
     const schema = await this.client.getSchema(graphId, variantName);
 
-    // TODO remove this faker config
-    const fakerConfig = {
-      fmcc__account__AccountNumber: {
-        method: 'random.numeric',
-        args: [],
-      },
-      Date: {
-        method: 'date.recent',
-        args: [],
-      },
-    };
-
+    // TODO remove faker config
     const mockServer = new MockServer(schema, {
       subgraph: false,
-      fakerConfig,
+      fakerConfig: {},
     });
 
-    const seeds: Seed[] =
-      await this.seedRepository.findAllByVariantName(variantName);
+    const seeds: Seed[] = await this.seedRepository.findByGraphIdAndVariantName(
+      graphId,
+      variantName
+    );
 
     for (const seed of seeds) {
       mockServer.seedManager.registerSeed(seed.sequenceId, SeedType.Operation, {
