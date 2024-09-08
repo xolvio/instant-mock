@@ -21,6 +21,7 @@ export const initializeDatabase = async (): Promise<SQLiteDB> => {
             CREATE TABLE IF NOT EXISTS seeds (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 variantName TEXT,
+                graphId TEXT,
                 operationName TEXT,
                 seedResponse TEXT,
                 operationMatchArguments TEXT,
