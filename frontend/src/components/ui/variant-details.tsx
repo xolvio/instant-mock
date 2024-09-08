@@ -1,29 +1,29 @@
+import {Seed} from '@/models/Seed';
+import {ApolloSandbox} from '@apollo/sandbox/react';
+import {HandleRequest} from '@apollo/sandbox/src/helpers/postMessageRelayHelpers';
+import {zodResolver} from '@hookform/resolvers/zod';
+import {Link, MoreHorizontal} from 'lucide-react';
+import React, {useState} from 'react';
+import {useForm} from 'react-hook-form';
+import {useNavigate, useParams} from 'react-router';
+
+import {Link as RouterLink} from 'react-router-dom';
+import {z} from 'zod';
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbSeparator,
+} from './breadcrumb';
+import {Button} from './button';
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from './card';
-import React, {useEffect, useState} from 'react';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from './table';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from './dropdown-menu';
-import {Button} from './button';
-import {MoreHorizontal, Link} from 'lucide-react';
 import {
   Dialog,
   DialogClose,
@@ -34,10 +34,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from './dialog';
-import {Input} from './input';
-import {z} from 'zod';
-import {useForm} from 'react-hook-form';
-import {zodResolver} from '@hookform/resolvers/zod';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from './dropdown-menu';
 import {
   Form,
   FormControl,
@@ -47,35 +50,27 @@ import {
   FormLabel,
   FormMessage,
 } from './form';
+import {HoverCard, HoverCardContent, HoverCardTrigger} from './hover-card';
+import {Input} from './input';
+import {Label} from './label';
+import {Switch} from './switch';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from './table';
+import {Textarea} from './textarea';
 import {Toaster} from './toaster';
 import {useToast} from './use-toast';
-import {Textarea} from './textarea';
-import {useNavigate, useParams} from 'react-router';
-import {Seed} from '@/models/Seed';
-import {HoverCard, HoverCardContent, HoverCardTrigger} from './hover-card';
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbSeparator,
-} from './breadcrumb';
 
-import {Link as RouterLink} from 'react-router-dom';
-import {Switch} from './switch';
-import {Label} from './label';
-import {ApolloExplorer} from '@apollo/explorer/react';
-import {HandleRequest} from '@apollo/sandbox/src/helpers/postMessageRelayHelpers';
-import {getIntrospectionQuery} from 'graphql';
-import {EmbeddedSandbox} from '@apollo/sandbox/src/EmbeddedSandbox';
-import {ApolloSandbox} from '@apollo/sandbox/react';
-
-const ProposalDetails = () => {
-  const port = process.env.PORT || 3001;
+const VariantDetails = () => {
   const apiUrl = process.env.REACT_APP_API_BASE_URL;
   const navigate = useNavigate();
   const {toast} = useToast();
-  const {proposalId} = useParams();
+  const {graphId, variantName} = useParams();
   // State to manage dialog open state
   const [seeds, setSeeds] = useState<Seed[]>([]); // Use Seed type for state
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -83,9 +78,9 @@ const ProposalDetails = () => {
   const [seedWithArguments, setSeedWithArguments] = useState(false);
   const [selectedSeedId, setSelectedSeedId] = useState(-1);
   // Fetch seeds
-  useEffect(() => {
-    fetchSeeds();
-  }, [proposalId]);
+  // useEffect(() => {
+  //   fetchSeeds();
+  // }, [variantName]);
 
   // const customFetcher = async (graphQLParams: any, headers: any) => {
   //   const {query, variables, operationName} = graphQLParams;
@@ -152,7 +147,7 @@ const ProposalDetails = () => {
   const fetchSeeds = async () => {
     try {
       const response = await fetch(
-        `${apiUrl}/api/seeds?variantName=${proposalId}`
+        `${apiUrl}/api/seeds?variantName=${variantName}`
       );
       const seeds: Seed[] = await response.json();
       setSeeds(seeds);
@@ -272,7 +267,7 @@ const ProposalDetails = () => {
         seedResponse: JSON.parse(values.seedResponse),
       };
       const response: Response = await fetch(
-        `${apiUrl}/api/seeds?variantName=${proposalId}`,
+        `${apiUrl}/api/seeds?variantName=${variantName}`,
         {
           method: 'POST',
           headers: {
@@ -305,26 +300,27 @@ const ProposalDetails = () => {
       });
     }
   }
-  const props = {
-    handleRequest: (endpointUrl, options) => {
-      return fetch(endpointUrl, {
-        ...options,
-        headers: {
-          ...options.headers,
-          // authorization: `token ${token}`,
-        },
-      });
-    },
-    hideCookieToggle: true,
-  };
+
+  // const props = {
+  //   handleRequest: (endpointUrl, options) => {
+  //     return fetch(endpointUrl, {
+  //       ...options,
+  //       headers: {
+  //         ...options.headers,
+  //         // authorization: `token ${token}`,
+  //       },
+  //     });
+  //   },
+  //   hideCookieToggle: true,
+  // };
 
   return (
     <>
       <div className="sandbox-container">
         <ApolloSandbox
-          initialEndpoint={`${apiUrl}/${proposalId}/graphql`}
+          initialEndpoint={`${apiUrl}/${graphId}/${variantName}/graphql`}
           className="apollo-sandbox"
-          handleRequest={props.handleRequest}
+          // handleRequest={props.handleRequest}
         />
       </div>{' '}
       <div className="flex justify-center items-start p-4 bg-muted/40">
@@ -354,7 +350,7 @@ const ProposalDetails = () => {
             <CardContent>
               <div className="flex items-center mb-2">
                 <a
-                  href={`https://studio.apollographql.com/sandbox/explorer?endpoint=${apiUrl}/${proposalId}/graphql`}
+                  href={`https://studio.apollographql.com/sandbox/explorer?endpoint=${apiUrl}/${variantName}/graphql`}
                   className="underline ml-1"
                   target="_blank"
                   rel="noopener noreferrer"
@@ -364,13 +360,13 @@ const ProposalDetails = () => {
               </div>
               <div className="flex items-center mb-2">
                 <Link
-                  to={`${apiUrl}/${proposalId}/graphql`}
+                  to={`${apiUrl}/${variantName}/graphql`}
                   className="mr-1.5 h-4 w-4 underline"
                 >
                   <span className="mr-1.5 h-4 w-4"></span>{' '}
                   {/* Icon placeholder if needed */}
                 </Link>
-                <span>{`Server URL: ${apiUrl}/${proposalId}/graphql`}</span>
+                <span>{`Server URL: ${apiUrl}/${variantName}/graphql`}</span>
               </div>
             </CardContent>
           </Card>
@@ -635,7 +631,7 @@ const ProposalDetails = () => {
                                 <DropdownMenuItem
                                   onClick={() =>
                                     navigate(
-                                      `/proposals/${proposalId}/seeds/${seed.id}`
+                                      `/proposals/${variantName}/seeds/${seed.id}`
                                     )
                                   }
                                 >
@@ -686,4 +682,4 @@ const ProposalDetails = () => {
   );
 };
 
-export default ProposalDetails;
+export default VariantDetails;
