@@ -9,8 +9,8 @@ export class SeedRepository {
     return await getDatabase().all(
       `SELECT id, graphId, variantName, operationName, seedResponse, operationMatchArguments, sequenceId
          FROM seeds
-         WHERE variantName = ?
-           AND graphId = ?`,
+         WHERE graphId = ?
+           AND variantName = ?`,
       [graphId, variantName]
     );
   }
