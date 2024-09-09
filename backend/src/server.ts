@@ -67,6 +67,98 @@ app.use('/:graphId/:variantName/graphql', async (req, res) => {
   const {query = '', variables = {}} = req.body;
   const operationName = req.body.operationName;
   const sequenceId = req.headers['mocking-sequence-id'] as string;
+
+  if (!operationName) {
+    res.status(400);
+    res.json({
+      message: 'GraphQL operation name is required',
+    });
+    return;
+  }
+
+  const mockServer = await mockService.getOrStartNewMockServer(
+    graphId,
+    variantName
+  );
+
+  try {
+    // verify the query is valid
+    parse(query);
+  } catch (error) {
+    // GraphqlMockingContextLogger.error(
+    //     `Invalid GraphQL Query: ${(error as Error).message}`,
+    //     sequenceId
+    // );
+    res.status(422);
+    res.json({
+      message: 'Invalid GraphQL Query',
+      error,
+    });
+    return;
+  }
+  const queryWithoutFragments = mockServer.expandFragments(query);
+  const typenamedQuery = mockServer.addTypenameFieldsToQuery(
+    queryWithoutFragments
+  );
+
+  let operationResult;
+  try {
+    const apolloServer = mockServer.apolloServer;
+    if (apolloServer) {
+      operationResult = await mockServer.executeOperation({
+        query: typenamedQuery,
+        variables,
+        operationName,
+      });
+    }
+  } catch (error) {
+    res.status(500);
+    res.json({
+      message: 'GraphQL operation execution error',
+      error,
+    });
+    return;
+  }
+
+  const {operationResponse, statusCode} =
+    await mockServer.seedManager.mergeOperationResponse({
+      operationName,
+      variables,
+      // @ts-expect-error TODO fix types
+      operationMock: operationResult,
+      sequenceId,
+      mockServer,
+      query: typenamedQuery,
+    });
+
+  res.status(statusCode);
+
+  if (operationResponse === null) {
+    res.end();
+  } else if (operationResponse instanceof Object) {
+    if ('warnings' in operationResponse) {
+      (operationResponse as SeededOperationResponse).warnings?.forEach(
+        (warning) => {
+          // GraphqlMockingContextLogger.warning(warning, sequenceId);
+          console.warn(warning);
+        }
+      );
+    }
+    res.json(operationResponse);
+  } else {
+    res.send(operationResponse);
+  }
+});
+
+// TODO refactor to avoid code duplication
+app.use('/graphql', async (req, res) => {
+  // TODO handle invalid
+  const {query = '', variables = {}} = req.body;
+  const operationName = req.body.operationName;
+  const graphId = req.headers['graph-id'] as string;
+  const variantName = req.headers['variant-name'] as string;
+  const sequenceId = req.headers['mocking-sequence-id'] as string;
+
   if (!operationName) {
     res.status(400);
     res.json({
