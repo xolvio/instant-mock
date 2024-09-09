@@ -3,7 +3,7 @@ import {ApolloSandbox} from '@apollo/sandbox/react';
 import {HandleRequest} from '@apollo/sandbox/src/helpers/postMessageRelayHelpers';
 import {zodResolver} from '@hookform/resolvers/zod';
 import {Link, MoreHorizontal} from 'lucide-react';
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {useForm} from 'react-hook-form';
 import {useNavigate, useParams} from 'react-router';
 
@@ -77,10 +77,10 @@ const VariantDetails = () => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [seedWithArguments, setSeedWithArguments] = useState(false);
   const [selectedSeedId, setSelectedSeedId] = useState(-1);
-  // Fetch seeds
-  // useEffect(() => {
-  //   fetchSeeds();
-  // }, [variantName]);
+
+  useEffect(() => {
+    fetchSeeds();
+  }, [variantName, graphId]);
 
   // const customFetcher = async (graphQLParams: any, headers: any) => {
   //   const {query, variables, operationName} = graphQLParams;
@@ -147,7 +147,7 @@ const VariantDetails = () => {
   const fetchSeeds = async () => {
     try {
       const response = await fetch(
-        `${apiUrl}/api/seeds?variantName=${variantName}`
+        `${apiUrl}/api/seeds?variantName=${variantName}&graphId=${graphId}`
       );
       const seeds: Seed[] = await response.json();
       setSeeds(seeds);
@@ -267,7 +267,7 @@ const VariantDetails = () => {
         seedResponse: JSON.parse(values.seedResponse),
       };
       const response: Response = await fetch(
-        `${apiUrl}/api/seeds?variantName=${variantName}`,
+        `${apiUrl}/api/seeds?variantName=${variantName}&graphId=${graphId}`,
         {
           method: 'POST',
           headers: {
@@ -381,165 +381,12 @@ const VariantDetails = () => {
                 <CardTitle>Seeds</CardTitle>
                 <CardDescription>Manage your seeds.</CardDescription>
               </div>
-              <Dialog
-                open={isCreateDialogOpen}
-                onOpenChange={setIsCreateDialogOpen}
+              <Button
+                className="ml-auto gap-1"
+                onClick={() => setIsCreateDialogOpen(true)}
               >
-                <DialogTrigger asChild>
-                  <Button
-                    className="ml-auto gap-1"
-                    onClick={() => setIsCreateDialogOpen(true)}
-                  >
-                    Create seed
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
-                  <DialogHeader>
-                    <DialogTitle>Create new seed</DialogTitle>
-                    <DialogDescription>
-                      <div>
-                        1. Go to Apollo Studio or use the embedded GraphiQL to
-                        generate a dummy response for the operation you want to
-                        mock.
-                      </div>
-                      <div>
-                        2. Paste the dummy response in here and adjust it to fit
-                        your specific needs.
-                      </div>
-                      <div>
-                        3. If your operation contains arguments, please define
-                        them. The operation will only match against these
-                        specified arguments.
-                      </div>
-                      <div>4. Define sequence ID.</div>
-                    </DialogDescription>
-                  </DialogHeader>
-                  <Form {...form}>
-                    <form
-                      onSubmit={form.handleSubmit(onSubmit)}
-                      className="space-y-4"
-                    >
-                      <FormField
-                        control={form.control}
-                        name="operationName"
-                        render={({field}) => (
-                          <FormItem>
-                            <FormLabel>Operation name</FormLabel>
-                            <FormControl>
-                              <Input
-                                placeholder="Operation name..."
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormDescription>
-                              Name of the GraphQL operation that will be sent to
-                              the mock
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="sequenceId"
-                        render={({field}) => (
-                          <FormItem>
-                            <FormLabel>Sequence id</FormLabel>
-                            <FormControl>
-                              <Input placeholder="Sequence id..." {...field} />
-                            </FormControl>
-                            <FormDescription>
-                              A unique string used to match GraphQL requests
-                              with registered seed. This id must be included in
-                              the request as 'mocking-sequence-id' header.
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      {/* Switch to control the visibility of operationMatchArguments */}
-                      <FormItem>
-                        <FormControl>
-                          <div className="flex items-center space-x-2">
-                            <Switch
-                              id="seed-with-arguments"
-                              checked={seedWithArguments}
-                              onCheckedChange={() =>
-                                setSeedWithArguments(!seedWithArguments)
-                              }
-                            />
-                            <Label htmlFor="seed-with-arguments">
-                              Seed with arguments
-                            </Label>
-                          </div>
-                        </FormControl>
-                      </FormItem>
-                      <FormField
-                        control={form.control}
-                        name="operationMatchArguments"
-                        render={({field}) => (
-                          <FormItem
-                            className={`transition-all duration-500 ease-in-out ${
-                              seedWithArguments
-                                ? 'max-h-[500px] opacity-100 visible'
-                                : 'max-h-0 opacity-0 invisible'
-                            }`}
-                          >
-                            <FormLabel>Matching arguments (JSON)</FormLabel>
-                            <FormControl>
-                              <Textarea
-                                placeholder="Matching arguments ..."
-                                {...field}
-                                className="h-48"
-                              />
-                            </FormControl>
-                            <FormDescription>
-                              Parameters used for matching a seed with GraphQL
-                              operations.
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="seedResponse"
-                        render={({field}) => (
-                          <FormItem>
-                            <FormLabel>Response (JSON)</FormLabel>
-                            <FormControl>
-                              <Textarea
-                                placeholder="Response..."
-                                {...field}
-                                className="h-48"
-                              />
-                            </FormControl>
-                            <FormDescription>
-                              Data to be returned for the combination of the
-                              defined operation name, sequence id and parameters
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <div className="sm:justify-start flex space-x-2">
-                        <DialogClose asChild>
-                          <Button
-                            type="button"
-                            variant="secondary"
-                            onClick={() => setIsCreateDialogOpen(false)}
-                          >
-                            Discard
-                          </Button>
-                        </DialogClose>
-                        <Button type="submit">Save seed</Button>
-                      </div>
-                    </form>
-                  </Form>
-                </DialogContent>
-              </Dialog>
+                Create seed
+              </Button>
             </CardHeader>
             {seeds.length === 0 && (
               <div className="flex flex-col items-center gap-1 text-center">
@@ -678,6 +525,147 @@ const VariantDetails = () => {
           </Dialog>
         </div>
       </div>
+      <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+        <DialogTrigger asChild></DialogTrigger>
+        <DialogContent className="sm:max-w-2xl max-h-[100vh] min-h-[50vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Create new seed</DialogTitle>
+            <DialogDescription>
+              <div>
+                1. Go to Apollo Studio or use the embedded GraphiQL to generate
+                a dummy response for the operation you want to mock.
+              </div>
+              <div>
+                2. Paste the dummy response in here and adjust it to fit your
+                specific needs.
+              </div>
+              <div>
+                3. If your operation contains arguments, please define them. The
+                operation will only match against these specified arguments.
+              </div>
+              <div>4. Define sequence ID.</div>
+            </DialogDescription>
+          </DialogHeader>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="operationName"
+                render={({field}) => (
+                  <FormItem>
+                    <FormLabel>Operation name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Operation name..." {...field} />
+                    </FormControl>
+                    <FormDescription>
+                      Name of the GraphQL operation that will be sent to the
+                      mock
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="sequenceId"
+                render={({field}) => (
+                  <FormItem>
+                    <FormLabel>Sequence id</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Sequence id..." {...field} />
+                    </FormControl>
+                    <FormDescription>
+                      A unique string used to match GraphQL requests with
+                      registered seed. This id must be included in the request
+                      as 'mocking-sequence-id' header.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Switch to control the visibility of operationMatchArguments */}
+              <FormItem>
+                <FormControl>
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="seed-with-arguments"
+                      checked={seedWithArguments}
+                      onCheckedChange={() =>
+                        setSeedWithArguments(!seedWithArguments)
+                      }
+                    />
+                    <Label htmlFor="seed-with-arguments">
+                      Seed with arguments
+                    </Label>
+                  </div>
+                </FormControl>
+              </FormItem>
+              <FormField
+                control={form.control}
+                name="operationMatchArguments"
+                render={({field}) => (
+                  <FormItem
+                    className={`transition-all duration-500 ease-in-out ${
+                      seedWithArguments
+                        ? 'max-h-[500px] opacity-100 visible'
+                        : 'max-h-0 opacity-0 invisible'
+                    }`}
+                  >
+                    <FormLabel>Matching arguments (JSON)</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Matching arguments ..."
+                        {...field}
+                        className="h-48"
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Parameters used for matching a seed with GraphQL
+                      operations.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="seedResponse"
+                render={({field}) => (
+                  <FormItem>
+                    <FormLabel>Response (JSON)</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Response..."
+                        {...field}
+                        className="h-48"
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Data to be returned for the combination of the defined
+                      operation name, sequence id and parameters
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <div className="sm:justify-start flex space-x-2">
+                <DialogClose asChild>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() => setIsCreateDialogOpen(false)}
+                  >
+                    Discard
+                  </Button>
+                </DialogClose>
+                <Button type="submit">Save seed</Button>
+              </div>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };
