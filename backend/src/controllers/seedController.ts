@@ -33,7 +33,6 @@ export default class SeedController {
           graphId,
           variantName
         );
-      await this.mockService.getOrStartNewMockServer(graphId, variantName);
       res.json(seeds);
     } catch (error) {
       console.error('Error fetching seeds:', error);
@@ -107,6 +106,9 @@ export default class SeedController {
 
   async deleteSeed(req: Request, res: Response): Promise<void> {
     const {id} = req.params;
+    const graphId = req.query.graphId as string;
+    const variantName = req.query.variantName as string;
+    const sequenceId = req.query.sequenceId as string;
 
     const numericId = Number(id);
 
@@ -114,7 +116,17 @@ export default class SeedController {
       res.status(400).json({message: 'Invalid ID'});
     }
 
+    if (!graphId || !variantName) {
+      res.status(400).json({message: 'graphId and variantName are required'});
+    }
+
     try {
+      const mockServer = await this.mockService.getOrStartNewMockServer(
+        graphId,
+        variantName
+      );
+
+      // TODO also remove seed from seedCache!!!
       const result = await this.seedRepository.deleteSeedById(numericId);
       if (result) {
         // await this.mockService.restartMockInstance(result.variantName);
