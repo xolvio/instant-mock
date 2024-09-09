@@ -5,15 +5,14 @@ import {
   InMemoryCache,
 } from '@apollo/client';
 import {setContext} from '@apollo/client/link/context';
-import {GET_PROPOSALS} from './queries/getProposals';
+import {GET_GRAPH} from './queries/getGraph';
+import {GET_GRAPHS} from './queries/getGraphs';
 import {GET_SCHEMA} from './queries/getSchema';
-import {GRAPH_ID} from '../server';
-import {Proposal, ProposalStatus} from '../models/proposal';
-import proposals from '../proposals';
-import {getPortPromise} from 'portfinder';
 
 export default class Client {
   private apolloClient: ApolloClient<any>;
+  private readonly organizationId =
+    process.env.ORGANIZATION_ID || 'fcamna-orchestration';
 
   constructor() {
     const link = createHttpLink({
@@ -37,47 +36,29 @@ export default class Client {
     });
   }
 
-  async getProposals(): Promise<Proposal[]> {
+  async getGraphs() {
     const {data} = await this.apolloClient.query({
-      query: GET_PROPOSALS,
-      variables: {graphId: GRAPH_ID, filterBy: {}}, // Adjust filterBy as needed
+      query: GET_GRAPHS,
+      variables: {organizationId: this.organizationId},
     });
-
-    const port = await getPortPromise();
-    proposals['dev'] = {
-      id: 'dev',
-      title: 'dev',
-      port: port,
-    };
-
-    return Promise.all(
-      data.graph.proposals.proposals
-        .filter((p: any) => p.backingVariant?.name)
-        .map(async (p: any): Promise<Proposal> => {
-          const port = await getPortPromise({
-            port: 8001, // minimum port
-          });
-          const proposal: Proposal = {
-            id: p.backingVariant.name,
-            title: p.displayName,
-            created: p.createdAt,
-            author: p.createdBy.name,
-            status: p.status as ProposalStatus,
-            port: port,
-          };
-          proposals[proposal.id] = proposal;
-          return proposal;
-        })
-    );
+    return data.organization.graphs;
   }
 
-  async getSchema(variantName: string) {
+  async getGraph(graphId: string) {
     const {data} = await this.apolloClient.query({
-      query: GET_SCHEMA,
-      variables: {graphId: GRAPH_ID, variantName},
+      query: GET_GRAPH,
+      variables: {graphId: graphId, filterBy: {}},
     });
 
-    // Assuming the document exists and is not null
+    return data.graph;
+  }
+
+  async getSchema(graphId: string, name: string) {
+    const {data} = await this.apolloClient.query({
+      query: GET_SCHEMA,
+      variables: {graphId: graphId, name},
+    });
+
     return data.graph.variant.latestPublication.schema.document;
   }
 }

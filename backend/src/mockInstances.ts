@@ -1,5 +1,6 @@
-import MockServer from "./MockServer";
+import MockServer from './MockServer';
 
-const mockInstances: Record<string, MockServer> = {};
+// graphId -> variantName -> MockServer
+const mockInstances: Record<string, Record<string, MockServer>> = {};
 
 export default mockInstances;
