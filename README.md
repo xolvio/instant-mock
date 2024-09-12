@@ -1,3 +1,5 @@
+# ❗❗❗ This project is currently under heavy development, with plans for a full rewrite in the coming months. ❗❗❗
+
 # 🚀 instant mock
 
 **instant mock** is a powerful tool that helps developers quickly create GraphQL endpoints for seamless alignment between front-end and back-end teams. Whether you're working with a small team or an enterprise, **instant mock** has you covered with robust features, including Apollo Studio schema proposal integration.
