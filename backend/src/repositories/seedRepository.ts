@@ -1,62 +1,99 @@
-import {getDatabase} from '../database/database';
+import {QueryResult} from 'pg';
+import {query} from '../database/database';
 import {Seed} from '../models/seed';
 
+// TODO we should consider using ORM since mapping column names to properties is cumbersome
 export class SeedRepository {
   async findByGraphIdAndVariantName(
     graphId: string,
     variantName: string
   ): Promise<Seed[]> {
-    return await getDatabase().all(
-      `SELECT id, graphId, variantName, operationName, seedResponse, operationMatchArguments, sequenceId
-         FROM seeds
-         WHERE graphId = ?
-           AND variantName = ?`,
+    const result: QueryResult = await query(
+      `SELECT id, graph_id, variant_name, operation_name, seed_response, operation_match_arguments, sequence_id
+       FROM seeds
+       WHERE graph_id = $1
+         AND variant_name = $2`,
       [graphId, variantName]
     );
+
+    return result.rows.map((row) => ({
+      id: row.id,
+      operationName: row.operation_name,
+      seedResponse: row.seed_response,
+      operationMatchArguments: row.operation_match_arguments,
+      sequenceId: row.sequence_id,
+      graphId: row.graph_id,
+      variantName: row.variant_name,
+    }));
   }
 
   async findSeedById(id: number): Promise<Seed | null> {
     try {
-      const db = getDatabase();
-      const seed = await db.get<Seed>('SELECT * FROM seeds WHERE id = ?', id);
-      return seed || null;
+      const result = await query('SELECT * FROM seeds WHERE id = $1', [id]);
+
+      if (result.rows.length === 0) {
+        return null;
+      }
+
+      const row = result.rows[0];
+      // Map the result to match your Seed interface (camelCase)
+      return {
+        id: row.id,
+        operationName: row.operation_name,
+        seedResponse: row.seed_response,
+        operationMatchArguments: row.operation_match_arguments,
+        sequenceId: row.sequence_id,
+        graphId: row.graph_id,
+        variantName: row.variant_name,
+      };
     } catch (error) {
       console.error('Error finding seed by ID:', error);
       throw new Error('Could not find seed');
     }
   }
 
-  async createSeed(seed: Seed) {
-    await getDatabase().run(
-      `INSERT INTO seeds (graphId, variantName , operationName, seedResponse, operationMatchArguments, sequenceId)
-             VALUES (?, ?, ?, ?, ?, ?)`,
-      [
-        seed.graphId,
-        seed.variantName,
-        seed.operationName,
-        JSON.stringify(seed.seedResponse),
-        JSON.stringify(seed.operationMatchArguments),
-        seed.sequenceId,
-      ]
-    );
+  async createSeed(seed: Seed): Promise<void> {
+    try {
+      await query(
+        `INSERT INTO seeds (graph_id, variant_name, operation_name, seed_response, operation_match_arguments, sequence_id)
+           VALUES ($1, $2, $3, $4, $5, $6)`,
+        [
+          seed.graphId,
+          seed.variantName,
+          seed.operationName,
+          JSON.stringify(seed.seedResponse), // Storing as JSON
+          JSON.stringify(seed.operationMatchArguments), // Storing as JSON
+          seed.sequenceId,
+        ]
+      );
+    } catch (error) {
+      console.error('Error creating seed:', error);
+      throw new Error('Could not create seed');
+    }
   }
 
   async deleteSeedById(id: number): Promise<Seed | null> {
     try {
-      const db = getDatabase();
+      const result = await query('SELECT * FROM seeds WHERE id = $1', [id]);
 
-      // First, fetch the seed to return it after deletion
-      const seed = await db.get<Seed>('SELECT * FROM seeds WHERE id = ?', id);
-
-      if (!seed) {
-        throw new Error(`Seed with ID ${id} does not exist`);
+      if (result.rows.length === 0) {
+        return null;
       }
 
-      const result = await db.run('DELETE FROM seeds WHERE id = ?', id);
+      const seed = result.rows[0];
+      const deleteResult = await query('DELETE FROM seeds WHERE id = $1', [id]);
 
-      // Check if the seed was deleted
-      if ((result.changes as number) > 0) {
-        return seed;
+      if (deleteResult?.rowCount && deleteResult.rowCount > 0) {
+        // Return the deleted seed mapped to your Seed interface (camelCase)
+        return {
+          id: seed.id,
+          operationName: seed.operation_name,
+          seedResponse: seed.seed_response,
+          operationMatchArguments: seed.operation_match_arguments,
+          sequenceId: seed.sequence_id,
+          graphId: seed.graph_id,
+          variantName: seed.variant_name,
+        };
       } else {
         return null;
       }

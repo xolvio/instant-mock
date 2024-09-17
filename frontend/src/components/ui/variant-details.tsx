@@ -434,7 +434,7 @@ const VariantDetails = () => {
                                 <pre className="bg-gray-100 p-4 rounded overflow-auto">
                                   <code className="text-sm overflow-auto">
                                     {JSON.stringify(
-                                      JSON.parse(seed.operationMatchArguments),
+                                      seed.operationMatchArguments,
                                       null,
                                       2
                                     )}
@@ -451,11 +451,7 @@ const VariantDetails = () => {
                               <HoverCardContent className="p-0">
                                 <pre className="bg-gray-100 p-4 rounded overflow-auto">
                                   <code className="text-sm overflow-auto">
-                                    {JSON.stringify(
-                                      JSON.parse(seed.seedResponse),
-                                      null,
-                                      2
-                                    )}
+                                    {JSON.stringify(seed.seedResponse, null, 2)}
                                   </code>
                                 </pre>
                               </HoverCardContent>
