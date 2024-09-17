@@ -1,13 +1,17 @@
+version: '3.8'
+
 services:
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
+  postgres:
+    image: postgres:latest
+    container_name: postgres-db
     environment:
-      - NODE_ENV=development
-      - PORT=3001
-      - HTTP_PROXY=http://internet.ford.com:83
-      - APOLLO_API_KEY=<APOLLO_API_KEY>
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: mydatabase
     ports:
-      - "3001:3001"
-    command: npm run dev
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
