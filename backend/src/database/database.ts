@@ -1,23 +1,18 @@
 import {Pool, QueryResult} from 'pg';
 
-// Database connection configuration
 const pool = new Pool({
-  user: 'myuser', // PostgreSQL username
-  host: 'localhost', // Use 'localhost' if Node.js is running outside Docker, or 'postgres' if inside Docker
-  database: 'mydatabase', // Name of the database
-  password: 'mypassword', // PostgreSQL password
-  port: 5432, // PostgreSQL port
+  user: process.env.POSTGRES_USER,
+  host: process.env.POSTGRES_HOST,
+  database: process.env.POSTGRES_DB,
+  password: String(process.env.POSTGRES_PASSWORD),
+  port: Number(process.env.POSTGRES_PORT),
 });
 
 let dbInitialized = false;
 
-/**
- * Initializes the PostgreSQL database if it has not been initialized yet
- */
+// Initialize the database if not done yet
 export const initializeDatabase = async (): Promise<void> => {
-  if (dbInitialized) {
-    return;
-  }
+  if (dbInitialized) return;
   try {
     await pool.query(`
       CREATE TABLE IF NOT EXISTS seeds (
@@ -38,9 +33,6 @@ export const initializeDatabase = async (): Promise<void> => {
   }
 };
 
-/**
- * Provides access to the PostgreSQL database pool
- */
 export const getDatabase = (): Pool => {
   if (!dbInitialized) {
     throw new Error(
@@ -50,12 +42,6 @@ export const getDatabase = (): Pool => {
   return pool;
 };
 
-/**
- * Function to execute a query
- * @param text SQL query string
- * @param params Query parameters (optional)
- * @returns QueryResult from PostgreSQL
- */
 export const query = async (
   text: string,
   params?: any[]

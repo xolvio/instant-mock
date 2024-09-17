@@ -2,45 +2,61 @@ import {QueryResult} from 'pg';
 import {query} from '../database/database';
 import {Seed} from '../models/seed';
 
+// TODO we should consider using ORM since mapping column names to properties is cumbersome
 export class SeedRepository {
-  /**
-   * Find seeds by graph_id and variant_name using underscore-style column names
-   */
   async findByGraphIdAndVariantName(
     graphId: string,
     variantName: string
   ): Promise<Seed[]> {
-    const result: QueryResult<Seed> = await query(
+    const result: QueryResult = await query(
       `SELECT id, graph_id, variant_name, operation_name, seed_response, operation_match_arguments, sequence_id
        FROM seeds
        WHERE graph_id = $1
          AND variant_name = $2`,
       [graphId, variantName]
     );
-    return result.rows;
+
+    return result.rows.map((row) => ({
+      id: row.id,
+      operationName: row.operation_name,
+      seedResponse: row.seed_response,
+      operationMatchArguments: row.operation_match_arguments,
+      sequenceId: row.sequence_id,
+      graphId: row.graph_id,
+      variantName: row.variant_name,
+    }));
   }
 
-  /**
-   * Find a seed by its id using underscore-style column names
-   */
   async findSeedById(id: number): Promise<Seed | null> {
     try {
       const result = await query('SELECT * FROM seeds WHERE id = $1', [id]);
-      return result.rows[0] || null;
+
+      if (result.rows.length === 0) {
+        return null;
+      }
+
+      const row = result.rows[0];
+      // Map the result to match your Seed interface (camelCase)
+      return {
+        id: row.id,
+        operationName: row.operation_name,
+        seedResponse: row.seed_response,
+        operationMatchArguments: row.operation_match_arguments,
+        sequenceId: row.sequence_id,
+        graphId: row.graph_id,
+        variantName: row.variant_name,
+      };
     } catch (error) {
       console.error('Error finding seed by ID:', error);
       throw new Error('Could not find seed');
     }
   }
 
-  /**
-   * Create a new seed using underscore-style column names
-   */
   async createSeed(seed: Seed): Promise<void> {
     try {
       await query(
         `INSERT INTO seeds (graph_id, variant_name, operation_name, seed_response, operation_match_arguments, sequence_id)
-         VALUES ($1, $2, $3, $4, $5, $6)`,
+           VALUES ($1, $2, $3, $4, $5, $6)`,
         [
           seed.graphId,
           seed.variantName,
@@ -56,25 +72,28 @@ export class SeedRepository {
     }
   }
 
-  /**
-   * Delete a seed by its id using underscore-style column names
-   */
   async deleteSeedById(id: number): Promise<Seed | null> {
     try {
-      // First, fetch the seed to return it after deletion
       const result = await query('SELECT * FROM seeds WHERE id = $1', [id]);
 
-      const seed = result.rows[0];
-      if (!seed) {
-        throw new Error(`Seed with ID ${id} does not exist`);
+      if (result.rows.length === 0) {
+        return null;
       }
 
-      // Delete the seed
+      const seed = result.rows[0];
       const deleteResult = await query('DELETE FROM seeds WHERE id = $1', [id]);
 
-      // Check if any rows were affected (i.e., seed was deleted)
       if (deleteResult?.rowCount && deleteResult.rowCount > 0) {
-        return seed;
+        // Return the deleted seed mapped to your Seed interface (camelCase)
+        return {
+          id: seed.id,
+          operationName: seed.operation_name,
+          seedResponse: seed.seed_response,
+          operationMatchArguments: seed.operation_match_arguments,
+          sequenceId: seed.sequence_id,
+          graphId: seed.graph_id,
+          variantName: seed.variant_name,
+        };
       } else {
         return null;
       }
