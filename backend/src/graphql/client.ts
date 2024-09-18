@@ -7,6 +7,7 @@ import {
 import {setContext} from '@apollo/client/link/context';
 import {GET_GRAPH} from './queries/getGraph';
 import {GET_GRAPHS} from './queries/getGraphs';
+import {GET_GRAPH_WITH_SUBGRAPHS} from './queries/getGraphWithSubgraphs';
 import {GET_SCHEMA} from './queries/getSchema';
 
 export default class Client {
@@ -47,6 +48,15 @@ export default class Client {
   async getGraph(graphId: string) {
     const {data} = await this.apolloClient.query({
       query: GET_GRAPH,
+      variables: {graphId: graphId, filterBy: {}},
+    });
+
+    return data.graph;
+  }
+
+  async getGraphWithSubgraphs(graphId: string) {
+    const {data} = await this.apolloClient.query({
+      query: GET_GRAPH_WITH_SUBGRAPHS,
       variables: {graphId: graphId, filterBy: {}},
     });
 

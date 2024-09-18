@@ -14,4 +14,8 @@ export class GraphService {
   async getGraph(graphId: string) {
     return this.client.getGraph(graphId);
   }
+
+  async getGraphWithSubgraphs(graphId: string) {
+    return this.client.getGraphWithSubgraphs(graphId);
+  }
 }
