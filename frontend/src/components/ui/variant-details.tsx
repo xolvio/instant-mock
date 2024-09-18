@@ -9,21 +9,9 @@ import {useNavigate, useParams} from 'react-router';
 
 import {Link as RouterLink} from 'react-router-dom';
 import {z} from 'zod';
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbSeparator,
-} from './breadcrumb';
+import {Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbSeparator,} from './breadcrumb';
 import {Button} from './button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from './card';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle,} from './card';
 import {
   Dialog,
   DialogClose,
@@ -41,33 +29,18 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from './dropdown-menu';
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from './form';
+import {Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage,} from './form';
 import {HoverCard, HoverCardContent, HoverCardTrigger} from './hover-card';
 import {Input} from './input';
 import {Label} from './label';
 import {Switch} from './switch';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from './table';
+import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow,} from './table';
 import {Textarea} from './textarea';
 import {Toaster} from './toaster';
 import {useToast} from './use-toast';
 
 const VariantDetails = () => {
-  const apiUrl = process.env.REACT_APP_API_BASE_URL;
+  const apiUrl = process.env.REACT_APP_API_BASE_URL || 'http://localhost:3000';
   const navigate = useNavigate();
   const {toast} = useToast();
   const {graphId, variantName} = useParams();

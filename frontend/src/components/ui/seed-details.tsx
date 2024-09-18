@@ -1,21 +1,9 @@
-import React, {useEffect, useState} from 'react';
-import {Link as RouterLink, useLocation} from 'react-router-dom';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from './card';
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbSeparator,
-} from './breadcrumb';
-import {useParams} from 'react-router';
 import {Seed} from '@/models/Seed';
+import React, {useEffect, useState} from 'react';
+import {useParams} from 'react-router';
+import {Link as RouterLink} from 'react-router-dom';
+import {Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbSeparator,} from './breadcrumb';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle,} from './card';
 
 const SeedDetails = () => {
   const {proposalId, seedId} = useParams<{
@@ -32,7 +20,7 @@ const SeedDetails = () => {
     ? JSON.parse(seed.operationMatchArguments)
     : {};
   const seedResponse = seed?.seedResponse ? JSON.parse(seed.seedResponse) : {};
-  const apiUrl = process.env.REACT_APP_API_BASE_URL;
+  const apiUrl = process.env.REACT_APP_API_BASE_URL || 'http://localhost:3000';
 
   useEffect(() => {
     // Fetch seed data from the API

@@ -17,7 +17,7 @@ import {ProposalCard} from './proposal-card';
 import {VariantCard} from './variant-card';
 
 const VariantDashboard = () => {
-  const apiUrl = process.env.REACT_APP_API_BASE_URL;
+  const apiUrl = process.env.REACT_APP_API_BASE_URL || 'http://localhost:3000';
   const [graph, setGraph] = useState<Graph | null>(null);
 
   const [selectedStatuses, setSelectedStatuses] = useState<ProposalStatus[]>(
