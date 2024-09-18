@@ -18,4 +18,18 @@ export class GraphService {
   async getGraphWithSubgraphs(graphId: string) {
     return this.client.getGraphWithSubgraphs(graphId);
   }
+
+  async createProposal(
+    graphId: string,
+    variantName: string,
+    displayName: string,
+    description: string | undefined
+  ) {
+    return this.client.createProposal(
+      graphId,
+      variantName,
+      displayName,
+      description
+    );
+  }
 }
