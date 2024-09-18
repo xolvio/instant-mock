@@ -11,9 +11,16 @@ export default class GraphController {
   }
 
   async getGraph(req: Request, res: Response) {
+    // TODO simplify
+    const withSubgraphs: boolean = req.query.withSubgraphs === 'true';
     const graphId = req.params.graphId as string;
     try {
-      const graphs = await this.graphService.getGraph(graphId);
+      let graphs;
+      if (withSubgraphs) {
+        graphs = await this.graphService.getGraphWithSubgraphs(graphId);
+      } else {
+        graphs = await this.graphService.getGraph(graphId);
+      }
       res.json(graphs);
     } catch (error) {
       console.error(error);
