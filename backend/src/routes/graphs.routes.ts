@@ -6,5 +6,9 @@ const graphController = new GraphController();
 
 router.get('/graphs', graphController.getGraphs);
 router.get('/graphs/:graphId', graphController.getGraph);
+router.post(
+  '/graphs/:graphId/:variantName/proposals',
+  graphController.createProposal
+);
 
 export default router;
