@@ -5,6 +5,7 @@ import {
   InMemoryCache,
 } from '@apollo/client';
 import {setContext} from '@apollo/client/link/context';
+import {CREATE_PROPOSAL} from './queries/createProposal';
 import {GET_GRAPH} from './queries/getGraph';
 import {GET_GRAPHS} from './queries/getGraphs';
 import {GET_GRAPH_WITH_SUBGRAPHS} from './queries/getGraphWithSubgraphs';
@@ -70,5 +71,25 @@ export default class Client {
     });
 
     return data.graph.variant.latestPublication.schema.document;
+  }
+
+  async createProposal(
+    graphId: string,
+    variantName: string,
+    displayName: string,
+    description: string | undefined
+  ) {
+    const {data} = await this.apolloClient.mutate({
+      mutation: CREATE_PROPOSAL,
+      variables: {
+        graphId: graphId,
+        input: {
+          sourceVariantName: variantName,
+          displayName: displayName,
+          description: description,
+        },
+      },
+    });
+    return data;
   }
 }

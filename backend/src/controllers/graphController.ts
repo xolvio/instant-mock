@@ -8,6 +8,7 @@ export default class GraphController {
     this.graphService = new GraphService();
     this.getGraph = this.getGraph.bind(this);
     this.getGraphs = this.getGraphs.bind(this);
+    this.createProposal = this.createProposal.bind(this);
   }
 
   async getGraph(req: Request, res: Response) {
@@ -24,7 +25,7 @@ export default class GraphController {
       res.json(graphs);
     } catch (error) {
       console.error(error);
-      res.status(500).send('Error querying GraphQL API');
+      res.status(500).send({error: 'Error querying GraphQL API'});
     }
   }
 
@@ -34,7 +35,40 @@ export default class GraphController {
       res.json(graphs);
     } catch (error) {
       console.error(error);
-      res.status(500).send('Error querying GraphQL API');
+      res.status(500).send({error: 'Error querying GraphQL API'});
+    }
+  }
+
+  async createProposal(req: Request, res: Response) {
+    // TODO probably we should use express-validator to make it in a more efficient way
+    const {graphId, variantName} = req.params;
+    const {displayName, description} = req.body;
+    if (!graphId || !variantName || !displayName) {
+      return res.status(400).json({
+        error:
+          'Missing required parameters: graphId, variantName, or displayName',
+      });
+    }
+
+    try {
+      const data = await this.graphService.createProposal(
+        graphId,
+        variantName,
+        displayName,
+        description
+      );
+      if (data.message) {
+        return res.status(400).json({error: data.message});
+      } else {
+        const proposalName = data.graph.createProposal.name;
+        return res.json({
+          url: `https://studio.apollographql.com/graph/${graphId}/proposal/${proposalName}/home`,
+        });
+      }
+    } catch (error) {
+      console.error(error);
+      // TODO add error message from apollo
+      res.status(500).send({error: 'Error querying GraphQL API'});
     }
   }
 }

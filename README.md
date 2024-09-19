@@ -91,7 +91,21 @@ use the api to create a mock programmatically. Here's an example:
 - **Description:** Retrieves the details of a specific graph by its `graphId`.
 - **Parameters:**
     - `graphId` (path param): The ID of the graph.
-- **Response:** JSON object of the requested graph.
+    - `withSubgraphs` (query param): Optional boolean parameter. If set to true, the response will include the given graph along with all its subgraphs
+- **Response:** JSON object of the requested graph. If withSubgraphs=true, the response will include the graph and all subgraphs of variants.
+
+#### Create a new Proposal
+- **Endpoint:** `POST api/graphs/:graphId/:variantName/proposals`
+- **Description:** Creates a schema proposal for a specific variant of the graph.
+- **Query Parameters:**
+    - `graphId` (required): The ID of the graph.
+    - `variantName` (required): The variant name of the graph.
+- **Request Body:**
+  ```json
+  {
+    "displayName": "string",
+    "description": "string (optional)",
+  }
 
 ### Seeds
 
