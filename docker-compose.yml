@@ -3,14 +3,13 @@ services:
     image: postgres:latest
     container_name: postgres-db
     environment:
-      POSTGRES_USER: myuser
-      POSTGRES_PASSWORD: mypassword
-      POSTGRES_DB: mydatabase
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
-
   instant-mock:
     build:
       context: .
@@ -18,17 +17,16 @@ services:
       no_cache: true
     container_name: instant-mock-app
     environment:
-      APOLLO_API_KEY: <api-key>
+      APOLLO_API_KEY: ${APOLLO_API_KEY}
       PORT: 3000
-      POSTGRES_USER: myuser
-      POSTGRES_PASSWORD: mypassword
-      POSTGRES_DB: mydatabase
-      POSTGRES_HOST: postgres
-      POSTGRES_PORT: 5432
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_HOST: ${POSTGRES_HOST}
+      POSTGRES_PORT: ${POSTGRES_PORT}
     depends_on:
       - postgres
     ports:
       - "3000:3000"
-
 volumes:
   pgdata:
