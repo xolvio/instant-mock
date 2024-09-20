@@ -1,4 +1,19 @@
 import {Pool, QueryResult} from 'pg';
+import fs from 'fs';
+import path from 'path';
+
+const sslConfig = {
+  rejectUnauthorized: false,
+  key: fs
+    .readFileSync(path.join(__dirname, '../../../certs/client-key.pem'))
+    .toString(),
+  cert: fs
+    .readFileSync(path.join(__dirname, '../../../certs/client-cert.pem'))
+    .toString(),
+  ca: fs
+    .readFileSync(path.join(__dirname, '../../../certs/server-ca.pem'))
+    .toString(),
+};
 
 const pool = new Pool({
   user: process.env.POSTGRES_USER,
@@ -6,6 +21,7 @@ const pool = new Pool({
   database: process.env.POSTGRES_DB,
   password: String(process.env.POSTGRES_PASSWORD),
   port: Number(process.env.POSTGRES_PORT),
+  ssl: sslConfig,
 });
 
 let dbInitialized = false;

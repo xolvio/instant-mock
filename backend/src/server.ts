@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 import cors from 'cors';
 import express from 'express';
 import {parse} from 'graphql';
@@ -13,8 +15,6 @@ import {SeededOperationResponse} from './seed/types';
 import {MockService} from './service/mockService';
 
 var proxy = require('express-http-proxy');
-
-require('dotenv').config();
 
 const ProxyAgent = Undici.ProxyAgent;
 const setGlobalDispatcher = Undici.setGlobalDispatcher;

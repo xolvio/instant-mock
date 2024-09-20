@@ -1,3 +1,5 @@
+ARG REACT_APP_API_BASE_URL="http://localhost:3000"
+
 FROM node:20-alpine AS build
 
 WORKDIR /app
@@ -11,6 +13,7 @@ FROM node:20-alpine
 WORKDIR /app
 COPY --from=build /app/frontend/build ./frontend/build
 COPY ./backend ./backend
+COPY ./certs ./certs
 WORKDIR /app/backend
 RUN npm install
 # Install ts-node-dev globally
