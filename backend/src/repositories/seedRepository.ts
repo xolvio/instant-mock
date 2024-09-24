@@ -72,6 +72,47 @@ export class SeedRepository {
     }
   }
 
+  async updateSeed(seed: Seed): Promise<void> {
+    const {
+      id,
+      operationName,
+      seedResponse,
+      operationMatchArguments,
+      sequenceId,
+      graphId,
+      variantName,
+    } = seed;
+
+    if (!id) {
+      throw new Error('Seed ID is required to update the seed.');
+    }
+
+    try {
+      await query(
+        `UPDATE seeds 
+       SET operation_name = $1, 
+           seed_response = $2, 
+           operation_match_arguments = $3, 
+           sequence_id = $4, 
+           graph_id = $5, 
+           variant_name = $6
+       WHERE id = $7`,
+        [
+          operationName,
+          JSON.stringify(seedResponse),
+          JSON.stringify(operationMatchArguments),
+          sequenceId,
+          graphId,
+          variantName,
+          id,
+        ]
+      );
+    } catch (error) {
+      console.error('Error updating seed:', error);
+      throw new Error('Could not update seed');
+    }
+  }
+
   async deleteSeedById(id: number): Promise<Seed | null> {
     try {
       const result = await query('SELECT * FROM seeds WHERE id = $1', [id]);
@@ -84,7 +125,6 @@ export class SeedRepository {
       const deleteResult = await query('DELETE FROM seeds WHERE id = $1', [id]);
 
       if (deleteResult?.rowCount && deleteResult.rowCount > 0) {
-        // Return the deleted seed mapped to your Seed interface (camelCase)
         return {
           id: seed.id,
           operationName: seed.operation_name,

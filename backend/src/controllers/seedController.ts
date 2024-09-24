@@ -15,6 +15,7 @@ export default class SeedController {
     this.findSeedById = this.findSeedById.bind(this);
     this.createSeed = this.createSeed.bind(this);
     this.deleteSeed = this.deleteSeed.bind(this);
+    this.updateSeed = this.updateSeed.bind(this);
   }
 
   async getSeeds(req: Request, res: Response) {
@@ -79,7 +80,7 @@ export default class SeedController {
     };
 
     if (!variantName) {
-      return res.status(400).send('Proposal ID is required');
+      return res.status(400).send('Variant name is required');
     }
 
     const mockServer = await this.mockService.getOrStartNewMockServer(
@@ -100,6 +101,57 @@ export default class SeedController {
     } catch (error) {
       console.error('Error registering seed:', error);
       res.status(500).send('Error registering seed');
+    }
+  }
+
+  async updateSeed(req: Request, res: Response) {
+    // TODO is it possible to simplify it?
+    const graphId = req.query.graphId as string;
+    const variantName = req.query.variantName as string;
+    const {
+      id,
+      seedResponse,
+      operationName,
+      operationMatchArguments,
+      sequenceId,
+      oldOperationMatchArguments,
+    } = req.body;
+    const seed: Seed = {
+      id,
+      variantName,
+      seedResponse,
+      operationName,
+      operationMatchArguments,
+      sequenceId,
+      graphId,
+    };
+
+    if (!variantName) {
+      return res.status(400).send('Variant name is required');
+    }
+
+    const mockServer = await this.mockService.getOrStartNewMockServer(
+      graphId,
+      variantName
+    );
+
+    try {
+      mockServer.seedManager.updateSeed(
+        seed.sequenceId,
+        oldOperationMatchArguments,
+        {
+          operationName: seed.operationName,
+          seedResponse: seedResponse,
+          operationMatchArguments: operationMatchArguments,
+        }
+      );
+
+      this.seedRepository.updateSeed(seed);
+
+      res.send({message: `Seed updated successfully`});
+    } catch (error) {
+      console.error('Error updating seed:', error);
+      res.status(500).send('Error updating seed');
     }
   }
 

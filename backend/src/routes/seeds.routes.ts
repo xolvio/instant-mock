@@ -1,5 +1,5 @@
-import express, {Router} from "express";
-import SeedController from "../controllers/seedController";
+import express, {Router} from 'express';
+import SeedController from '../controllers/seedController';
 
 const router: Router = express.Router();
 const seedController = new SeedController(); // Initialize SeedController
@@ -176,5 +176,6 @@ router.post('/seeds', seedController.createSeed);
  *                   example: "Detailed error message"
  */
 router.delete('/seeds/:id', seedController.deleteSeed);
+router.patch('/seeds', seedController.updateSeed);
 
 export default router;
