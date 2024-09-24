@@ -1,11 +1,20 @@
+'use client';
+
 import {Seed} from '@/models/Seed';
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {useParams} from 'react-router';
 import {Link as RouterLink} from 'react-router-dom';
-import {Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbSeparator,} from './breadcrumb';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle,} from './card';
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbSeparator,
+} from './breadcrumb';
+import {Button} from './button';
+import {Card, CardContent, CardHeader, CardTitle} from './card';
 
-const SeedDetails = () => {
+export default function SeedDetails() {
   const {proposalId, seedId} = useParams<{
     proposalId: string;
     seedId: string;
@@ -13,17 +22,22 @@ const SeedDetails = () => {
   const [seed, setSeed] = useState<Seed | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [editedMatchArguments, setEditedMatchArguments] = useState<string>('');
+  const [editedResponse, setEditedResponse] = useState<string>('');
+
+  const matchArgumentsRef = useRef<HTMLPreElement>(null);
+  const responseRef = useRef<HTMLPreElement>(null);
 
   const operationName = seed?.operationName;
   const sequenceId = seed?.sequenceId;
   const operationMatchArguments = seed?.operationMatchArguments
-    ? JSON.parse(seed.operationMatchArguments)
+    ? seed.operationMatchArguments
     : {};
-  const seedResponse = seed?.seedResponse ? JSON.parse(seed.seedResponse) : {};
+  const seedResponse = seed?.seedResponse ? seed.seedResponse : {};
   const apiUrl = process.env.REACT_APP_API_BASE_URL || 'http://localhost:3000';
 
   useEffect(() => {
-    // Fetch seed data from the API
     const fetchSeed = async () => {
       try {
         setLoading(true);
@@ -35,6 +49,10 @@ const SeedDetails = () => {
 
         const data = await response.json();
         setSeed(data);
+        setEditedMatchArguments(
+          JSON.stringify(data.operationMatchArguments, null, 2)
+        );
+        setEditedResponse(JSON.stringify(data.seedResponse, null, 2));
       } catch (error) {
         setError((error as Error).message);
       } finally {
@@ -43,7 +61,59 @@ const SeedDetails = () => {
     };
 
     fetchSeed();
-  }, [seedId]);
+  }, [seedId, apiUrl]);
+
+  const handleEdit = () => {
+    setIsEditing(true);
+  };
+
+  const handleCancel = () => {
+    setIsEditing(false);
+    if (matchArgumentsRef.current) {
+      matchArgumentsRef.current.textContent = JSON.stringify(
+        operationMatchArguments,
+        null,
+        2
+      );
+    }
+    if (responseRef.current) {
+      responseRef.current.textContent = JSON.stringify(seedResponse, null, 2);
+    }
+  };
+
+  const handleSave = async () => {
+    try {
+      const updatedMatchArguments =
+        matchArgumentsRef.current?.textContent || '';
+      const updatedResponse = responseRef.current?.textContent || '';
+
+      setEditedMatchArguments(updatedMatchArguments);
+      setEditedResponse(updatedResponse);
+      console.log(updatedMatchArguments);
+      // console.log(updatedResponse);
+
+      // const response = await fetch(`${apiUrl}/api/seeds/${seedId}`, {
+      //   method: 'PUT',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //   },
+      //   body: JSON.stringify({
+      //     operationMatchArguments: JSON.parse(updatedMatchArguments),
+      //     seedResponse: JSON.parse(updatedResponse),
+      //   }),
+      // });
+
+      // if (!response.ok) {
+      //   throw new Error('Failed to update seed data');
+      // }
+
+      // const updatedSeed = await response.json();
+      // setSeed(updatedSeed);
+      setIsEditing(false);
+    } catch (error) {
+      setError((error as Error).message);
+    }
+  };
 
   return (
     <div className="flex justify-center items-start p-4 bg-muted/40">
@@ -74,27 +144,44 @@ const SeedDetails = () => {
           <p className="text-red-500">Error: {error}</p>
         ) : seed ? (
           <>
-            <Card x-chunk="dashboard-07-chunk-5" className="mb-4">
-              <CardHeader>
+            <Card className="mb-4">
+              <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>Seed details</CardTitle>
-                <CardDescription>
-                  <div className="flex items-center mb-2">
-                    <span>{`Operation name: ${operationName}`}</span>
+                {!isEditing && <Button onClick={handleEdit}>Edit</Button>}
+                {isEditing && (
+                  <div className="flex justify-end space-x-2">
+                    <Button variant="outline" onClick={handleCancel}>
+                      Cancel
+                    </Button>
+                    <Button onClick={handleSave}>Save</Button>
                   </div>
-                  <div className="flex items-center mb-2">
-                    <span>{`Sequence ID: ${sequenceId}`}</span>
-                  </div>
-                </CardDescription>
+                )}
               </CardHeader>
-            </Card>
-            <Card x-chunk="dashboard-06-chunk-0" className="mb-4">
-              <CardHeader className="flex flex-row items-center">
-                <div>
-                  <CardTitle>Matching arguments</CardTitle>
+              <CardContent>
+                <div className="flex items-center mb-2">
+                  <span>{`Operation name: ${operationName}`}</span>
                 </div>
+                <div className="flex items-center mb-2">
+                  <span>{`Sequence ID: ${sequenceId}`}</span>
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="mb-4">
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle>Matching arguments</CardTitle>
               </CardHeader>
               <CardContent className="flex-1">
-                <pre className="bg-gray-100 p-4 rounded overflow-auto">
+                <pre
+                  ref={matchArgumentsRef}
+                  contentEditable={isEditing}
+                  suppressContentEditableWarning={true}
+                  className={`bg-gray-100 p-4 rounded overflow-auto focus:border-primary focus:outline-none ${
+                    isEditing
+                      ? 'border-[1px] border-[hsl(var(--primary))]'
+                      : 'border-[1px] border-transparent'
+                  }`}
+                  style={{minHeight: '100px'}}
+                >
                   <code className="text-sm">
                     {JSON.stringify(operationMatchArguments, null, 2)}
                   </code>
@@ -102,14 +189,22 @@ const SeedDetails = () => {
               </CardContent>
             </Card>
 
-            <Card x-chunk="dashboard-06-chunk-0" className="mb-4">
-              <CardHeader className="flex flex-row items-center">
-                <div>
-                  <CardTitle>Response</CardTitle>
-                </div>
+            <Card className="mb-4">
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle>Response</CardTitle>
               </CardHeader>
               <CardContent className="flex-1">
-                <pre className="bg-gray-100 p-4 rounded overflow-auto">
+                <pre
+                  ref={responseRef}
+                  contentEditable={isEditing}
+                  suppressContentEditableWarning={true}
+                  className={`bg-gray-100 p-4 rounded overflow-auto focus:border-primary focus:outline-none ${
+                    isEditing
+                      ? 'border-[1px] border-[hsl(var(--primary))]'
+                      : 'border-[1px] border-transparent'
+                  }`}
+                  style={{minHeight: '100px'}}
+                >
                   <code className="text-sm">
                     {JSON.stringify(seedResponse, null, 2)}
                   </code>
@@ -123,6 +218,4 @@ const SeedDetails = () => {
       </div>
     </div>
   );
-};
-
-export default SeedDetails;
+}
