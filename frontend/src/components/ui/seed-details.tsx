@@ -38,33 +38,33 @@ export default function SeedDetails() {
   const apiUrl = process.env.REACT_APP_API_BASE_URL || 'http://localhost:3000';
 
   useEffect(() => {
-    const fetchSeed = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch(`${apiUrl}/api/seeds/${seedId}`);
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch seed data');
-        }
-
-        const data = await response.json();
-        setSeed(data);
-        setEditedMatchArguments(
-          JSON.stringify(data.operationMatchArguments, null, 2)
-        );
-        setEditedResponse(JSON.stringify(data.seedResponse, null, 2));
-      } catch (error) {
-        setError((error as Error).message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchSeed();
   }, [seedId, apiUrl]);
 
   const handleEdit = () => {
     setIsEditing(true);
+  };
+
+  const fetchSeed = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${apiUrl}/api/seeds/${seedId}`);
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch seed data');
+      }
+
+      const data = await response.json();
+      setSeed(data);
+      setEditedMatchArguments(
+        JSON.stringify(data.operationMatchArguments, null, 2)
+      );
+      setEditedResponse(JSON.stringify(data.seedResponse, null, 2));
+    } catch (error) {
+      setError((error as Error).message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleCancel = () => {
@@ -89,27 +89,39 @@ export default function SeedDetails() {
 
       setEditedMatchArguments(updatedMatchArguments);
       setEditedResponse(updatedResponse);
-      console.log(updatedMatchArguments);
-      // console.log(updatedResponse);
 
-      // const response = await fetch(`${apiUrl}/api/seeds/${seedId}`, {
-      //   method: 'PUT',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body: JSON.stringify({
-      //     operationMatchArguments: JSON.parse(updatedMatchArguments),
-      //     seedResponse: JSON.parse(updatedResponse),
-      //   }),
-      // });
+      // Prepare the payload for the PATCH request
+      const payload = {
+        id: seedId,
+        operationName: operationName,
+        seedResponse: JSON.parse(updatedResponse), // Updated response
+        operationMatchArguments: JSON.parse(updatedMatchArguments),
+        sequenceId: sequenceId,
+        graphId: seed?.graphId,
+        variantName: seed?.variantName,
+        oldOperationMatchArguments: operationMatchArguments,
+      };
 
-      // if (!response.ok) {
-      //   throw new Error('Failed to update seed data');
-      // }
+      const response = await fetch(
+        `${apiUrl}/api/seeds?variantName=${seed?.variantName}&graphId=${seed?.graphId}`,
+        {
+          method: 'PATCH', // Use PATCH method for update
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        }
+      );
 
-      // const updatedSeed = await response.json();
-      // setSeed(updatedSeed);
-      setIsEditing(false);
+      fetchSeed();
+
+      if (!response.ok) {
+        throw new Error('Failed to update seed data');
+      }
+
+      const updatedSeed = await response.json();
+      setSeed(updatedSeed); // Update the state with the new seed data
+      setIsEditing(false); // Exit editing mode
     } catch (error) {
       setError((error as Error).message);
     }
