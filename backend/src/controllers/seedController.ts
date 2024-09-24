@@ -88,14 +88,13 @@ export default class SeedController {
     );
 
     try {
-      // Save seed to SQLite
-      await this.seedRepository.createSeed(seed);
-
       mockServer.seedManager.registerSeed(seed.sequenceId, SeedType.Operation, {
         operationName: seed.operationName,
         seedResponse: seedResponse,
         operationMatchArguments: operationMatchArguments,
       });
+
+      await this.seedRepository.createSeed(seed);
 
       res.send({message: `Seed registered successfully`});
     } catch (error) {
