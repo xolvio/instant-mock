@@ -58,8 +58,10 @@ export class MockService {
     for (const seed of seeds) {
       mockServer.seedManager.registerSeed(seed.sequenceId, SeedType.Operation, {
         operationName: seed.operationName,
-        seedResponse: JSON.parse(seed.seedResponse),
-        operationMatchArguments: JSON.parse(seed.operationMatchArguments),
+        // @ts-expect-error
+        seedResponse: seed.seedResponse,
+        // @ts-expect-error
+        operationMatchArguments: seed.operationMatchArguments,
       });
     }
     mockInstances[graphId] = mockInstances[graphId] || {};
