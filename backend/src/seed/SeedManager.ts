@@ -104,6 +104,40 @@ export default class SeedManager {
     });
   }
 
+  updateSeed(
+    sequenceId: string,
+    oldOperationMatchArguments: OperationMatchArguments,
+    seed: Seed
+    // {usesLeft, partialArgs, statusCode}: SeedOptions = {}
+  ): void {
+    this.validateSeed(SeedType.Operation, seed);
+    const seedCacheInstance = this.findSeed(
+      sequenceId,
+      seed.operationName,
+      oldOperationMatchArguments
+    );
+    seedCacheInstance.seed.operationMatchArguments =
+      seed.operationMatchArguments;
+    seedCacheInstance.seed.seedResponse = seed.seedResponse;
+  }
+
+  deleteSeed(
+    sequenceId: string,
+    operationName: string,
+    oldOperationMatchArguments: OperationMatchArguments
+    // {usesLeft, partialArgs, statusCode}: SeedOptions = {}
+  ): void {
+    const {seedIndex} = this.findSeed(
+      sequenceId,
+      operationName,
+      oldOperationMatchArguments
+    );
+
+    if (seedIndex !== -1) {
+      delete this.seedCache[sequenceId][operationName][seedIndex];
+    }
+  }
+
   // @ts-expect-error TODO fix types
   private maybeDiscardSeed(sequenceId, operationName, seedIndex): void {
     const seed = this.seedCache[sequenceId][operationName][seedIndex];

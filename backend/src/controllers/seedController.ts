@@ -15,6 +15,7 @@ export default class SeedController {
     this.findSeedById = this.findSeedById.bind(this);
     this.createSeed = this.createSeed.bind(this);
     this.deleteSeed = this.deleteSeed.bind(this);
+    this.updateSeed = this.updateSeed.bind(this);
   }
 
   async getSeeds(req: Request, res: Response) {
@@ -79,7 +80,7 @@ export default class SeedController {
     };
 
     if (!variantName) {
-      return res.status(400).send('Proposal ID is required');
+      return res.status(400).send('Variant name is required');
     }
 
     const mockServer = await this.mockService.getOrStartNewMockServer(
@@ -88,14 +89,13 @@ export default class SeedController {
     );
 
     try {
-      // Save seed to SQLite
-      await this.seedRepository.createSeed(seed);
-
       mockServer.seedManager.registerSeed(seed.sequenceId, SeedType.Operation, {
         operationName: seed.operationName,
         seedResponse: seedResponse,
         operationMatchArguments: operationMatchArguments,
       });
+
+      await this.seedRepository.createSeed(seed);
 
       res.send({message: `Seed registered successfully`});
     } catch (error) {
@@ -104,7 +104,58 @@ export default class SeedController {
     }
   }
 
-  async deleteSeed(req: Request, res: Response): Promise<void> {
+  async updateSeed(req: Request, res: Response) {
+    // TODO is it possible to simplify it?
+    const graphId = req.query.graphId as string;
+    const variantName = req.query.variantName as string;
+    const {
+      id,
+      seedResponse,
+      operationName,
+      operationMatchArguments,
+      sequenceId,
+      oldOperationMatchArguments,
+    } = req.body;
+    const seed: Seed = {
+      id,
+      variantName,
+      seedResponse,
+      operationName,
+      operationMatchArguments,
+      sequenceId,
+      graphId,
+    };
+
+    if (!variantName) {
+      return res.status(400).send('Variant name is required');
+    }
+
+    const mockServer = await this.mockService.getOrStartNewMockServer(
+      graphId,
+      variantName
+    );
+
+    try {
+      mockServer.seedManager.updateSeed(
+        seed.sequenceId,
+        oldOperationMatchArguments,
+        {
+          operationName: seed.operationName,
+          seedResponse: seedResponse,
+          operationMatchArguments: operationMatchArguments,
+        }
+      );
+
+      this.seedRepository.updateSeed(seed);
+
+      res.send({message: `Seed updated successfully`});
+    } catch (error) {
+      console.error('Error updating seed:', error);
+      res.status(500).send('Error updating seed');
+    }
+  }
+
+  async deleteSeed(req: Request, res: Response) {
     const {id} = req.params;
     const graphId = req.query.graphId as string;
     const variantName = req.query.variantName as string;
@@ -113,11 +164,13 @@ export default class SeedController {
     const numericId = Number(id);
 
     if (isNaN(numericId)) {
-      res.status(400).json({message: 'Invalid ID'});
+      return res.status(400).json({message: 'Invalid ID'});
     }
 
     if (!graphId || !variantName) {
-      res.status(400).json({message: 'graphId and variantName are required'});
+      return res
+        .status(400)
+        .json({message: 'graphId and variantName are required'});
     }
 
     try {
@@ -128,14 +181,21 @@ export default class SeedController {
 
       // TODO also remove seed from seedCache!!!
       const result = await this.seedRepository.deleteSeedById(numericId);
+
       if (result) {
-        // await this.mockService.restartMockInstance(result.variantName);
-        res.status(200).json({message: 'Seed deleted successfully'});
+        mockServer.seedManager.deleteSeed(
+          sequenceId,
+          result.operationName,
+          result.operationMatchArguments as any
+        );
+        return res.status(200).json({message: 'Seed deleted successfully'});
       } else {
-        res.status(404).json({message: 'Seed not found'});
+        return res.status(404).json({message: 'Seed not found'});
       }
     } catch (error) {
-      res.status(500).json({message: 'Error deleting seed', error: error});
+      return res
+        .status(500)
+        .json({message: 'Error deleting seed', error: error});
     }
   }
 }

@@ -13,7 +13,7 @@ export default class MockController {
   async startNewMockInstance(req: Request, res: Response) {
     const {graphId, variantName} = req.query;
     if (!variantName) {
-      return res.status(400).send('Variant Name is required');
+      return res.status(400).send({error: 'Variant Name is required'});
     }
 
     if (mockInstances[graphId as string][variantName as string]) {
