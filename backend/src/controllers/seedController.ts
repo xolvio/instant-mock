@@ -155,7 +155,7 @@ export default class SeedController {
     }
   }
 
-  async deleteSeed(req: Request, res: Response): Promise<void> {
+  async deleteSeed(req: Request, res: Response) {
     const {id} = req.params;
     const graphId = req.query.graphId as string;
     const variantName = req.query.variantName as string;
@@ -164,11 +164,13 @@ export default class SeedController {
     const numericId = Number(id);
 
     if (isNaN(numericId)) {
-      res.status(400).json({message: 'Invalid ID'});
+      return res.status(400).json({message: 'Invalid ID'});
     }
 
     if (!graphId || !variantName) {
-      res.status(400).json({message: 'graphId and variantName are required'});
+      return res
+        .status(400)
+        .json({message: 'graphId and variantName are required'});
     }
 
     try {
@@ -179,14 +181,21 @@ export default class SeedController {
 
       // TODO also remove seed from seedCache!!!
       const result = await this.seedRepository.deleteSeedById(numericId);
+
       if (result) {
-        // await this.mockService.restartMockInstance(result.variantName);
-        res.status(200).json({message: 'Seed deleted successfully'});
+        mockServer.seedManager.deleteSeed(
+          sequenceId,
+          result.operationName,
+          result.operationMatchArguments as any
+        );
+        return res.status(200).json({message: 'Seed deleted successfully'});
       } else {
-        res.status(404).json({message: 'Seed not found'});
+        return res.status(404).json({message: 'Seed not found'});
       }
     } catch (error) {
-      res.status(500).json({message: 'Error deleting seed', error: error});
+      return res
+        .status(500)
+        .json({message: 'Error deleting seed', error: error});
     }
   }
 }
