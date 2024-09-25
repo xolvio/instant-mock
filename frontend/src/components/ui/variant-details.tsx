@@ -9,9 +9,21 @@ import {useNavigate, useParams} from 'react-router';
 
 import {Link as RouterLink} from 'react-router-dom';
 import {z} from 'zod';
-import {Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbSeparator,} from './breadcrumb';
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbSeparator,
+} from './breadcrumb';
 import {Button} from './button';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle,} from './card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from './card';
 import {
   Dialog,
   DialogClose,
@@ -29,12 +41,27 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from './dropdown-menu';
-import {Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage,} from './form';
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from './form';
 import {HoverCard, HoverCardContent, HoverCardTrigger} from './hover-card';
 import {Input} from './input';
 import {Label} from './label';
 import {Switch} from './switch';
-import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow,} from './table';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from './table';
 import {Textarea} from './textarea';
 import {Toaster} from './toaster';
 import {useToast} from './use-toast';
@@ -49,7 +76,7 @@ const VariantDetails = () => {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [seedWithArguments, setSeedWithArguments] = useState(false);
-  const [selectedSeedId, setSelectedSeedId] = useState(-1);
+  const [selectedSeed, setSelectedSeed] = useState(null);
 
   useEffect(() => {
     fetchSeeds();
@@ -169,21 +196,24 @@ const VariantDetails = () => {
 
   const {setValue} = form;
 
-  async function deleteSeed(seedId: number) {
+  async function deleteSeed(seed: Seed) {
     try {
-      const response = await fetch(`${apiUrl}/api/seeds/${seedId}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      const response = await fetch(
+        `${apiUrl}/api/seeds/${seed.id}?graphId=${seed.graphId}&variantName=${seed.variantName}&sequenceId=${seed.sequenceId}`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
 
       if (!response.ok) {
-        throw new Error(`Failed to delete seed with ID ${seedId}`);
+        throw new Error(`Failed to delete seed with ID ${seed.id}`);
       }
 
       const result = await response.json();
-      console.log(`Seed with ID ${seedId} deleted successfully`, result);
+      console.log(`Seed with ID ${seed.id} deleted successfully`, result);
 
       return result; // Assuming the API returns the deleted seed or a confirmation message
     } catch (error) {
@@ -192,9 +222,9 @@ const VariantDetails = () => {
     }
   }
 
-  const handleDelete = async (seedId: number) => {
+  const handleDelete = async (seed: Seed) => {
     try {
-      const result = await deleteSeed(seedId);
+      const result = await deleteSeed(seed);
       fetchSeeds();
       console.log('Deleted seed:', result);
       // Optionally, update the state to remove the seed from your UI
@@ -203,13 +233,15 @@ const VariantDetails = () => {
     }
   };
 
-  const handleDeleteClick = (seedId: number) => {
-    setSelectedSeedId(seedId);
+  const handleDeleteClick = (seed: Seed) => {
+    // @ts-ignore
+    setSelectedSeed(seed);
     setIsDeleteDialogOpen(true);
   };
 
   const handleConfirmDelete = () => {
-    handleDelete(selectedSeedId); // Call your delete function here
+    // @ts-ignore
+    handleDelete(selectedSeed); // Call your delete function here
     setIsDeleteDialogOpen(false);
   };
 
@@ -454,7 +486,7 @@ const VariantDetails = () => {
                                   View
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
-                                  onClick={() => handleDeleteClick(seed.id)}
+                                  onClick={() => handleDeleteClick(seed)}
                                 >
                                   Delete
                                 </DropdownMenuItem>
