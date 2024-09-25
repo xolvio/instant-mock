@@ -121,6 +121,23 @@ export default class SeedManager {
     seedCacheInstance.seed.seedResponse = seed.seedResponse;
   }
 
+  deleteSeed(
+    sequenceId: string,
+    operationName: string,
+    oldOperationMatchArguments: OperationMatchArguments
+    // {usesLeft, partialArgs, statusCode}: SeedOptions = {}
+  ): void {
+    const {seedIndex} = this.findSeed(
+      sequenceId,
+      operationName,
+      oldOperationMatchArguments
+    );
+
+    if (seedIndex !== -1) {
+      delete this.seedCache[sequenceId][operationName][seedIndex];
+    }
+  }
+
   // @ts-expect-error TODO fix types
   private maybeDiscardSeed(sequenceId, operationName, seedIndex): void {
     const seed = this.seedCache[sequenceId][operationName][seedIndex];
