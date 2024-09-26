@@ -2,19 +2,21 @@ import {
   ApolloClient,
   ApolloLink,
   createHttpLink,
+  DefaultOptions,
   InMemoryCache,
 } from '@apollo/client';
 import {setContext} from '@apollo/client/link/context';
-import {CREATE_PROPOSAL} from './queries/createProposal';
+import {CREATE_PROPOSAL} from './mutations/createProposal';
+import {PUBLISH_PROPOSAL_REVISION} from './mutations/publishProposalRevision';
 import {GET_GRAPH} from './queries/getGraph';
 import {GET_GRAPHS} from './queries/getGraphs';
 import {GET_GRAPH_WITH_SUBGRAPHS} from './queries/getGraphWithSubgraphs';
+import {GET_ORGANIZATION_ID} from './queries/getOrganizationId';
 import {GET_SCHEMA} from './queries/getSchema';
 
 export default class Client {
   private apolloClient: ApolloClient<any>;
-  private readonly organizationId =
-    process.env.ORGANIZATION_ID || 'fcamna-orchestration';
+  private organizationId: string | undefined;
 
   constructor() {
     const link = createHttpLink({
@@ -32,9 +34,20 @@ export default class Client {
       };
     });
 
+    const defaultOptions: DefaultOptions = {
+      watchQuery: {fetchPolicy: 'no-cache'},
+      query: {fetchPolicy: 'no-cache'},
+    };
+
     this.apolloClient = new ApolloClient({
       link: ApolloLink.from([authLink, link]),
       cache: new InMemoryCache(),
+      defaultOptions: defaultOptions,
+    });
+
+    // set organizationId
+    this.getOrganizationId().then((organizationId) => {
+      this.organizationId = organizationId;
     });
   }
 
@@ -91,5 +104,41 @@ export default class Client {
       },
     });
     return data;
+  }
+
+  // TODO fix object type
+  async publishProposalRevision(
+    proposalId: string,
+    subgraphInputs: Object[],
+    summary: string,
+    revision: string,
+    previousLaunchId: string
+  ) {
+    const {data} = await this.apolloClient.mutate({
+      mutation: PUBLISH_PROPOSAL_REVISION,
+      variables: {
+        proposalId: proposalId,
+        input: {
+          subgraphInputs: subgraphInputs,
+          summary: summary,
+          revision: revision,
+          previousLaunchId: previousLaunchId,
+        },
+      },
+    });
+
+    return data;
+  }
+
+  async getOrganizationId() {
+    const {data} = await this.apolloClient.query({query: GET_ORGANIZATION_ID});
+    const memberships = data?.me?.memberships;
+
+    // TODO consider case when a token has multiple memberships
+    if (memberships && memberships.length > 0) {
+      return memberships[0].account?.id;
+    }
+
+    return null;
   }
 }

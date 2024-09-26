@@ -9,6 +9,7 @@ export default class GraphController {
     this.getGraph = this.getGraph.bind(this);
     this.getGraphs = this.getGraphs.bind(this);
     this.createProposal = this.createProposal.bind(this);
+    this.publishProposalRevision = this.publishProposalRevision.bind(this);
   }
 
   async getGraph(req: Request, res: Response) {
@@ -60,14 +61,47 @@ export default class GraphController {
       if (data.message) {
         return res.status(400).json({error: data.message});
       } else {
-        const proposalName = data.graph.createProposal.name;
         return res.json({
-          url: `https://studio.apollographql.com/graph/${graphId}/proposal/${proposalName}/home`,
+          proposalName: data.graph.createProposal.name,
+          proposalId: data.graph.createProposal.proposal.id,
+          latestLaunchId: data.graph.createProposal.latestLaunch.id,
         });
       }
     } catch (error) {
       console.error(error);
       // TODO add error message from apollo
+      res.status(500).send({error: 'Error querying GraphQL API'});
+    }
+  }
+
+  async publishProposalRevision(req: Request, res: Response) {
+    // TODO probably we should use express-validator to make it in a more efficient way
+    const {proposalId} = req.params;
+    const {subgraphInputs, summary, revision, previousLaunchId} = req.body;
+    // TODO parameter validation before sending request to apollo, for now rely on their validation
+
+    try {
+      const data = await this.graphService.publishProposalRevision(
+        proposalId,
+        subgraphInputs,
+        summary,
+        revision,
+        previousLaunchId
+      );
+      if (data.proposal.message) {
+        return res.status(400).json({error: data.proposal.message});
+      } else if (data.proposal.publishSubgraphs.message) {
+        return res
+          .status(400)
+          .json({error: data.proposal.publishSubgraphs.message});
+      } else {
+        return res.json({
+          latestLaunchId:
+            data.proposal.publishSubgraphs.backingVariant.latestLaunch.id,
+        });
+      }
+    } catch (error) {
+      console.error(error);
       res.status(500).send({error: 'Error querying GraphQL API'});
     }
   }

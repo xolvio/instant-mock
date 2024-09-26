@@ -6,6 +6,15 @@ export const CREATE_PROPOSAL = gql`
       createProposal(input: $input) {
         ... on GraphVariant {
           name
+          subgraphs {
+            revision
+          }
+          proposal {
+            id
+          }
+          latestLaunch {
+            id
+          }
         }
         ... on CreateProposalError {
           message
