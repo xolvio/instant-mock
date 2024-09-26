@@ -32,4 +32,20 @@ export class GraphService {
       description
     );
   }
+
+  async publishProposalRevision(
+    proposalId: string,
+    subgraphInputs: Object[],
+    summary: string,
+    revision: string,
+    previousLaunchId: string
+  ) {
+    return this.client.publishProposalRevision(
+      proposalId,
+      subgraphInputs,
+      summary,
+      revision,
+      previousLaunchId
+    );
+  }
 }
