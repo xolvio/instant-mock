@@ -9,6 +9,7 @@ import swaggerUi from 'swagger-ui-express';
 import * as Undici from 'undici';
 import {initializeDatabase} from './database/database';
 import graphsRoutes from './routes/graphs.routes';
+import proposalsRoutes from './routes/proposals.routes';
 import seedsRoutes from './routes/seeds.routes';
 import {SeededOperationResponse} from './seed/types';
 import {MockService} from './service/mockService';
@@ -35,6 +36,7 @@ app.use(express.static(path.join(__dirname, '../../frontend/build')));
 
 app.use('/api', seedsRoutes);
 app.use('/api', graphsRoutes);
+app.use('/api', proposalsRoutes);
 app.get('*', (_, res) => {
   res.sendFile(path.join(__dirname, '../../frontend/build', 'index.html'));
 });
