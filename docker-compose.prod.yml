@@ -6,10 +6,10 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3001
-      - HTTP_PROXY=http://internet.gcp.ford.com:83
-      - http_proxy=http://internet.gcp.ford.com:83
-      - HTTPS_PROXY=http://internet.gcp.ford.com:83
-      - https_proxy=http://internet.gcp.ford.com:83
+      - HTTP_PROXY={HTTP_PROXY}
+      - http_proxy={HTTP_PROXY}
+      - HTTPS_PROXY={HTTP_PROXY}
+      - https_proxy={HTTP_PROXY}
     ports:
       - "3001:3001"
     command: npm run start
