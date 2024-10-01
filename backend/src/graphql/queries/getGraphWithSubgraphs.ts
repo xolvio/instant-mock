@@ -8,6 +8,9 @@ export const GET_GRAPH_WITH_SUBGRAPHS = gql`
         name
         latestPublication {
           publishedAt
+          schema {
+            document
+          }
         }
         subgraphs {
           name
@@ -33,6 +36,11 @@ export const GET_GRAPH_WITH_SUBGRAPHS = gql`
               name
               activePartialSchema {
                 sdl
+              }
+            }
+            latestPublication {
+              schema {
+                document
               }
             }
           }
