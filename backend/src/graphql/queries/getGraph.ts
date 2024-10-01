@@ -8,6 +8,9 @@ export const GET_GRAPH = gql`
         name
         latestPublication {
           publishedAt
+          schema {
+            document
+          }
         }
       }
       proposals(filterBy: $filterBy) {
@@ -23,6 +26,11 @@ export const GET_GRAPH = gql`
           backingVariant {
             id
             name
+            latestPublication {
+              schema {
+                document
+              }
+            }
           }
         }
       }
