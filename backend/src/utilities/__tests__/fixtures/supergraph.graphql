@@ -1,0 +1,406 @@
+type Query {
+  search(excludeFileTypes: [SearchResultType!], input: String, workspaceId: String!): [SearchResult!]!
+  mediaAuth: MediaAuth!
+  linkPreview(url: String!): LinkPreview!
+  signedMediaUploadUrl(parentId: String!): SignedUrl!
+  organizations: [Organization!]!
+  versions(organizationId: String!): [ModelVersion!]!
+  user: User!
+  users(organizationId: String!): [User!]!
+  changeset(id: String!): Changeset
+  changesets(workspaceId: String!): [Changeset!]!
+  changesetTree(workspaceId: String!): [ChangesetTree!]!
+  files(ids: [String!]!): [FileChange!]!
+  fileTree(isArchived: Boolean, workspaceId: String!): [File!]!
+  file(isArchived: Boolean, workspaceId: String!, fileId: String!): File!
+  fileSubTree(isArchived: Boolean, fileId: String!, workspaceId: String!): [File!]!
+  subscriptionPlans(organizationId: String!): [SubscriptionPlan!]!
+  subscriptionSession(organizationId: String!, planId: String!): SubscriptionSession!
+  customerPortalSession(organizationId: String!): SubscriptionSession!
+}
+
+type SearchResult {
+  id: ID!
+  title: String!
+  fileType: SearchResultType!
+  path: String!
+}
+
+enum SearchResultType {
+  Doc
+  ComponentSpec
+  BusinessRuleSpec
+  Folder
+  Changeset
+  Feature
+  FeatureSet
+  Capability
+}
+
+type MediaAuth {
+  token: String!
+}
+
+type LinkPreview {
+  title: String!
+  imageUrl: String
+  favicon: String
+}
+
+type SignedUrl {
+  putUrl: String!
+  getUrl: String!
+}
+
+type Organization {
+  id: ID!
+  name: String!
+  hasBilling: Boolean
+  hasSubscription: Boolean
+  numberOfSeats: Float
+  allowedEmailDomains: [OrganizationAllowedEmailDomain!]!
+  workspaces: [Workspace!]!
+  subscriptionPlans: [OrganizationSubscriptionPlan!]!
+  samlSsoConfig: SamlSsoConfig
+  users: [User!]
+  singleSourceModel: SingleSourceModel
+}
+
+type OrganizationAllowedEmailDomain {
+  domain: String!
+}
+
+type Workspace {
+  id: ID!
+  name: String!
+  changesets: [Changeset!]!
+}
+
+type Changeset {
+  id: ID!
+  name: String!
+  createdAt: DateTimeISO!
+  isPublished: Boolean!
+  files: [FileChange!]
+}
+
+"""
+A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `date-time` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.This scalar is serialized to a string in ISO 8601 format and parsed from a string in ISO 8601 format.
+"""
+scalar DateTimeISO
+
+type FileChange {
+  id: ID!
+  fileType: FileType!
+  name: String!
+  publishedChanges: [Change!]!
+  committedChanges: [CommittedChange!]
+}
+
+enum FileType {
+  Doc
+  Folder
+  BusinessRuleSpec
+  ComponentSpec
+  FeatureSet
+  Feature
+  Capability
+}
+
+type Change {
+  id: ID!
+  blockId: String!
+  changeset: Changeset
+  file: File!
+  fileVersion: String!
+  content: String
+  line: Int
+  path: [Int!]
+  isPublished: Boolean!
+  changeType: ChangeType
+}
+
+type File {
+  id: ID!
+  name: String!
+  fileType: FileType!
+  parent: File
+  children: [File!]
+}
+
+enum ChangeType {
+  Added
+  Modified
+  Deleted
+}
+
+type CommittedChange {
+  changeset: Changeset!
+  blockId: String!
+  changeType: ChangeType
+  content: String
+  line: Int
+  path: [Int!]!
+}
+
+type OrganizationSubscriptionPlan {
+  id: ID!
+  name: String!
+  status: String!
+  numberOfSeats: Float!
+}
+
+type SamlSsoConfig {
+  tenantId: String!
+  idp: String!
+}
+
+type User {
+  id: ID!
+  name: String
+  email: String
+  picture: String
+  permittedOrganizations: [UserOrganization!]!
+  role: Role!
+}
+
+type UserOrganization {
+  organization: Organization!
+  role: Role!
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+type SingleSourceModel {
+  id: ID!
+}
+
+type ModelVersion {
+  versionId: ID!
+  createdAt: DateTimeISO!
+  isLatest: Boolean!
+  size: Float!
+}
+
+type ChangesetTree {
+  id: ID!
+  name: String!
+  isPublished: Boolean!
+  type: ChangesetTreeType!
+  parent: ChangesetTree
+}
+
+enum ChangesetTreeType {
+  Changeset
+  Doc
+  ComponentSpec
+  BusinessRuleSpec
+}
+
+type SubscriptionPlan {
+  id: ID!
+  name: String!
+  description: String!
+  features: [String!]!
+  price: Float!
+  currency: String!
+  priceInterval: String!
+  canSubscribe: Boolean!
+  isCustomPlan: Boolean!
+  priceFormatted: String!
+  isCurrentPlan: Boolean!
+}
+
+type SubscriptionSession {
+  url: String!
+}
+
+type Mutation {
+  acceptInvite(args: AcceptInviteArgs!): Response!
+  addWorkspace(args: AddWorkspaceArgs!): Response!
+  addFile(args: AddFileArgs!): Response!
+  addOrganization(args: AddOrganizationArgs!): Response!
+  deleteWorkspace(args: DeleteWorkspaceArgs!): Response!
+  deleteOrganization(args: DeleteOrganizationArgs!): Response!
+  makeSuggestion(args: SuggestionArgs!): Response!
+  inviteUsers(args: InviteUsersArgs!): Response!
+  linkExistingSpecToDoc(args: LinkExistingSpecToDocArgs!): Response!
+  linkNewSpecToDoc(args: LinkNewSpecToDocArgs!): Response!
+  moveFile(args: MoveFileArgs!): Response!
+  removeUserFromOrganization(args: RemoveUserFromOrganizationArgs!): Response!
+  renameWorkspace(args: RenameWorkspaceArgs!): Response!
+  renameFile(args: RenameFileArgs!): Response!
+  renameOrganization(args: RenameOrganizationArgs!): Response!
+  unlinkSpecFromDoc(args: UnlinkSpecFromDocArgs!): Response!
+  updateUserRole(args: UpdateUserRoleArgs!): Response!
+  verifyEmail: Response!
+  deleteFile(args: DeleteFileArgs!): Response!
+  updateOrganizationEmailDomains(args: UpdateOrganizationEmailDomainsArgs!): Response!
+  configureSamlSso(args: ConfigureSamlSsoArgs!): Response!
+  resolveThread(args: ResolveThreadArgs!): Response!
+  mentionUsers(args: MentionUsersArgs!): Response!
+  restoreVersion(args: RestoreVersionArgs!): Response!
+}
+
+type Response {
+  data: String
+  error: String
+}
+
+input AcceptInviteArgs {
+  invitationId: String!
+  organizationId: String!
+}
+
+input AddWorkspaceArgs {
+  workspaceId: String!
+  organizationId: String!
+  workspaceName: String!
+}
+
+input AddFileArgs {
+  id: String!
+  workspaceId: String!
+  name: String!
+  fileType: FileType!
+  parent: String
+}
+
+input AddOrganizationArgs {
+  organizationId: String!
+  name: String!
+}
+
+input DeleteWorkspaceArgs {
+  organizationId: String!
+  workspaceId: String!
+}
+
+input DeleteOrganizationArgs {
+  organizationId: String!
+}
+
+input SuggestionArgs {
+  scopeId: String!
+  input: String!
+  type: SuggestionType!
+  modelId: String!
+}
+
+enum SuggestionType {
+  Context
+  Moment
+  CommandsAndQueries
+  BusinessLogic
+  SoftwareModel
+  ReflowDiagram
+}
+
+input InviteUsersArgs {
+  organizationId: String!
+  workspaceId: String
+  type: ShareType
+  resourceId: String
+  emails: [String!]!
+}
+
+enum ShareType {
+  Organization
+  Doc
+  Spec
+  Diagram
+}
+
+input LinkExistingSpecToDocArgs {
+  workspaceId: String!
+  docId: String!
+  specId: String!
+  blockId: String!
+}
+
+input LinkNewSpecToDocArgs {
+  workspaceId: String!
+  docId: String!
+  specId: String!
+  specName: String!
+  blockId: String!
+}
+
+input MoveFileArgs {
+  workspaceId: String!
+  id: String!
+  destinationParentId: String
+  destinationPrecedingId: String
+  destinationSucceedingId: String
+}
+
+input RemoveUserFromOrganizationArgs {
+  organizationId: String!
+  userToRemove: String!
+}
+
+input RenameWorkspaceArgs {
+  workspaceId: String!
+  newName: String!
+}
+
+input RenameFileArgs {
+  workspaceId: String!
+  id: String!
+  newName: String!
+}
+
+input RenameOrganizationArgs {
+  organizationId: String!
+  newName: String!
+}
+
+input UnlinkSpecFromDocArgs {
+  workspaceId: String!
+  docId: String!
+  specId: String!
+}
+
+input UpdateUserRoleArgs {
+  organizationId: String!
+  userToUpdate: String!
+  role: Role!
+}
+
+input DeleteFileArgs {
+  workspaceId: String!
+  id: String!
+}
+
+input UpdateOrganizationEmailDomainsArgs {
+  organizationId: String!
+  domains: [String!]!
+}
+
+input ConfigureSamlSsoArgs {
+  tenantId: String!
+  organizationId: String!
+  idp: String!
+  idpMetaDataUrl: String!
+}
+
+input ResolveThreadArgs {
+  id: String!
+  workspaceId: String!
+}
+
+input MentionUsersArgs {
+  workspaceId: String!
+  mentionedUserIds: [String!]!
+  threadId: String!
+  commentId: String!
+}
+
+input RestoreVersionArgs {
+  organizationId: String!
+  fileVersion: String!
+  scope: String!
+}

@@ -1,5 +1,8 @@
 import {Request, Response} from 'express';
 import {GraphService} from '../service/graphService';
+import {parse, DocumentNode} from 'graphql';
+import {findMissingFields} from '../utilities/findMissingFields';
+import {MockService} from '../service/mockService';
 
 export default class GraphController {
   private graphService: GraphService;
@@ -10,6 +13,8 @@ export default class GraphController {
     this.getGraphs = this.getGraphs.bind(this);
     this.createProposal = this.createProposal.bind(this);
     this.publishProposalRevision = this.publishProposalRevision.bind(this);
+    this.createOrUpdateSchemaProposalByOperation =
+      this.createOrUpdateSchemaProposalByOperation.bind(this);
   }
 
   async getGraph(req: Request, res: Response) {
@@ -103,6 +108,49 @@ export default class GraphController {
     } catch (error) {
       console.error(error);
       res.status(500).send({error: 'Error querying GraphQL API'});
+    }
+  }
+
+  async createOrUpdateSchemaProposalByOperation(req: Request, res: Response) {
+    try {
+      const {operation, graphId, variantName} = req.body;
+      // First we find any missing fields from the provided schema
+      const mockService = MockService.getInstance();
+
+      const variantServerInstance = await mockService.getOrStartNewMockServer(
+        graphId,
+        variantName
+      );
+      const variantSupergraphSchema = variantServerInstance.schema;
+      const missingFields = findMissingFields(
+        operation,
+        variantSupergraphSchema
+      );
+
+      //
+      //
+      //
+      //
+      //
+      // // Ensure the provided operation is a valid GraphQL query or mutation
+      // let parsedOperation: DocumentNode;
+      // try {
+      //   parsedOperation = parse(operation);
+      // } catch (error) {
+      //   return res.status(400).json({error: 'Invalid GraphQL operation'});
+      // }
+      //
+      // // Placeholder logic for generating the response
+      // const response = {
+      //   graphId,
+      //   proposalId: 'generated-proposal-id', // Replace with actual proposal ID logic
+      //   schemaDocument: 'generated-schema-document', // Replace with actual schema document logic
+      // };
+      //
+      // res.json(response);
+    } catch (error) {
+      console.error(error);
+      res.status(500).send({error: 'An unexpected error occurred'});
     }
   }
 }

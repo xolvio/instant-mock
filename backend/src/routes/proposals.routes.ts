@@ -9,4 +9,9 @@ router.post(
   '/proposals/:proposalId/revisions',
   graphController.publishProposalRevision
 );
+
+router.post(
+  '/create-or-update-schema-proposal-by-operation',
+  graphController.createOrUpdateSchemaProposalByOperation
+);
 export default router;
