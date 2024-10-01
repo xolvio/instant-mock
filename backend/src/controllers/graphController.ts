@@ -127,6 +127,9 @@ export default class GraphController {
         variantSupergraphSchema
       );
 
+
+      // Then we need to build up our schema from the operation
+      // 
       //
       //
       //
