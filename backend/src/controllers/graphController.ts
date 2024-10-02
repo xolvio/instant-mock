@@ -1,14 +1,17 @@
+import {gql} from '@apollo/client';
 import {Request, Response} from 'express';
+import {buildASTSchema, parse} from 'graphql';
+import Client from '../graphql/client';
 import {GraphService} from '../service/graphService';
-import {parse, DocumentNode} from 'graphql';
-import {findMissingFields} from '../utilities/findMissingFields';
-import {MockService} from '../service/mockService';
+import {getSubgraphInputs} from '../utilities/addMissingFieldsToSchema';
 
 export default class GraphController {
   private graphService: GraphService;
+  private client: Client;
 
   constructor() {
     this.graphService = new GraphService();
+    this.client = new Client();
     this.getGraph = this.getGraph.bind(this);
     this.getGraphs = this.getGraphs.bind(this);
     this.createProposal = this.createProposal.bind(this);
@@ -114,22 +117,54 @@ export default class GraphController {
   async createOrUpdateSchemaProposalByOperation(req: Request, res: Response) {
     try {
       const {operation, graphId, variantName} = req.body;
-      // First we find any missing fields from the provided schema
-      const mockService = MockService.getInstance();
 
-      const variantServerInstance = await mockService.getOrStartNewMockServer(
+      // TODO this should not start instnace, instead get a variant from apollo
+      const variant = await this.client.getVariant(graphId, variantName);
+
+      const test = 5;
+      const supergraph = buildASTSchema(
+        parse(variant.latestPublication.schema.document)
+      );
+      // @ts-ignore
+      const subgraphs = variant.subgraphs.map((subgraph) => {
+        const schemaString = subgraph.activePartialSchema.sdl;
+        const typeDefs = gql(schemaString);
+        // const schema = buildFederatedSchema
+
+        const schema = buildASTSchema(parse(schemaString));
+        return {
+          name: subgraph.name,
+          schema: schema,
+        };
+      });
+
+      const subgraphInputs = getSubgraphInputs(
+        supergraph,
+        subgraphs,
+        operation
+      );
+
+      const data = await this.client.createProposal(
         graphId,
-        variantName
-      );
-      const variantSupergraphSchema = variantServerInstance.schema;
-      const missingFields = findMissingFields(
-        operation,
-        variantSupergraphSchema
+        variantName,
+        Math.random().toString(),
+        ''
       );
 
+      const proposalName = data.graph.createProposal.name;
+      const proposalId = data.graph.createProposal.proposal.id;
+      const latestLaunchId = data.graph.createProposal.latestLaunch.id;
+      const revision = await this.client.publishProposalRevision(
+        proposalId,
+        subgraphInputs,
+        'test summary',
+        'test revision',
+        latestLaunchId
+      );
 
+      const x = 5;
       // Then we need to build up our schema from the operation
-      // 
+      //
       //
       //
       //
