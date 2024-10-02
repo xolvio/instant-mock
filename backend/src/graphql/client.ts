@@ -13,6 +13,7 @@ import {GET_GRAPHS} from './queries/getGraphs';
 import {GET_GRAPH_WITH_SUBGRAPHS} from './queries/getGraphWithSubgraphs';
 import {GET_ORGANIZATION_ID} from './queries/getOrganizationId';
 import {GET_SCHEMA} from './queries/getSchema';
+import {GET_VARIANT} from './queries/getVariant';
 
 export default class Client {
   private apolloClient: ApolloClient<any>;
@@ -66,6 +67,15 @@ export default class Client {
     });
 
     return data.graph;
+  }
+
+  async getVariant(graphId: string, variantName: string) {
+    const {data} = await this.apolloClient.query({
+      query: GET_VARIANT,
+      variables: {graphId: graphId, name: variantName},
+    });
+
+    return data.graph.variant;
   }
 
   async getGraphWithSubgraphs(graphId: string) {
