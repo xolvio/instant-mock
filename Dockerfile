@@ -13,7 +13,7 @@ FROM node:20-alpine
 WORKDIR /app
 COPY --from=build /app/frontend/build ./frontend/build
 COPY ./backend ./backend
-COPY ./certs ./certs
+# COPY ./certs ./certs      if you need SSL, put certs here
 WORKDIR /app/backend
 RUN npm install
 # Install ts-node-dev globally
