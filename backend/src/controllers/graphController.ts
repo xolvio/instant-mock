@@ -1,9 +1,8 @@
-import {gql} from '@apollo/client';
 import {Request, Response} from 'express';
 import {buildASTSchema, parse} from 'graphql';
 import Client from '../graphql/client';
 import {GraphService} from '../service/graphService';
-import {getSubgraphInputs} from '../utilities/addMissingFieldsToSchema';
+import {createProposedSubgraphsFromOperationsMissingFields} from '../utilities/addMissingFieldsToSchema';
 
 export default class GraphController {
   private graphService: GraphService;
@@ -117,41 +116,63 @@ export default class GraphController {
   async createOrUpdateSchemaProposalByOperation(req: Request, res: Response) {
     try {
       const {operation, graphId, variantName} = req.body;
-
-      // TODO this should not start instnace, instead get a variant from apollo
       const variant = await this.client.getVariant(graphId, variantName);
 
-      const test = 5;
       const supergraph = buildASTSchema(
         parse(variant.latestPublication.schema.document)
       );
-      // @ts-ignore
-      const subgraphs = variant.subgraphs.map((subgraph) => {
-        const schemaString = subgraph.activePartialSchema.sdl;
-        const typeDefs = gql(schemaString);
-        // const schema = buildFederatedSchema
 
-        const schema = buildASTSchema(parse(schemaString));
-        return {
-          name: subgraph.name,
-          schema: schema,
-        };
-      });
+      const subgraphs = variant.subgraphs.map(
+        (subgraph: {name: string; activePartialSchema: {sdl: string}}) => {
+          const schemaString = subgraph.activePartialSchema.sdl;
 
-      const subgraphInputs = getSubgraphInputs(
+          const schemaStringWithKeyDirective = `
+        scalar FieldSet
+        scalar link__Import
+        enum link__Purpose {
+          """
+          \`SECURITY\` features provide metadata necessary to securely resolve fields.
+          """
+          SECURITY
+
+          """
+          \`EXECUTION\` features provide metadata necessary for operation execution.
+          """
+          EXECUTION
+        }
+        directive @link(url: String!, as: String, for: link__Purpose, import: [link__Import]) repeatable on SCHEMA
+        directive @key(fields: FieldSet!, resolvable: Boolean = true) repeatable on OBJECT | INTERFACE
+        ${schemaString}
+        `;
+
+          console.log(schemaStringWithKeyDirective);
+
+          const schema = buildASTSchema(parse(schemaStringWithKeyDirective));
+
+          return {
+            name: subgraph.name,
+            schema,
+          };
+        }
+      );
+
+      const subgraphInputs = createProposedSubgraphsFromOperationsMissingFields(
         supergraph,
         subgraphs,
         operation
       );
 
+      const proposalDisplayName = 'Generated at ' + new Date().toLocaleString();
+
       const data = await this.client.createProposal(
         graphId,
         variantName,
-        Math.random().toString(),
+        proposalDisplayName,
         ''
       );
 
-      const proposalName = data.graph.createProposal.name;
+      //TODO: support this being provided in request
+      // const proposalName = data.graph.createProposal.name;
       const proposalId = data.graph.createProposal.proposal.id;
       const latestLaunchId = data.graph.createProposal.latestLaunch.id;
       const revision = await this.client.publishProposalRevision(
@@ -162,30 +183,7 @@ export default class GraphController {
         latestLaunchId
       );
 
-      const x = 5;
-      // Then we need to build up our schema from the operation
-      //
-      //
-      //
-      //
-      //
-      //
-      // // Ensure the provided operation is a valid GraphQL query or mutation
-      // let parsedOperation: DocumentNode;
-      // try {
-      //   parsedOperation = parse(operation);
-      // } catch (error) {
-      //   return res.status(400).json({error: 'Invalid GraphQL operation'});
-      // }
-      //
-      // // Placeholder logic for generating the response
-      // const response = {
-      //   graphId,
-      //   proposalId: 'generated-proposal-id', // Replace with actual proposal ID logic
-      //   schemaDocument: 'generated-schema-document', // Replace with actual schema document logic
-      // };
-      //
-      // res.json(response);
+      res.json({proposalDisplayName, revision});
     } catch (error) {
       console.error(error);
       res.status(500).send({error: 'An unexpected error occurred'});

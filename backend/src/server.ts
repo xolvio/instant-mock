@@ -14,7 +14,7 @@ import seedsRoutes from './routes/seeds.routes';
 import {SeededOperationResponse} from './seed/types';
 import {MockService} from './service/mockService';
 
-var proxy = require('express-http-proxy');
+const proxy = require('express-http-proxy');
 
 const ProxyAgent = Undici.ProxyAgent;
 const setGlobalDispatcher = Undici.setGlobalDispatcher;

@@ -14,7 +14,11 @@ export interface MissingFieldInfo {
   hasGeneratedParentType: boolean; // Indicates if the parent type was generated (true) or already existed in the schema (false)
 }
 
-export function getSubgraphInputs(supergraph, subgraphs, operation: string) {
+export function createProposedSubgraphsFromOperationsMissingFields(
+  supergraph,
+  subgraphs,
+  operation: string
+) {
   const missingFields: Array<MissingFieldInfo> =
     findMissingFieldsWithParentTypes(operation, supergraph);
   const subgraphsWithMissingFields = findSubgraphForMissingTypes(
@@ -27,11 +31,38 @@ export function getSubgraphInputs(supergraph, subgraphs, operation: string) {
       missingFields
     );
 
+    //remove all the extra stuff we had to add
+    const sanitizedSubgraphString = updatedSubgraph.updatedSchemaString.replace(
+      `directive @link(url: String!, as: String, for: link__Purpose, import: [link__Import]) repeatable on SCHEMA
+
+directive @key(fields: FieldSet!, resolvable: Boolean = true) repeatable on OBJECT | INTERFACE
+
+scalar FieldSet
+
+scalar link__Import
+
+enum link__Purpose {
+  """
+  \`SECURITY\` features provide metadata necessary to securely resolve fields.
+  """
+  SECURITY
+
+  """
+  \`EXECUTION\` features provide metadata necessary for operation execution.
+  """
+  EXECUTION
+}
+`,
+      `        extend schema
+  @link(url: "https://specs.apollo.dev/federation/v2.7", import: ["@key"])
+`
+    );
+    console.log(sanitizedSubgraphString);
     // Build and return subgraph input for Apollo
     return {
       name: updatedSubgraph.name,
       activePartialSchema: {
-        sdl: updatedSubgraph.updatedSchemaString,
+        sdl: sanitizedSubgraphString,
       },
     };
   });

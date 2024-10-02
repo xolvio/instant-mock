@@ -1,4 +1,4 @@
-import {Proposal} from "./models/proposal";
+import {Proposal} from './models/proposal';
 
 // proposalId -> Proposal
 const proposals: Record<string, Proposal> = {};

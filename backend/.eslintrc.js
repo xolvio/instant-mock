@@ -1,3 +1,5 @@
+const unusedImports = require('eslint-plugin-unused-imports');
+
 module.exports = {
   parser: '@typescript-eslint/parser',
   parserOptions: {
@@ -9,10 +11,16 @@ module.exports = {
     // Make sure this is always the last configuration in the extends array.
     'plugin:prettier/recommended',
   ],
+  plugins: [
+    '@typescript-eslint',
+    'prettier',
+    'no-only-tests',
+    'unused-imports',
+  ],
   rules: {
     '@typescript-eslint/no-var-requires': 'off',
     '@typescript-eslint/ban-ts-comment': 'off',
-    '@typescript-eslint/no-unused-vars': ['error', {ignoreRestSiblings: true}],
+    '@typescript-eslint/no-unused-vars': 'off', // Disabled to use the 'unused-imports' version.
     '@typescript-eslint/explicit-module-boundary-types': 'error',
     '@typescript-eslint/no-non-null-assertion': 'error',
     'no-only-tests/no-only-tests': 'error',
@@ -22,6 +30,15 @@ module.exports = {
         allowSingleExtends: true,
       },
     ],
+    'unused-imports/no-unused-imports': 'error',
+    'unused-imports/no-unused-vars': [
+      'warn',
+      {
+        vars: 'all',
+        varsIgnorePattern: '^_',
+        args: 'after-used',
+        argsIgnorePattern: '^_',
+      },
+    ],
   },
-  plugins: ['no-only-tests'],
 };

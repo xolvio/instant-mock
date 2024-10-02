@@ -3,22 +3,26 @@ import {
   buildSchema,
   GraphQLSchema,
   parse,
+  print,
   printSchema,
 } from 'graphql';
 import {
   addMissingFieldsToSchemaWithVisitor,
+  createProposedSubgraphsFromOperationsMissingFields,
   findSubgraphForMissingTypes,
-  getSubgraphInputs,
   MissingFieldInfo,
 } from '../addMissingFieldsToSchema';
 
 describe('addMissingFieldsToSchemaWithVisitor', () => {
   const schemaString1 = `
+    scalar FieldSet
+    directive @key(fields: FieldSet!, resolvable: Boolean = true) repeatable on OBJECT | INTERFACE
+
     type Query {
       product: Product
     }
 
-    type Product {
+    type Product @key(fields:"id"){
       id: String
       name: String
     }
@@ -59,12 +63,19 @@ describe('addMissingFieldsToSchemaWithVisitor', () => {
       subgraph1,
       missingFields
     );
-    const expectedSchemaString = `
+
+    expect(print(parse(updatedSubgraph.updatedSchemaString))).toEqual(
+      print(
+        parse(`
+      scalar FieldSet
+
+      directive @key(fields: FieldSet!, resolvable: Boolean = true) repeatable on OBJECT | INTERFACE
+
       type Query {
         product: Product
       }
 
-      type Product {
+      type Product @key(fields:"id"){
         id: String
         name: String
         price: String
@@ -73,10 +84,8 @@ describe('addMissingFieldsToSchemaWithVisitor', () => {
       type Category {
         description: String
       }
-    `;
-
-    expect(updatedSubgraph.updatedSchemaString.trim()).toBe(
-      printSchema(buildASTSchema(parse(expectedSchemaString))).trim()
+    `)
+      )
     );
   });
 
@@ -207,7 +216,11 @@ describe('addMissingFieldsToSchemaWithVisitor', () => {
     `;
 
     // Step 2: Call the function
-    const result = getSubgraphInputs(supergraph, subgraphs, operation);
+    const result = createProposedSubgraphsFromOperationsMissingFields(
+      supergraph,
+      subgraphs,
+      operation
+    );
 
     // Step 3: Expected output
     const expectedOutput = [
