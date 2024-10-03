@@ -4,6 +4,39 @@ import Client from '../graphql/client';
 import {GraphService} from '../service/graphService';
 import {createProposedSubgraphsFromOperationsMissingFields} from '../utilities/addMissingFieldsToSchema';
 
+type Variant = {
+  id: string;
+  name: string;
+  latestPublication: any;
+  subgraphs: any;
+  key?: string;
+};
+
+type Proposal = {
+  displayName: string;
+  status: string;
+  id: string;
+  createdAt: string;
+  createdBy: {name: string};
+  backingVariant: {
+    id: string;
+    name: string;
+    subgraphs: any;
+    latestPublication: any;
+  };
+  key: {id: string};
+};
+
+type Graph = {
+  id: string;
+  name: string;
+  variants: Variant[];
+  proposals?: {
+    totalCount: number;
+    proposals: Proposal[];
+  };
+};
+
 export default class GraphController {
   private graphService: GraphService;
   private client: Client;
@@ -20,17 +53,30 @@ export default class GraphController {
   }
 
   async getGraph(req: Request, res: Response) {
-    // TODO simplify
     const withSubgraphs: boolean = req.query.withSubgraphs === 'true';
     const graphId = req.params.graphId as string;
+
     try {
-      let graphs;
+      let graph: Graph;
       if (withSubgraphs) {
-        graphs = await this.graphService.getGraphWithSubgraphs(graphId);
+        graph = await this.graphService.getGraphWithSubgraphs(graphId);
       } else {
-        graphs = await this.graphService.getGraph(graphId);
+        graph = await this.graphService.getGraph(graphId);
       }
-      res.json(graphs);
+
+      const updatedProposals = graph.proposals?.proposals?.map((proposal) => ({
+        ...proposal,
+        key: proposal.key.id,
+      }));
+
+      const updatedGraph: Graph = {
+        ...graph,
+        proposals: {
+          proposals: updatedProposals,
+        },
+      };
+
+      res.json(updatedGraph);
     } catch (error) {
       console.error(error);
       res.status(500).send({error: 'Error querying GraphQL API'});

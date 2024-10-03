@@ -5,6 +5,7 @@ export const GET_GRAPH_WITH_SUBGRAPHS = gql`
     graph(id: $graphId) {
       name
       variants {
+        key: id
         name
         latestPublication {
           publishedAt
@@ -22,6 +23,9 @@ export const GET_GRAPH_WITH_SUBGRAPHS = gql`
       proposals(filterBy: $filterBy) {
         totalCount
         proposals {
+          key: backingVariant {
+            id
+          }
           displayName
           status
           id
