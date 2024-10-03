@@ -71,9 +71,7 @@ export default class GraphController {
 
       const updatedGraph: Graph = {
         ...graph,
-        proposals: {
-          proposals: updatedProposals,
-        },
+        proposals: updatedProposals,
       };
 
       res.json(updatedGraph);
