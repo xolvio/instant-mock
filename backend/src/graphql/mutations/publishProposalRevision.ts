@@ -22,7 +22,9 @@ export const PUBLISH_PROPOSAL_REVISION = gql`
           }
           ... on Proposal {
             id
+            displayName
             backingVariant {
+              id
               name
               subgraphs {
                 revision

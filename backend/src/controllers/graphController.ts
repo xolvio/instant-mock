@@ -71,6 +71,7 @@ export default class GraphController {
 
       const updatedGraph: Graph = {
         ...graph,
+        // @ts-ignore
         proposals: updatedProposals,
       };
 
@@ -162,6 +163,7 @@ export default class GraphController {
       const {operation, key} = req.body;
       const graphId = key.split('@')[0];
       const variantName = key.split('@')[1];
+
       const variant = await this.client.getVariant(graphId, variantName);
 
       const supergraph = buildASTSchema(
@@ -208,28 +210,42 @@ export default class GraphController {
         operation
       );
 
-      const proposalDisplayName = 'Generated at ' + new Date().toLocaleString();
+      let data, revision;
 
-      const data = await this.client.createProposal(
-        graphId,
-        variantName,
-        proposalDisplayName,
-        ''
-      );
+      if (variant.isProposal) {
+        revision = await this.client.publishProposalRevision(
+          variant.proposal.id,
+          subgraphInputs,
+          'Auto-updating from Narrative via instant-mock at ' +
+            new Date().toLocaleString(),
+          'auto-updated',
+          variant.latestLaunch.id
+        );
+      } else {
+        const proposalDisplayName =
+          'Auto-generated from Narrative via instant-mock at ' +
+          new Date().toLocaleString();
+        data = await this.client.createProposal(
+          graphId,
+          variantName,
+          proposalDisplayName,
+          ''
+        );
+        const proposalId = data.graph.createProposal.proposal.id;
+        const latestLaunchId = data.graph.createProposal.latestLaunch.id;
+        revision = await this.client.publishProposalRevision(
+          proposalId,
+          subgraphInputs,
+          'Auto-generating from Narrative via instant-mock at ' +
+            new Date().toLocaleString(),
+          'auto-generated',
+          latestLaunchId
+        );
+      }
 
-      //TODO: support this being provided in request
-      // const proposalName = data.graph.createProposal.name;
-      const proposalId = data.graph.createProposal.proposal.id;
-      const latestLaunchId = data.graph.createProposal.latestLaunch.id;
-      const revision = await this.client.publishProposalRevision(
-        proposalId,
-        subgraphInputs,
-        'test summary',
-        'test revision',
-        latestLaunchId
-      );
-
-      res.json({proposalDisplayName, revision});
+      revision.proposal.key =
+        revision.proposal.publishSubgraphs.backingVariant.id;
+      res.json(revision);
     } catch (error) {
       console.error(error);
       res.status(500).send({error: 'An unexpected error occurred'});
