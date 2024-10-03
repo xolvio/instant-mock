@@ -159,7 +159,9 @@ export default class GraphController {
 
   async createOrUpdateSchemaProposalByOperation(req: Request, res: Response) {
     try {
-      const {operation, graphId, variantName} = req.body;
+      const {operation, key} = req.body;
+      const graphId = key.split('@')[0];
+      const variantName = key.split('@')[1];
       const variant = await this.client.getVariant(graphId, variantName);
 
       const supergraph = buildASTSchema(
