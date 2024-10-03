@@ -71,6 +71,7 @@ export default class GraphController {
 
       const updatedGraph: Graph = {
         ...graph,
+        // @ts-ignore
         proposals: updatedProposals,
       };
 
@@ -209,7 +210,7 @@ export default class GraphController {
         operation
       );
 
-      let data, revision, proposalDisplayName;
+      let data, revision;
 
       if (variant.isProposal) {
         revision = await this.client.publishProposalRevision(
@@ -220,7 +221,6 @@ export default class GraphController {
           'auto-updated',
           variant.latestLaunch.id
         );
-        console.log(JSON.stringify(revision, null, 2));
       } else {
         const proposalDisplayName =
           'Auto-generated from Narrative via instant-mock at ' +
@@ -243,7 +243,9 @@ export default class GraphController {
         );
       }
 
-      res.json({proposalDisplayName, revision});
+      revision.proposal.key =
+        revision.proposal.publishSubgraphs.backingVariant.id;
+      res.json(revision);
     } catch (error) {
       console.error(error);
       res.status(500).send({error: 'An unexpected error occurred'});
