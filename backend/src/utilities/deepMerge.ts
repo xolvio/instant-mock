@@ -1,5 +1,5 @@
-import cloneDeep from 'lodash/cloneDeep';
 import escapeStringRegexp from 'escape-string-regexp';
+import cloneDeep from 'lodash/cloneDeep';
 import MockServer from '../MockServer';
 
 /**
@@ -83,6 +83,7 @@ async function deepMerge(
   async function merge(
     // @ts-expect-error TODO fix types
     source,
+    // @ts-ignore-error
     target,
     {rollingKey = '', metaPropertyPrefix = '$'}
   ) {
