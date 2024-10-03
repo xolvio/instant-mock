@@ -5,12 +5,18 @@ export const GET_VARIANT = gql`
     graph(id: $graphId) {
       variant(name: $name) {
         id
+        proposal {
+          id
+        }
         url
         subgraphs {
           name
           activePartialSchema {
             sdl
           }
+        }
+        latestLaunch {
+          id
         }
         isProposal
         latestPublication {
