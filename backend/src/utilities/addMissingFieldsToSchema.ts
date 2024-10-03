@@ -1,12 +1,7 @@
 //@ts-nocheck
-import {
-  buildASTSchema,
-  GraphQLSchema,
-  parse,
-  printSchema,
-  visit,
-} from 'graphql';
+import {buildASTSchema, GraphQLSchema, parse, visit} from 'graphql';
 import {findMissingFieldsWithParentTypes} from './findMissingFields';
+import {printSchemaWithDirectives} from '@graphql-tools/utils';
 
 export interface MissingFieldInfo {
   parentTypeName: string; // The name of the parent type in the schema, e.g., "Product" or "Query"
@@ -46,17 +41,16 @@ enum link__Purpose {
   \`SECURITY\` features provide metadata necessary to securely resolve fields.
   """
   SECURITY
-
   """
   \`EXECUTION\` features provide metadata necessary for operation execution.
   """
   EXECUTION
 }
+
 `,
-      `        extend schema
-  @link(url: "https://specs.apollo.dev/federation/v2.7", import: ["@key"])
-`
+      ''
     );
+    console.log('sanitizedSubgraphString');
     console.log(sanitizedSubgraphString);
     // Build and return subgraph input for Apollo
     return {
@@ -123,7 +117,7 @@ export function addMissingFieldsToSchemaWithVisitor(
   const {name, schema} = subgraph;
 
   // Step 1: Convert the GraphQLSchema to SDL string representation
-  const schemaSDL = printSchema(schema);
+  const schemaSDL = printSchemaWithDirectives(schema);
 
   // Step 2: Parse the SDL string to a DocumentNode
   const documentNode = parse(schemaSDL);
@@ -207,7 +201,7 @@ export function addMissingFieldsToSchemaWithVisitor(
 
   // Convert the modified AST back to a schema
   const updatedSchema = buildASTSchema(modifiedAst);
-  const updatedSchemaString = printSchema(updatedSchema);
+  const updatedSchemaString = printSchemaWithDirectives(updatedSchema);
 
   // Print the updated schema
   console.log(`Updated Schema for ${name}:\n`, updatedSchemaString);
