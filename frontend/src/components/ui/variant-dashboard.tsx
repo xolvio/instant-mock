@@ -103,10 +103,10 @@ const VariantDashboard = () => {
           </div>
         </div>
         <div className="w-full max-w-4xl space-y-4">
-          {graph?.variants.map((variant) => (
-            <VariantCard key={variant.id} {...variant} />
+          {graph?.variants?.map((variant) => (
+            <VariantCard key={variant.name} {...variant} />
           ))}
-          {graph?.proposals.proposals.map((proposal) => (
+          {graph?.proposals.map((proposal) => (
             <ProposalCard key={proposal.id} {...proposal} />
           ))}
         </div>
