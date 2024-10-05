@@ -2,6 +2,7 @@
 import {buildASTSchema, GraphQLSchema, parse, visit} from 'graphql';
 import {findMissingFieldsWithParentTypes} from './findMissingFields';
 import {printSchemaWithDirectives} from '@graphql-tools/utils';
+import {SubgraphAST} from '../controllers/graphController';
 
 export interface MissingFieldInfo {
   parentTypeName: string; // The name of the parent type in the schema, e.g., "Product" or "Query"
@@ -9,17 +10,39 @@ export interface MissingFieldInfo {
   hasGeneratedParentType: boolean; // Indicates if the parent type was generated (true) or already existed in the schema (false)
 }
 
+export type ProposedSubgraph = {
+  name: string;
+  activePartialSchema: {
+    sdl: string;
+  };
+};
+
 export function createProposedSubgraphsFromOperationsMissingFields(
-  supergraph,
-  subgraphs,
+  supergraph: GraphQLSchema,
+  subgraphs: SubgraphAST[],
   operation: string
-) {
+): ProposedSubgraph[] {
+  console.log('supergraph here:');
+  console.log(printSchemaWithDirectives(supergraph));
+  console.log('subgraphs here');
+  const forTest = subgraphs.map(({name, schema}) => {
+    return {
+      name,
+      schema: printSchemaWithDirectives(schema),
+    };
+  });
+  console.log(JSON.stringify(forTest, null, 2));
+  console.log('operation');
+  console.log(operation);
+
   const missingFields: Array<MissingFieldInfo> =
     findMissingFieldsWithParentTypes(operation, supergraph);
+
   const subgraphsWithMissingFields = findSubgraphForMissingTypes(
     subgraphs,
     missingFields
   );
+
   return subgraphsWithMissingFields.map(({name, schema, missingFields}) => {
     const updatedSubgraph = addMissingFieldsToSchemaWithVisitor(
       {name, schema},
@@ -50,8 +73,19 @@ enum link__Purpose {
 `,
       ''
     );
-    console.log('sanitizedSubgraphString');
-    console.log(sanitizedSubgraphString);
+    console.log('the output');
+    console.log(
+      JSON.stringify(
+        {
+          name: updatedSubgraph.name,
+          activePartialSchema: {
+            sdl: sanitizedSubgraphString,
+          },
+        },
+        null,
+        2
+      )
+    );
     // Build and return subgraph input for Apollo
     return {
       name: updatedSubgraph.name,

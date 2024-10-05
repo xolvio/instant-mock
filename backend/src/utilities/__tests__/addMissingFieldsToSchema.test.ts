@@ -11,7 +11,7 @@ import {
   createProposedSubgraphsFromOperationsMissingFields,
   findSubgraphForMissingTypes,
   MissingFieldInfo,
-} from '../addMissingFieldsToSchema';
+} from '../operationToSchema';
 
 describe('addMissingFieldsToSchemaWithVisitor', () => {
   const schemaString1 = `

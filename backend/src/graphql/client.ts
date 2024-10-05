@@ -53,6 +53,7 @@ export default class Client {
   }
 
   async getGraphs() {
+    console.log('getGraphs with org id: ', this.organizationId);
     const {data} = await this.apolloClient.query({
       query: GET_GRAPHS,
       variables: {organizationId: this.organizationId},

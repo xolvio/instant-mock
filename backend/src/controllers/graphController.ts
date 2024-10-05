@@ -1,8 +1,8 @@
 import {Request, Response} from 'express';
-import {buildASTSchema, parse} from 'graphql';
+import {buildASTSchema, GraphQLSchema, parse} from 'graphql';
 import Client from '../graphql/client';
 import {GraphService} from '../service/graphService';
-import {createProposedSubgraphsFromOperationsMissingFields} from '../utilities/addMissingFieldsToSchema';
+import {createProposedSubgraphsFromOperationsMissingFields} from '../utilities/operationToSchema';
 
 type Variant = {
   id: string;
@@ -34,6 +34,47 @@ type Graph = {
   proposals?: {
     totalCount: number;
     proposals: Proposal[];
+  };
+};
+
+export type SubgraphAST = {name: string; schema: GraphQLSchema};
+
+const prepareSubgraphSchema = (subgraph: {
+  name: string;
+  activePartialSchema: {sdl: string};
+}): SubgraphAST => {
+  const schemaString = subgraph.activePartialSchema.sdl;
+
+  const schemaStringWithKeyDirective = `
+        scalar FieldSet
+        scalar link__Import
+        enum link__Purpose {
+          """
+          \`SECURITY\` features provide metadata necessary to securely resolve fields.
+          """
+          SECURITY
+
+          """
+          \`EXECUTION\` features provide metadata necessary for operation execution.
+          """
+          EXECUTION
+        }
+        directive @link(url: String!, as: String, for: link__Purpose, import: [link__Import]) repeatable on SCHEMA
+        directive @key(fields: FieldSet!, resolvable: Boolean = true) repeatable on OBJECT | INTERFACE
+        ${schemaString}
+        `;
+
+  // console.log('----------------------------');
+  // console.log('schemaStringWithKeyDirective');
+  // console.log('----------------------------');
+  // console.log(schemaStringWithKeyDirective);
+  // console.log('----------------------------');
+
+  const schema = buildASTSchema(parse(schemaStringWithKeyDirective));
+
+  return {
+    name: subgraph.name,
+    schema,
   };
 };
 
@@ -166,42 +207,12 @@ export default class GraphController {
 
       const variant = await this.client.getVariant(graphId, variantName);
 
-      const supergraph = buildASTSchema(
+      const supergraph: GraphQLSchema = buildASTSchema(
         parse(variant.latestPublication.schema.document)
       );
 
-      const subgraphs = variant.subgraphs.map(
-        (subgraph: {name: string; activePartialSchema: {sdl: string}}) => {
-          const schemaString = subgraph.activePartialSchema.sdl;
-
-          const schemaStringWithKeyDirective = `
-        scalar FieldSet
-        scalar link__Import
-        enum link__Purpose {
-          """
-          \`SECURITY\` features provide metadata necessary to securely resolve fields.
-          """
-          SECURITY
-
-          """
-          \`EXECUTION\` features provide metadata necessary for operation execution.
-          """
-          EXECUTION
-        }
-        directive @link(url: String!, as: String, for: link__Purpose, import: [link__Import]) repeatable on SCHEMA
-        directive @key(fields: FieldSet!, resolvable: Boolean = true) repeatable on OBJECT | INTERFACE
-        ${schemaString}
-        `;
-
-          console.log(schemaStringWithKeyDirective);
-
-          const schema = buildASTSchema(parse(schemaStringWithKeyDirective));
-
-          return {
-            name: subgraph.name,
-            schema,
-          };
-        }
+      const subgraphs: Array<SubgraphAST> = variant.subgraphs.map(
+        prepareSubgraphSchema
       );
 
       const subgraphInputs = createProposedSubgraphsFromOperationsMissingFields(
@@ -243,6 +254,7 @@ export default class GraphController {
         );
       }
 
+      console.log('rev', JSON.stringify(revision, null, 2));
       revision.proposal.key =
         revision.proposal.publishSubgraphs.backingVariant.id;
       res.json(revision);
