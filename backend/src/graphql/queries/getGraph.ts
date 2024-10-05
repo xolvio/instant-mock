@@ -17,6 +17,9 @@ export const GET_GRAPH = gql`
         totalCount
         proposals {
           displayName
+          key: backingVariant {
+            id
+          }
           status
           id
           createdAt

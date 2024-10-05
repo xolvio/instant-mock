@@ -30,5 +30,5 @@ export type Graph = {
   id: string;
   name: string;
   variants: Variant[];
-  proposals: ProposalsResult;
+  proposals: Proposal[];
 };
