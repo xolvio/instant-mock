@@ -2,17 +2,17 @@ require('dotenv').config();
 
 import cors from 'cors';
 import express from 'express';
-import {parse} from 'graphql';
+import { parse } from 'graphql';
 import path from 'path';
 import swaggerJsdoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import * as Undici from 'undici';
-import {initializeDatabase} from './database/database';
+import { initializeDatabase } from './database/database';
 import graphsRoutes from './routes/graphs.routes';
 import proposalsRoutes from './routes/proposals.routes';
 import seedsRoutes from './routes/seeds.routes';
-import {SeededOperationResponse} from './seed/types';
-import {MockService} from './service/mockService';
+import { SeededOperationResponse } from './seed/types';
+import { MockService } from './service/mockService';
 
 const proxy = require('express-http-proxy');
 
@@ -37,38 +37,37 @@ app.use(express.static(path.join(__dirname, '../../frontend/build')));
 app.use('/api', seedsRoutes);
 app.use('/api', graphsRoutes);
 app.use('/api', proposalsRoutes);
+const options = {
+  definition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'Instant Mock',
+      version: '0.1.0-alpha',
+      description: 'Mocks, but more instantly...'
+    },
+  },
+  apis: [
+    path.join(__dirname, './routes/*.ts'),
+    path.join(__dirname, 'server.ts'),
+  ],
+};
+
+const swaggerSpec = swaggerJsdoc(options);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.get('/api/openapi.json', (req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  res.send(swaggerSpec);
+});
 app.get('*', (_, res) => {
   res.sendFile(path.join(__dirname, '../../frontend/build', 'index.html'));
 });
 
 const mockService = MockService.getInstance();
 
-const options = {
-  definition: {
-    openapi: '3.0.0',
-    info: {
-      title: 'Instant Mock',
-      version: '1.0.0',
-    },
-  },
-  apis: [
-    path.join(__dirname, './routes/*.js'),
-    path.join(__dirname, 'server.js'),
-  ],
-};
-
-const swaggerSpec = swaggerJsdoc(options);
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-// Expose the OpenAPI JSON directly
-app.get('/api/openapi.json', (req, res) => {
-  res.setHeader('Content-Type', 'application/json');
-  res.send(swaggerSpec);
-});
-
 app.use('/:graphId/:variantName/graphql', async (req, res) => {
-  // TODO handle invalid
-  const {graphId, variantName} = req.params;
-  const {query = '', variables = {}} = req.body;
+  // TODO: handle invalid graphId/variantName
+  const { graphId, variantName } = req.params;
+  const { query = '', variables = {} } = req.body;
   const operationName = req.body.operationName;
   const sequenceId = req.headers['mocking-sequence-id'] as string;
 
@@ -86,7 +85,6 @@ app.use('/:graphId/:variantName/graphql', async (req, res) => {
   );
 
   try {
-    // verify the query is valid
     parse(query);
   } catch (error) {
     // GraphqlMockingContextLogger.error(
@@ -124,7 +122,7 @@ app.use('/:graphId/:variantName/graphql', async (req, res) => {
     return;
   }
 
-  const {operationResponse, statusCode} =
+  const { operationResponse, statusCode } =
     await mockServer.seedManager.mergeOperationResponse({
       operationName,
       variables,
@@ -157,7 +155,7 @@ app.use('/:graphId/:variantName/graphql', async (req, res) => {
 // TODO refactor to avoid code duplication
 app.use('/graphql', async (req, res) => {
   // TODO handle invalid
-  const {query = '', variables = {}} = req.body;
+  const { query = '', variables = {} } = req.body;
   const operationName = req.body.operationName;
   const graphId = req.headers['graph-id'] as string;
   const variantName = req.headers['variant-name'] as string;
@@ -215,7 +213,7 @@ app.use('/graphql', async (req, res) => {
     return;
   }
 
-  const {operationResponse, statusCode} =
+  const { operationResponse, statusCode } =
     await mockServer.seedManager.mergeOperationResponse({
       operationName,
       variables,
