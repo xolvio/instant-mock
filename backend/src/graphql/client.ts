@@ -8,6 +8,7 @@ import {
 import {setContext} from '@apollo/client/link/context';
 import {CREATE_PROPOSAL} from './mutations/createProposal';
 import {PUBLISH_PROPOSAL_REVISION} from './mutations/publishProposalRevision';
+import {PROPOSAL_LAUNCHES} from './queries/proposalLaunches';
 import {GET_GRAPH} from './queries/getGraph';
 import {GET_GRAPHS} from './queries/getGraphs';
 import {GET_GRAPH_WITH_SUBGRAPHS} from './queries/getGraphWithSubgraphs';
@@ -95,6 +96,15 @@ export default class Client {
     });
 
     return data.graph.variant.latestPublication.schema.document;
+  }
+
+  async proposalLaunches(proposalId: string) {
+    const {data} = await this.apolloClient.query({
+      query: PROPOSAL_LAUNCHES,
+      variables: {proposalId},
+    });
+
+    return data.proposal;
   }
 
   async createProposal(

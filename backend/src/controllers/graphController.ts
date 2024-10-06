@@ -253,8 +253,30 @@ export default class GraphController {
           latestLaunchId
         );
       }
-
       console.log('rev', JSON.stringify(revision, null, 2));
+
+      let launchCompleted = false;
+      const latestLaunchId =
+        revision.proposal.publishSubgraphs.backingVariant.latestLaunch.id;
+      const proposalId = revision.proposal.publishSubgraphs.id;
+
+      while (!launchCompleted) {
+        const proposalStatus = await this.client.proposalLaunches(proposalId);
+
+        const latestLaunch = proposalStatus.activities?.edges?.find(
+          (edge) => edge?.node?.target?.launch?.id === latestLaunchId
+        );
+
+        if (latestLaunch?.node?.target?.launch?.status === 'LAUNCH_COMPLETED') {
+          launchCompleted = true;
+          console.log(`[Polling] Launch ${latestLaunchId} is completed.`);
+        } else {
+          console.log(
+            `[Polling] Waiting for launch ${latestLaunchId} to complete...`
+          );
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+        }
+      }
       revision.proposal.key =
         revision.proposal.publishSubgraphs.backingVariant.id;
       res.json(revision);
