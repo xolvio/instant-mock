@@ -203,7 +203,7 @@ export default class SeedManager {
       };
     }
 
-    const seedIndex = this.seedCache[sequenceId][operationName].findIndex(
+    const seedIndex = this.seedCache[sequenceId][operationName].findLastIndex(
       (seedDefinition) => {
         const argsMatch = this.matchArguments(
           seedDefinition.operationMatchArguments,
