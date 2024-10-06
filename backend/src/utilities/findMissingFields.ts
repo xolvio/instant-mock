@@ -8,12 +8,7 @@ import {
   GraphQLObjectType,
   parse,
 } from 'graphql';
-
-interface MissingFieldInfo {
-  parentTypeName: string;
-  fieldName: string;
-  hasGeneratedParentType: boolean;
-}
+import {MissingFieldInfo} from './operationToSchema';
 
 export function findMissingFieldsWithParentTypes(
   operation: string,
@@ -29,10 +24,13 @@ export function findMissingFieldsWithParentTypes(
       Field(node, _key, _parent, _path, ancestors) {
         const fieldDef = typeInfo.getFieldDef();
         const parentType = typeInfo.getParentType();
+        const isLeaf = !node.selectionSet;
+
+        console.log('[findMissingFields.ts:25] parentType:', parentType);
 
         // Only add the field if it does not exist in the schema
         if (!fieldDef) {
-          let parentTypeName: string;
+          let parentTypeName: string | undefined;
           let hasGeneratedParentType = false;
 
           if (parentType && parentType instanceof GraphQLObjectType) {
@@ -43,7 +41,7 @@ export function findMissingFieldsWithParentTypes(
             const parentField = ancestors[ancestors.length - 2];
 
             if (parentField && parentField.kind === 'Field') {
-              parentTypeName = capitalize(parentField.name.value);
+              parentTypeName = cap(parentField.name.value);
               hasGeneratedParentType = true;
             } else if (
               ancestors.length >= 2 &&
@@ -60,6 +58,7 @@ export function findMissingFieldsWithParentTypes(
             parentTypeName,
             fieldName: node.name.value,
             hasGeneratedParentType,
+            isLeaf,
           });
         }
       },
@@ -69,6 +68,6 @@ export function findMissingFieldsWithParentTypes(
   return missingFields;
 }
 
-function capitalize(str: string): string {
+export const cap = (str: string): string => {
   return str.charAt(0).toUpperCase() + str.slice(1);
-}
+};

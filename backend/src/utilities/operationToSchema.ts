@@ -1,13 +1,14 @@
 //@ts-nocheck
 import {buildASTSchema, GraphQLSchema, parse, visit} from 'graphql';
-import {findMissingFieldsWithParentTypes} from './findMissingFields';
+import {cap, findMissingFieldsWithParentTypes} from './findMissingFields';
 import {printSchemaWithDirectives} from '@graphql-tools/utils';
 import {SubgraphAST} from '../controllers/graphController';
 
 export interface MissingFieldInfo {
-  parentTypeName: string; // The name of the parent type in the schema, e.g., "Product" or "Query"
-  fieldName: string; // The name of the field that is missing, e.g., "price" or "description"
-  hasGeneratedParentType: boolean; // Indicates if the parent type was generated (true) or already existed in the schema (false)
+  parentTypeName: string | undefined;
+  fieldName: string;
+  hasGeneratedParentType: boolean;
+  isLeaf: boolean;
 }
 
 export type ProposedSubgraph = {
@@ -86,7 +87,6 @@ enum link__Purpose {
         2
       )
     );
-    // Build and return subgraph input for Apollo
     return {
       name: updatedSubgraph.name,
       activePartialSchema: {
@@ -96,40 +96,35 @@ enum link__Purpose {
   });
 }
 
-export function findSubgraphForMissingTypes(subgraphs, missingFields) {
-  // Create a result map to hold subgraph names and their corresponding missing fields
+export function findSubgraphForMissingTypes(
+  subgraphs,
+  missingFields: Array<MissingFieldInfo>
+) {
   const subgraphMapping = new Map();
 
-  // Ensure there's at least one subgraph available
   if (subgraphs.length === 0) {
     throw new Error('No subgraphs provided');
   }
 
-  // Iterate over each missing field to determine the subgraph containing its parent type
   missingFields.forEach((missingField) => {
     const {parentTypeName} = missingField;
 
-    // Find the appropriate subgraph that contains the parent type
     let matchingSubgraph = subgraphs.find(({schema}) => {
-      // Ensure we are working with a GraphQLSchema instance
       if (!(schema instanceof GraphQLSchema)) {
         throw new Error(
           'Provided subgraph schema is not a GraphQLSchema instance'
         );
       }
 
-      // Check if the type exists in the subgraph
       return schema.getType(parentTypeName) !== undefined;
     });
 
-    // If no matching subgraph is found, use the first subgraph
     if (!matchingSubgraph) {
       matchingSubgraph = subgraphs[0];
     }
 
     const {name, schema} = matchingSubgraph;
 
-    // Add the missing field to the subgraph entry
     if (!subgraphMapping.has(name)) {
       subgraphMapping.set(name, {
         name,
@@ -140,7 +135,6 @@ export function findSubgraphForMissingTypes(subgraphs, missingFields) {
     subgraphMapping.get(name).missingFields.push(missingField);
   });
 
-  // Convert the map to an array of objects for easier iteration
   return Array.from(subgraphMapping.values());
 }
 
@@ -150,32 +144,26 @@ export function addMissingFieldsToSchemaWithVisitor(
 ): {name: string; updatedSchemaString: string} {
   const {name, schema} = subgraph;
 
-  // Step 1: Convert the GraphQLSchema to SDL string representation
   const schemaSDL = printSchemaWithDirectives(schema);
 
-  // Step 2: Parse the SDL string to a DocumentNode
   const documentNode = parse(schemaSDL);
 
-  // Track the types and fields we need to add
-  const fieldsToAdd: Record<
-    string,
-    Array<{fieldName: string; type: string; hasGeneratedParentType: boolean}>
-  > = {};
+  const fieldsToAdd: Record<string, Array<MissingFieldInfo>> = {};
 
-  // Organize missing fields to be added
   missingFields.forEach(
-    ({parentTypeName, fieldName, hasGeneratedParentType}) => {
+    ({parentTypeName, fieldName, hasGeneratedParentType, isLeaf}) => {
       if (!fieldsToAdd[parentTypeName]) {
         fieldsToAdd[parentTypeName] = [];
       }
       fieldsToAdd[parentTypeName].push({
         fieldName,
-        type: 'String',
+        type: isLeaf ? 'String' : cap(fieldName),
         hasGeneratedParentType,
       });
     }
   );
 
+  console.log('[operationToSchema.ts:152] fieldsToAdd:', fieldsToAdd);
   // Visit the AST and modify it
   const modifiedAst = visit(documentNode, {
     ObjectTypeDefinition(node) {
@@ -205,12 +193,12 @@ export function addMissingFieldsToSchemaWithVisitor(
         const newTypeDefinitions = Object.entries(fieldsToAdd)
           .filter(
             ([typeName, fields]) =>
-              fields.some((field) => field.hasGeneratedParentType)
-            // !node.definitions.some(
-            //   (def) =>
-            //     def.kind === 'ObjectTypeDefinition' &&
-            //     def.name.value === typeName
-            // )
+              fields.some((field) => field.hasGeneratedParentType) &&
+              !node.definitions.some(
+                (def) =>
+                  def.kind === 'ObjectTypeDefinition' &&
+                  def.name.value === typeName
+              )
           )
           .map(([typeName, fields]) => ({
             kind: 'ObjectTypeDefinition',

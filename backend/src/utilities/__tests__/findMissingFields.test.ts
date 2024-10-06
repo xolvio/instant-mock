@@ -38,6 +38,7 @@ describe('findMissingFieldsWithParentTypes', () => {
         parentTypeName: 'Product',
         fieldName: 'theNewField',
         hasGeneratedParentType: false,
+        isLeaf: true,
       },
     ]);
   });
@@ -71,11 +72,13 @@ describe('findMissingFieldsWithParentTypes', () => {
         parentTypeName: 'Product',
         fieldName: 'theNewNestedField',
         hasGeneratedParentType: false,
+        isLeaf: true,
       },
       {
         parentTypeName: 'Category',
         fieldName: 'newCategoryField',
         hasGeneratedParentType: false,
+        isLeaf: true,
       },
     ]);
   });
@@ -101,26 +104,31 @@ describe('findMissingFieldsWithParentTypes', () => {
         parentTypeName: 'Query',
         fieldName: 'newEntity',
         hasGeneratedParentType: false, // This is a top-level field under Query, so not generated
+        isLeaf: false,
       },
       {
         parentTypeName: 'NewEntity',
         fieldName: 'id',
         hasGeneratedParentType: true,
+        isLeaf: true,
       },
       {
         parentTypeName: 'NewEntity',
         fieldName: 'nestedEntity',
         hasGeneratedParentType: true,
+        isLeaf: false,
       },
       {
         parentTypeName: 'NestedEntity',
         fieldName: 'id',
         hasGeneratedParentType: true,
+        isLeaf: true,
       },
       {
         parentTypeName: 'NestedEntity',
         fieldName: 'name',
         hasGeneratedParentType: true,
+        isLeaf: true,
       },
     ]);
   });
