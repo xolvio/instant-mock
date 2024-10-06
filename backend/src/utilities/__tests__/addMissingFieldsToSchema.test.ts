@@ -45,7 +45,7 @@ describe('addMissingFieldsToSchemaWithVisitor', () => {
   const subgraph1 = {name: 'subgraph1', schema: schema1};
   const subgraph2 = {name: 'subgraph2', schema: schema2};
 
-  it('should successfully add missing fields and new types (Pass Test)', () => {
+  it('should successfully add missing fields and new types', () => {
     const missingFields: Array<MissingFieldInfo> = [
       {
         parentTypeName: 'Product',
