@@ -91,6 +91,7 @@ export default class GraphController {
     this.publishProposalRevision = this.publishProposalRevision.bind(this);
     this.createOrUpdateSchemaProposalByOperation =
       this.createOrUpdateSchemaProposalByOperation.bind(this);
+    this.resetGraph = this.resetGraph.bind(this);
   }
 
   async getGraph(req: Request, res: Response) {
@@ -264,6 +265,7 @@ export default class GraphController {
         const proposalStatus = await this.client.proposalLaunches(proposalId);
 
         const latestLaunch = proposalStatus.activities?.edges?.find(
+          // @ts-ignore
           (edge) => edge?.node?.target?.launch?.id === latestLaunchId
         );
 
@@ -280,6 +282,24 @@ export default class GraphController {
       revision.proposal.key =
         revision.proposal.publishSubgraphs.backingVariant.id;
       res.json(revision);
+    } catch (error) {
+      console.error(error);
+      res.status(500).send({error: 'An unexpected error occurred'});
+    }
+  }
+
+  async resetGraph(req: Request, res: Response) {
+    try {
+      const {graphId} = req.params;
+
+      const graph = await this.client.getGraph(graphId);
+
+      graph.proposals.proposals
+        .filter((proposal: any) => proposal.status !== 'CLOSED')
+        .map((proposal: any) =>
+          this.client.updateProposalStatus(proposal.id, 'CLOSED')
+        );
+      res.json('success');
     } catch (error) {
       console.error(error);
       res.status(500).send({error: 'An unexpected error occurred'});
