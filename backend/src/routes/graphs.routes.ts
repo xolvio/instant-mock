@@ -10,5 +10,6 @@ router.post(
   '/graphs/:graphId/:variantName/proposals',
   graphController.createProposal
 );
+router.post('/graphs/:graphId/reset', graphController.resetGraph);
 
 export default router;
