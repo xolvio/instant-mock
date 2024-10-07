@@ -8,13 +8,14 @@ import {
 import {setContext} from '@apollo/client/link/context';
 import {CREATE_PROPOSAL} from './mutations/createProposal';
 import {PUBLISH_PROPOSAL_REVISION} from './mutations/publishProposalRevision';
-import {PROPOSAL_LAUNCHES} from './queries/proposalLaunches';
+import {UPDATE_PROPOSAL_STATUS} from './mutations/updateProposalStatus';
 import {GET_GRAPH} from './queries/getGraph';
 import {GET_GRAPHS} from './queries/getGraphs';
 import {GET_GRAPH_WITH_SUBGRAPHS} from './queries/getGraphWithSubgraphs';
 import {GET_ORGANIZATION_ID} from './queries/getOrganizationId';
 import {GET_SCHEMA} from './queries/getSchema';
 import {GET_VARIANT} from './queries/getVariant';
+import {PROPOSAL_LAUNCHES} from './queries/proposalLaunches';
 
 export default class Client {
   private apolloClient: ApolloClient<any>;
@@ -65,7 +66,13 @@ export default class Client {
   async getGraph(graphId: string) {
     const {data} = await this.apolloClient.query({
       query: GET_GRAPH,
-      variables: {graphId: graphId, filterBy: {}},
+      variables: {
+        graphId: graphId,
+        // TODO remove it after summit, consumers should define filters themselvers
+        filterBy: {
+          status: ['APPROVED', 'DRAFT', 'IMPLEMENTED', 'OPEN'],
+        },
+      },
     });
 
     return data.graph;
@@ -83,7 +90,12 @@ export default class Client {
   async getGraphWithSubgraphs(graphId: string) {
     const {data} = await this.apolloClient.query({
       query: GET_GRAPH_WITH_SUBGRAPHS,
-      variables: {graphId: graphId, filterBy: {}},
+      variables: {
+        graphId: graphId, // TODO remove it after summit, consumers should define filters themselvers
+        filterBy: {
+          status: ['APPROVED', 'DRAFT', 'IMPLEMENTED', 'OPEN'],
+        },
+      },
     });
 
     return data.graph;
@@ -125,6 +137,16 @@ export default class Client {
       },
     });
     return data;
+  }
+
+  async updateProposalStatus(proposalId: string, status: string) {
+    const {data} = await this.apolloClient.mutate({
+      mutation: UPDATE_PROPOSAL_STATUS,
+      variables: {
+        proposalId: proposalId,
+        status: status,
+      },
+    });
   }
 
   // TODO fix object type
