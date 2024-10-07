@@ -10,9 +10,9 @@ export class SeedRepository {
   ): Promise<Seed[]> {
     const result: QueryResult = await query(
       `SELECT id, graph_id, variant_name, operation_name, seed_response, operation_match_arguments, sequence_id
-       FROM seeds
-       WHERE graph_id = $1
-         AND variant_name = $2`,
+         FROM seeds
+         WHERE graph_id = $1
+           AND variant_name = $2`,
       [graphId, variantName]
     );
 
@@ -89,14 +89,14 @@ export class SeedRepository {
 
     try {
       await query(
-        `UPDATE seeds 
-       SET operation_name = $1, 
-           seed_response = $2, 
-           operation_match_arguments = $3, 
-           sequence_id = $4, 
-           graph_id = $5, 
-           variant_name = $6
-       WHERE id = $7`,
+        `UPDATE seeds
+           SET operation_name = $1,
+               seed_response = $2,
+               operation_match_arguments = $3,
+               sequence_id = $4,
+               graph_id = $5,
+               variant_name = $6
+           WHERE id = $7`,
         [
           operationName,
           JSON.stringify(seedResponse),
@@ -140,6 +140,20 @@ export class SeedRepository {
     } catch (error) {
       console.error('Error deleting seed:', error);
       throw new Error('Could not delete seed');
+    }
+  }
+
+  async deleteSeedsByGraphId(graphId: string): Promise<number> {
+    try {
+      const deleteResult = await query(
+        'DELETE FROM seeds WHERE graph_id = $1',
+        [graphId]
+      );
+
+      return deleteResult.rowCount || 0;
+    } catch (error) {
+      console.error('Error deleting seeds by graphId:', error);
+      throw new Error('Could not delete seeds by graphId');
     }
   }
 }
