@@ -95,10 +95,9 @@ export default class GraphController {
   }
 
   async getGraph(req: Request, res: Response) {
-    const withSubgraphs: boolean = req.query.withSubgraphs === 'true';
-    const graphId = req.params.graphId as string;
-
     try {
+      const withSubgraphs: boolean = req.query.withSubgraphs === 'true';
+      const graphId = req.params.graphId as string;
       let graph: Graph;
       if (withSubgraphs) {
         graph = await this.graphService.getGraphWithSubgraphs(graphId);
@@ -135,17 +134,16 @@ export default class GraphController {
   }
 
   async createProposal(req: Request, res: Response) {
-    // TODO probably we should use express-validator to make it in a more efficient way
-    const {graphId, variantName} = req.params;
-    const {displayName, description} = req.body;
-    if (!graphId || !variantName || !displayName) {
-      return res.status(400).json({
-        error:
-          'Missing required parameters: graphId, variantName, or displayName',
-      });
-    }
-
     try {
+      // TODO probably we should use express-validator to make it in a more efficient way
+      const {graphId, variantName} = req.params;
+      const {displayName, description} = req.body;
+      if (!graphId || !variantName || !displayName) {
+        return res.status(400).json({
+          error:
+            'Missing required parameters: graphId, variantName, or displayName',
+        });
+      }
       const data = await this.graphService.createProposal(
         graphId,
         variantName,
@@ -169,12 +167,11 @@ export default class GraphController {
   }
 
   async publishProposalRevision(req: Request, res: Response) {
-    // TODO probably we should use express-validator to make it in a more efficient way
-    const {proposalId} = req.params;
-    const {subgraphInputs, summary, revision, previousLaunchId} = req.body;
-    // TODO parameter validation before sending request to apollo, for now rely on their validation
-
     try {
+      // TODO probably we should use express-validator to make it in a more efficient way
+      const {proposalId} = req.params;
+      const {subgraphInputs, summary, revision, previousLaunchId} = req.body;
+      // TODO parameter validation before sending request to apollo, for now rely on their validation
       const data = await this.graphService.publishProposalRevision(
         proposalId,
         subgraphInputs,
