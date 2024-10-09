@@ -19,15 +19,14 @@ export default class SeedController {
   }
 
   async getSeeds(req: Request, res: Response) {
-    // TODO is it possible to simplify it?
-    const graphId = req.query.graphId as string;
-    const variantName = req.query.variantName as string;
-
-    if (!variantName) {
-      return res.status(400).send('Variant name is required');
-    }
-
     try {
+      // TODO is it possible to simplify it?
+      const graphId = req.query.graphId as string;
+      const variantName = req.query.variantName as string;
+
+      if (!variantName) {
+        return res.status(400).send('Variant name is required');
+      }
       // TODO add graphId to the method
       const seeds: Seed[] =
         await this.seedRepository.findByGraphIdAndVariantName(
@@ -42,16 +41,15 @@ export default class SeedController {
   }
 
   async findSeedById(req: Request, res: Response) {
-    const {id} = req.params;
-
-    const numericId = Number(id);
-
-    if (isNaN(numericId)) {
-      res.status(400).json({message: 'Invalid ID'});
-      return;
-    }
-
     try {
+      const {id} = req.params;
+
+      const numericId = Number(id);
+
+      if (isNaN(numericId)) {
+        res.status(400).json({message: 'Invalid ID'});
+        return;
+      }
       const seed = await this.seedRepository.findSeedById(numericId);
       if (seed) {
         res.status(200).json(seed);
@@ -65,30 +63,29 @@ export default class SeedController {
   }
 
   async createSeed(req: Request, res: Response) {
-    // TODO is it possible to simplify it?
-    const graphId = req.query.graphId as string;
-    const variantName = req.query.variantName as string;
-    const {seedResponse, operationName, operationMatchArguments, sequenceId} =
-      req.body;
-    const seed: Seed = {
-      variantName,
-      seedResponse,
-      operationName,
-      operationMatchArguments,
-      sequenceId,
-      graphId,
-    };
-
-    if (!variantName) {
-      return res.status(400).send('Variant name is required');
-    }
-
-    const mockServer = await this.mockService.getOrStartNewMockServer(
-      graphId,
-      variantName
-    );
-
     try {
+      // TODO is it possible to simplify it?
+      const graphId = req.query.graphId as string;
+      const variantName = req.query.variantName as string;
+      const {seedResponse, operationName, operationMatchArguments, sequenceId} =
+        req.body;
+      const seed: Seed = {
+        variantName,
+        seedResponse,
+        operationName,
+        operationMatchArguments,
+        sequenceId,
+        graphId,
+      };
+
+      if (!variantName) {
+        return res.status(400).send('Variant name is required');
+      }
+
+      const mockServer = await this.mockService.getOrStartNewMockServer(
+        graphId,
+        variantName
+      );
       mockServer.seedManager.registerSeed(seed.sequenceId, SeedType.Operation, {
         operationName: seed.operationName,
         seedResponse: seedResponse,
@@ -105,37 +102,36 @@ export default class SeedController {
   }
 
   async updateSeed(req: Request, res: Response) {
-    // TODO is it possible to simplify it?
-    const graphId = req.query.graphId as string;
-    const variantName = req.query.variantName as string;
-    const {
-      id,
-      seedResponse,
-      operationName,
-      operationMatchArguments,
-      sequenceId,
-      oldOperationMatchArguments,
-    } = req.body;
-    const seed: Seed = {
-      id,
-      variantName,
-      seedResponse,
-      operationName,
-      operationMatchArguments,
-      sequenceId,
-      graphId,
-    };
-
-    if (!variantName) {
-      return res.status(400).send('Variant name is required');
-    }
-
-    const mockServer = await this.mockService.getOrStartNewMockServer(
-      graphId,
-      variantName
-    );
-
     try {
+      // TODO is it possible to simplify it?
+      const graphId = req.query.graphId as string;
+      const variantName = req.query.variantName as string;
+      const {
+        id,
+        seedResponse,
+        operationName,
+        operationMatchArguments,
+        sequenceId,
+        oldOperationMatchArguments,
+      } = req.body;
+      const seed: Seed = {
+        id,
+        variantName,
+        seedResponse,
+        operationName,
+        operationMatchArguments,
+        sequenceId,
+        graphId,
+      };
+
+      if (!variantName) {
+        return res.status(400).send('Variant name is required');
+      }
+
+      const mockServer = await this.mockService.getOrStartNewMockServer(
+        graphId,
+        variantName
+      );
       mockServer.seedManager.updateSeed(
         seed.sequenceId,
         oldOperationMatchArguments,
@@ -156,24 +152,24 @@ export default class SeedController {
   }
 
   async deleteSeed(req: Request, res: Response) {
-    const {id} = req.params;
-    const graphId = req.query.graphId as string;
-    const variantName = req.query.variantName as string;
-    const sequenceId = req.query.sequenceId as string;
-
-    const numericId = Number(id);
-
-    if (isNaN(numericId)) {
-      return res.status(400).json({message: 'Invalid ID'});
-    }
-
-    if (!graphId || !variantName) {
-      return res
-        .status(400)
-        .json({message: 'graphId and variantName are required'});
-    }
-
     try {
+      const {id} = req.params;
+      const graphId = req.query.graphId as string;
+      const variantName = req.query.variantName as string;
+      const sequenceId = req.query.sequenceId as string;
+
+      const numericId = Number(id);
+
+      if (isNaN(numericId)) {
+        return res.status(400).json({message: 'Invalid ID'});
+      }
+
+      if (!graphId || !variantName) {
+        return res
+          .status(400)
+          .json({message: 'graphId and variantName are required'});
+      }
+
       const mockServer = await this.mockService.getOrStartNewMockServer(
         graphId,
         variantName
