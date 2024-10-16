@@ -1,15 +1,42 @@
-![image](https://github.com/user-attachments/assets/75214b94-660e-4e69-bad7-0743896091b2)
-
-# 🚀 instant mock
-
-<img width="736" alt="image" src="https://github.com/user-attachments/assets/69267572-f6a4-40f3-90a5-fa95af796645">
+# 🚀 InstantMock
 
 ## 🚀 Quick Start
 
+### 🐳 Docker (Recommended)
+InstantMock runs by default on `localhost:3001`. If you want to run the app on another port, adjust the `PORT` and `REACT_APP_API_BASE_URL` variables in your `.env` file accordingly.
+
 ```bash
 mv .env.example .env
-# 🤫 add your apollo key to .env 🤫
+# Add your Apollo key to the .env file
 docker compose up
+```
+
+### 📦 NPM
+#### Database
+You will need a PostgreSQL database instance. You can either:
+- Set one up locally,
+- Use a remote instance, 
+- Or use the PostgreSQL instance that is started automatically with the above docker compose config.
+Make sure to adjust the database connection details in your .env file accordingly.
+
+#### Server
+The InstantMock server runs by default on port 3001. If you want to run the server on another port, adjust the `PORT` variable in your `.env` file. Also, remember to update the `REACT_APP_API_BASE_URL` in your `.env` file accordingly.
+```bash
+cd backend
+mv .env.example .env
+# Add your Apollo key to the .env file
+# Add your database connection details to the .env file
+npm install
+npm run dev
+```
+
+#### Client
+The InstantMock client runs by default on port 3000. If you want to run it on another port, adjust the `PORT` variable in your `.env` file.
+```bash
+cd frontend
+mv .env.example .env
+npm install
+npm start
 ```
 
 ## API Reference
@@ -78,30 +105,3 @@ docker compose up
 - **Parameters:**
     - `id` (path param): The ID of the seed.
 - **Response:** JSON object confirming the deletion of the seed.
-
-## Running Locally
-
-Copy the .env.example from the root into `backend` and fill in apollo key. 
-
-1. **Install Node Version Manager (nvm):**
-   ```bash
-   curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh | bash`
-   ```
-
-2. **Frontend:**
-   * Navigate to the `frontend` directory:
-
-     ```bash
-     cd frontend
-     npm install
-     npm run start
-     ```
-3. **Backend:**
-   * Navigate to the `backend` directory in a new terminal:
-
-     ```bash
-     cd backend
-     npm install
-     npm run dev
-     ```
-
