@@ -1,5 +1,20 @@
 # 🚀 InstantMock
 
+As supergraphs scale, delays between front-end development, QA, and back-end API readiness can slow teams down. InstantMock allows you to mock your Supergraph endpoints as soon as you define the annotations you need, eliminating delays.
+
+## Key Features
+- **Instant GraphQL Endpoint Creation**: Get a mock endpoint up and running in minutes. 
+- **Apollo Studio Schema Proposal Integration**: Create mocks directly for your schema proposals with full access to all schemas.
+- **Realistic Mock Responses**: Tailor-made fake responses for accurate testing.
+- **Advanced Data Seeding**: Populate your mocks with lifelike data for production-like testing scenarios.
+- **Integration with Narrative Studio**: Fully integrated into Narrative Studio and supporting Narrative Driven Development (NDD)
+
+InstantMock can:
+- Run Locally: Quick testing right on your machine.
+- Run inside of a Docker container: Use Docker for a containerized environment.
+- Central Hosting: Share mocks with multiple teams using our AWS CDK templates.
+- Works with Corporate Proxies: Seamless integration in enterprise environments.
+
 ## 🚀 Quick Start
 
 ### 🐳 Docker (Recommended)
