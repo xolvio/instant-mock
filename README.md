@@ -10,10 +10,10 @@ As supergraphs scale, delays between front-end development, QA, and back-end API
 - **Integration with Narrative Studio**: Fully integrated into Narrative Studio and supporting Narrative Driven Development (NDD)
 
 InstantMock can:
-- Run Locally: Quick testing right on your machine.
-- Run inside of a Docker container: Use Docker for a containerized environment.
-- Central Hosting: Share mocks with multiple teams using our AWS CDK templates.
-- Works with Corporate Proxies: Seamless integration in enterprise environments.
+- run Locally: Quick testing right on your machine.
+- run inside of a Docker container: Use Docker for a containerized environment.
+- be hosted centrally: Share mocks with multiple teams using our AWS CDK templates (coming soon).
+- works with Corporate Proxies: Seamless integration in enterprise environments.
 
 ## 🚀 Quick Start
 
