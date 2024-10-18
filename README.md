@@ -1,3 +1,5 @@
+![instant-mock-screen-cap-final](https://github.com/user-attachments/assets/de0f50d4-5a71-4e5a-b479-37c6cfa0481d)
+
 # 🚀 InstantMock
 
 As GraphQL deployments scale, delays between front-end development, QA, and back-end API readiness can slow teams down.  Adding the complexity of _distributed_ GraphQL ([Apollo Supergraphs](https://www.apollographql.com/federation), [Open Federation](https://open-federation.org/), [etc](https://grafbase.com/docs/federation)) can make this bottleneck even worse.
