@@ -74,6 +74,7 @@ const Header = () => {
   };
 
   const handleVariantChange = (variantId) => {
+    console.log(variantId);
     setSelectedVariant(variantId); // Set the selected variant
   };
 
