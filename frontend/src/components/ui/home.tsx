@@ -3,13 +3,11 @@ import {useNavigate} from 'react-router';
 import GraphDashboard from './/graph-dashboard';
 
 const Home = () => {
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    navigate('/graphs', {replace: true});
-  }, [navigate]);
-
-  return <GraphDashboard />;
+  return (
+    <>
+      <div>foo</div>
+    </>
+  );
 };
 
 export default Home;

@@ -1,48 +1,53 @@
-import {CircleUser, Plus, Settings, User} from 'lucide-react';
-import React from 'react';
-import {useNavigate} from 'react-router';
-import logo from '../../assets/logo.png';
+import {useState, useEffect} from 'react';
 import {Button} from './button';
 import {Input} from './input';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from './dropdown-menu';
+import {Settings, User, Plus} from 'lucide-react';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from './select';
-import {useState, useEffect} from 'react';
+} from '@radix-ui/react-select';
 
-const Header = () => {
-  const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('sandbox');
-  const [selectedGraph, setSelectedGraph] = useState(null);
-  const [selectedVariant, setSelectedVariant] = useState(null);
-  const [seedGroups, setSeedGroups] = useState([]);
-  const [selectedSeedGroup, setSelectedSeedGroup] = useState(null);
+type Graph = {
+  id: string;
+  name: string;
+  variants: Variant[];
+};
+
+type Variant = {
+  id: string;
+  name: string;
+};
+
+type SeedGroup = {
+  id: string;
+  name: string;
+};
+
+type ComponentData = {
+  graphs: Graph[];
+  seedGroups: SeedGroup[];
+  defaultSeedGroup: SeedGroup;
+};
+
+export default function DashboardSelector() {
+  const [activeTab, setActiveTab] = useState('narratives');
+  const [selectedGraph, setSelectedGraph] = useState<Graph | null>(null);
+  const [selectedVariant, setSelectedVariant] = useState<Variant | null>(null);
+  const [selectedSeedGroup, setSelectedSeedGroup] = useState<SeedGroup | null>(
+    null
+  );
   const [newSeedGroup, setNewSeedGroup] = useState('');
-  const [data, setData] = useState(null);
+  const [data, setData] = useState<ComponentData | null>(null);
 
-  // Navigation handlers
-  const handleSettingsClick = () => navigate('/settings');
-  const handleLogoClick = () => navigate('/graphs');
-
-  // Fetch data for the selects
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('/api/data-endpoint');
+        const response = await fetch('/api/data-endpoint'); // Replace with your API endpoint
         const result = await response.json();
         setData(result);
-        setSeedGroups(result.seedGroups);
         setSelectedSeedGroup(result.defaultSeedGroup);
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -51,13 +56,13 @@ const Header = () => {
     fetchData();
   }, []);
 
-  const handleGraphChange = (graphId) => {
+  const handleGraphChange = (graphId: string) => {
     const graph = data?.graphs.find((g) => g.id === graphId) || null;
     setSelectedGraph(graph);
-    setSelectedVariant(null); // Reset variant on graph change
+    setSelectedVariant(null);
   };
 
-  const handleVariantChange = (variantId) => {
+  const handleVariantChange = (variantId: string) => {
     const variant =
       selectedGraph?.variants.find((v) => v.id === variantId) || null;
     setSelectedVariant(variant);
@@ -65,24 +70,21 @@ const Header = () => {
 
   const handleAddSeedGroup = () => {
     if (newSeedGroup) {
-      const newGroup = {id: Date.now().toString(), name: newSeedGroup};
-      setSeedGroups([...seedGroups, newGroup]);
+      const newGroup: SeedGroup = {
+        id: Date.now().toString(),
+        name: newSeedGroup,
+      };
+      data?.seedGroups.push(newGroup);
       setSelectedSeedGroup(newGroup);
       setNewSeedGroup('');
     }
   };
 
   return (
-    <header className="sticky top-0 z-50 flex flex-col gap-4 border-b bg-background px-4 md:px-6">
-      <div className="flex h-16 items-center gap-4">
-        <img
-          src={logo}
-          alt="Logo"
-          className="h-14 w-24 object-cover cursor-pointer"
-          onClick={handleLogoClick}
-        />
-        <div className="flex items-center gap-4">
-          {/* Graph Select */}
+    <header className="w-full bg-white border-b border-gray-200 p-4">
+      <div className="max-w-7xl mx-auto flex items-center justify-between">
+        <div className="flex items-center space-x-4">
+          <Logo />
           <Select onValueChange={handleGraphChange}>
             <SelectTrigger className="w-[200px]">
               <SelectValue placeholder="Select a graph" />
@@ -95,8 +97,6 @@ const Header = () => {
               ))}
             </SelectContent>
           </Select>
-
-          {/* Variant Select */}
           <Select onValueChange={handleVariantChange} disabled={!selectedGraph}>
             <SelectTrigger className="w-[200px]">
               <SelectValue placeholder="Variant / Proposal" />
@@ -109,13 +109,11 @@ const Header = () => {
               ))}
             </SelectContent>
           </Select>
-
-          {/* Seed Group Select */}
           <Select
             value={selectedSeedGroup?.id || ''}
             onValueChange={(value) =>
               setSelectedSeedGroup(
-                seedGroups.find((sg) => sg.id === value) || null
+                data?.seedGroups.find((sg) => sg.id === value) || null
               )
             }
           >
@@ -123,16 +121,14 @@ const Header = () => {
               <SelectValue placeholder="Select seed group" />
             </SelectTrigger>
             <SelectContent>
-              {seedGroups.map((group) => (
-                <SelectItem key={group.id} value={group.id}>
-                  {group.name}
+              {data?.seedGroups.map((seedGroup) => (
+                <SelectItem key={seedGroup.id} value={seedGroup.id}>
+                  {seedGroup.name}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
-
-          {/* Add New Seed Group */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center space-x-2">
             <Input
               className="w-[150px]"
               placeholder="New seed group"
@@ -144,36 +140,12 @@ const Header = () => {
             </Button>
           </div>
         </div>
-
-        <div className="ml-auto flex items-center gap-2">
-          <Settings
-            className="h-5 w-5 text-gray-500"
-            onClick={handleSettingsClick}
-          />
+        <div className="flex items-center space-x-2">
+          <Settings className="h-5 w-5 text-gray-500" />
           <User className="h-5 w-5 text-gray-500" />
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="secondary" size="icon" className="rounded-full">
-                <CircleUser className="h-5 w-5" />
-                <span className="sr-only">Toggle user menu</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleSettingsClick}>
-                Settings
-              </DropdownMenuItem>
-              <DropdownMenuItem>Support</DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>Logout</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
         </div>
       </div>
-
-      {/* Dashboard Selector Tab Group */}
-      <div className="flex space-x-2">
+      <div className="mt-4 flex space-x-2">
         <Button
           variant={activeTab === 'sandbox' ? 'default' : 'outline'}
           onClick={() => setActiveTab('sandbox')}
@@ -195,6 +167,13 @@ const Header = () => {
       </div>
     </header>
   );
-};
+}
 
-export default Header;
+function Logo() {
+  return (
+    <div className="flex items-center space-x-2">
+      <div className="w-6 h-6 bg-emerald-500 rounded" />
+      <span className="text-xl font-semibold text-gray-800">xolvio</span>
+    </div>
+  );
+}
