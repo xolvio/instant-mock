@@ -1,9 +1,8 @@
 import {CircleUser, Plus, Settings, User} from 'lucide-react';
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {useNavigate} from 'react-router';
 import logo from '../../assets/logo.png';
 import {Button} from './button';
-import {Input} from './input';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,55 +11,70 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from './dropdown-menu';
+import {Input} from './input';
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from './select';
-import {useState, useEffect} from 'react';
 
 const Header = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('sandbox');
   const [selectedGraph, setSelectedGraph] = useState(null);
-  const [selectedVariant, setSelectedVariant] = useState(null);
+  const [selectedVariant, setSelectedVariant] = useState(null); // Track selected variant
+  const [variants, setVariants] = useState([]);
+  const [proposals, setProposals] = useState([]);
   const [seedGroups, setSeedGroups] = useState([]);
   const [selectedSeedGroup, setSelectedSeedGroup] = useState(null);
   const [newSeedGroup, setNewSeedGroup] = useState('');
-  const [data, setData] = useState(null);
+  const [graphs, setGraphs] = useState([]);
 
   // Navigation handlers
   const handleSettingsClick = () => navigate('/settings');
   const handleLogoClick = () => navigate('/graphs');
 
-  // Fetch data for the selects
+  // Fetch only graphs on component mount
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchGraphs = async () => {
       try {
-        const response = await fetch('/api/data-endpoint');
+        const response = await fetch('http://localhost:3001/api/graphs');
         const result = await response.json();
-        setData(result);
-        setSeedGroups(result.seedGroups);
-        setSelectedSeedGroup(result.defaultSeedGroup);
+        setGraphs(result); // Only set graphs, ignoring variants
       } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error('Error fetching graphs:', error);
       }
     };
-    fetchData();
+    fetchGraphs();
   }, []);
 
-  const handleGraphChange = (graphId) => {
-    const graph = data?.graphs.find((g) => g.id === graphId) || null;
-    setSelectedGraph(graph);
-    setSelectedVariant(null); // Reset variant on graph change
+  // Fetch variants and proposals for the selected graph
+  const handleGraphChange = async (graphId) => {
+    const selectedGraph = graphs.find((g) => g.id === graphId) || null;
+    setSelectedGraph(selectedGraph);
+    setSelectedVariant(null); // Clear variant when a new graph is selected
+
+    try {
+      const response = await fetch(
+        `http://localhost:3001/api/graphs/${graphId}`
+      );
+      const result = await response.json();
+
+      setVariants(result.variants || []);
+      setProposals(result.proposals || []);
+    } catch (error) {
+      console.error('Error fetching graph details:', error);
+      setVariants([]);
+      setProposals([]);
+    }
   };
 
   const handleVariantChange = (variantId) => {
-    const variant =
-      selectedGraph?.variants.find((v) => v.id === variantId) || null;
-    setSelectedVariant(variant);
+    setSelectedVariant(variantId); // Set the selected variant
   };
 
   const handleAddSeedGroup = () => {
@@ -88,7 +102,7 @@ const Header = () => {
               <SelectValue placeholder="Select a graph" />
             </SelectTrigger>
             <SelectContent>
-              {data?.graphs.map((graph) => (
+              {graphs.map((graph) => (
                 <SelectItem key={graph.id} value={graph.id}>
                   {graph.name}
                 </SelectItem>
@@ -96,17 +110,33 @@ const Header = () => {
             </SelectContent>
           </Select>
 
-          {/* Variant Select */}
-          <Select onValueChange={handleVariantChange} disabled={!selectedGraph}>
+          {/* Variant/Proposal Select */}
+          <Select
+            value={selectedVariant || ''} // Ensure no variant is selected by default
+            onValueChange={handleVariantChange}
+            disabled={!selectedGraph}
+          >
             <SelectTrigger className="w-[200px]">
               <SelectValue placeholder="Variant / Proposal" />
             </SelectTrigger>
             <SelectContent>
-              {selectedGraph?.variants.map((variant) => (
-                <SelectItem key={variant.id} value={variant.id}>
-                  {variant.name}
-                </SelectItem>
-              ))}
+              {/* Variants Group */}
+              <SelectGroup>
+                <SelectLabel>Variants</SelectLabel>
+                {variants.map((variant) => (
+                  <SelectItem key={variant.id} value={variant.id}>
+                    {variant.name}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+              <SelectGroup>
+                <SelectLabel>Proposals</SelectLabel>
+                {proposals.map((proposal) => (
+                  <SelectItem key={proposal.id} value={proposal.id}>
+                    {proposal.displayName}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
             </SelectContent>
           </Select>
 
