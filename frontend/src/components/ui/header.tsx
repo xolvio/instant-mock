@@ -1,8 +1,32 @@
-import {CircleUser, Plus, Settings, User} from 'lucide-react';
+import {
+  Check,
+  ChevronsUpDown,
+  CircleUser,
+  Plus,
+  Settings,
+  User,
+} from 'lucide-react';
 import React, {useEffect, useState} from 'react';
 import {useNavigate} from 'react-router';
 import logo from '../../assets/logo.png';
+import {cn} from '../../lib/utils';
 import {Button} from './button';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  CommandSeparator,
+} from './command';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from './dialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,6 +36,8 @@ import {
   DropdownMenuTrigger,
 } from './dropdown-menu';
 import {Input} from './input';
+import {Label} from './label';
+import {Popover, PopoverContent, PopoverTrigger} from './popover';
 import {
   Select,
   SelectContent,
@@ -33,6 +59,21 @@ const Header = () => {
   const [selectedSeedGroup, setSelectedSeedGroup] = useState(null);
   const [newSeedGroup, setNewSeedGroup] = useState('');
   const [graphs, setGraphs] = useState([]);
+  const [open, setOpen] = useState(false);
+  const [value, setValue] = useState('');
+  const [groups, setGroups] = useState(seedGroups);
+  const [dialogOpen, setDialogOpen] = React.useState(false);
+  const [newGroupName, setNewGroupName] = React.useState('');
+
+  const addNewGroup = (newGroupName: string) => {
+    const newGroup = {
+      id: (groups.length + 1).toString(),
+      name: newGroupName,
+    };
+    setGroups([...groups, newGroup]);
+    setValue(newGroup.id);
+    setOpen(false);
+  };
 
   // Navigation handlers
   const handleSettingsClick = () => navigate('/settings');
@@ -141,26 +182,87 @@ const Header = () => {
             </SelectContent>
           </Select>
 
-          {/* Seed Group Select */}
-          <Select
-            value={selectedSeedGroup?.id || ''}
-            onValueChange={(value) =>
-              setSelectedSeedGroup(
-                seedGroups.find((sg) => sg.id === value) || null
-              )
-            }
-          >
-            <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="Select seed group" />
-            </SelectTrigger>
-            <SelectContent>
-              {seedGroups.map((group) => (
-                <SelectItem key={group.id} value={group.id}>
-                  {group.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Popover open={open} onOpenChange={setOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                aria-expanded={open}
+                className="w-[250px] justify-between"
+              >
+                {value
+                  ? groups.find((group) => group.id === value)?.name
+                  : 'Select seed group...'}
+                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[250px] p-0">
+              <Command>
+                <CommandInput placeholder="Search seed group..." />
+                <CommandList>
+                  <CommandEmpty>No seed group found.</CommandEmpty>
+                  <CommandGroup heading="Seed Groups">
+                    {groups.map((group) => (
+                      <CommandItem
+                        key={group.id}
+                        value={group.id}
+                        onSelect={(currentValue) => {
+                          setValue(currentValue === value ? '' : currentValue);
+                          setOpen(false);
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            'mr-2 h-4 w-4',
+                            value === group.id ? 'opacity-100' : 'opacity-0'
+                          )}
+                        />
+                        {group.name}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                  <CommandSeparator />
+                  <CommandGroup>
+                    <CommandItem
+                      onSelect={() => {
+                        setDialogOpen(true);
+                        setOpen(false);
+                      }}
+                    >
+                      <Plus className="mr-2 h-4 w-4" />
+                      Add new seed group
+                    </CommandItem>
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
+
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Add New Seed Group</DialogTitle>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="name" className="text-right">
+                    Name
+                  </Label>
+                  <Input
+                    id="name"
+                    value={newGroupName}
+                    onChange={(e) => setNewGroupName(e.target.value)}
+                    className="col-span-3"
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button type="submit" onClick={() => addNewGroup(newGroupName)}>
+                  Add Group
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
 
           {/* Add New Seed Group */}
           <div className="flex items-center gap-2">
