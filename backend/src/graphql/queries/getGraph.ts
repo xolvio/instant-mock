@@ -5,6 +5,7 @@ export const GET_GRAPH = gql`
     graph(id: $graphId) {
       name
       variants {
+        id
         name
         latestPublication {
           publishedAt
