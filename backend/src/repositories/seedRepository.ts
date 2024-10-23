@@ -4,6 +4,12 @@ import {Seed} from '../models/seed';
 export class SeedRepository {
   constructor(private em: EntityManager) {}
 
+  async find(
+    where: Partial<Pick<Seed, 'graphId' | 'variantName'>>
+  ): Promise<Seed[]> {
+    return this.em.find(Seed, where);
+  }
+
   async findByGraphIdAndVariantName(
     graphId: string,
     variantName: string

@@ -94,7 +94,7 @@ export default class GraphController {
     this.resetGraph = this.resetGraph.bind(this);
   }
 
-  async getGraph(req: Request, res: Response) {
+  async getGraph(req: Request, res: Response): Promise<void> {
     const withSubgraphs: boolean = req.query.withSubgraphs === 'true';
     const graphId = req.params.graphId as string;
 
