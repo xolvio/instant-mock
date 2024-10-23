@@ -1,13 +1,7 @@
-import React, {useEffect} from 'react';
-import {useNavigate} from 'react-router';
-import GraphDashboard from './/graph-dashboard';
+import React from 'react';
 
 const Home = () => {
-  return (
-    <>
-      <div>foo</div>
-    </>
-  );
+  return <></>;
 };
 
 export default Home;
