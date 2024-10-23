@@ -149,177 +149,161 @@ const Header = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-50 flex flex-col gap-4 border-b bg-background px-4 md:px-6">
-        <div className="flex h-16 items-center gap-4">
-          <img
-            src={logo}
-            alt="Logo"
-            className="h-14 w-24 object-cover cursor-pointer"
-            onClick={handleLogoClick}
-          />
-          <div className="flex items-center gap-4">
-            {/* Graph Select */}
-            <Select onValueChange={handleGraphChange}>
-              <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder="Select a graph" />
-              </SelectTrigger>
-              <SelectContent>
-                {graphs.map((graph) => (
-                  <SelectItem key={graph.id} value={graph.id}>
-                    {graph.name}
+      <header className="sticky top-0 z-50 flex items-center justify-between border-b bg-background px-4 py-2 md:px-6">
+        <img
+          src={logo}
+          alt="Logo"
+          className="h-14 w-24 object-cover cursor-pointer"
+          onClick={handleLogoClick}
+        />
+        <div className="flex items-center gap-4">
+          <Select onValueChange={handleGraphChange}>
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="Select a graph" />
+            </SelectTrigger>
+            <SelectContent>
+              {graphs.map((graph) => (
+                <SelectItem key={graph.id} value={graph.id}>
+                  {graph.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select
+            value={selectedVariant || ''}
+            onValueChange={handleVariantChange}
+            disabled={!selectedGraph}
+          >
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="Variant / Proposal" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectLabel>Variants</SelectLabel>
+                {variants.map((variant) => (
+                  <SelectItem key={variant.id} value={variant.id}>
+                    {variant.name}
                   </SelectItem>
                 ))}
-              </SelectContent>
-            </Select>
+              </SelectGroup>
+              <SelectGroup>
+                <SelectLabel>Proposals</SelectLabel>
+                {proposals.map((proposal) => (
+                  <SelectItem key={proposal.id} value={proposal.id}>
+                    {proposal.displayName}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
 
-            {/* Variant/Proposal Select */}
-            <Select
-              value={selectedVariant || ''} // Ensure no variant is selected by default
-              onValueChange={handleVariantChange}
-              disabled={!selectedGraph}
-            >
-              <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder="Variant / Proposal" />
-              </SelectTrigger>
-              <SelectContent>
-                {/* Variants Group */}
-                <SelectGroup>
-                  <SelectLabel>Variants</SelectLabel>
-                  {variants.map((variant) => (
-                    <SelectItem key={variant.id} value={variant.id}>
-                      {variant.name}
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
-                <SelectGroup>
-                  <SelectLabel>Proposals</SelectLabel>
-                  {proposals.map((proposal) => (
-                    <SelectItem key={proposal.id} value={proposal.id}>
-                      {proposal.displayName}
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-
-            <Popover open={open} onOpenChange={setOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  aria-expanded={open}
-                  className="w-[250px] justify-between"
-                >
-                  {value
-                    ? groups.find((group) => group.id === value)?.name
-                    : 'Select seed group...'}
-                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-[250px] p-0">
-                <Command>
-                  <CommandInput placeholder="Search seed group..." />
-                  <CommandList>
-                    <CommandEmpty>No seed group found.</CommandEmpty>
-                    <CommandGroup heading="Seed Groups">
-                      {groups.map((group) => (
-                        <CommandItem
-                          key={group.id}
-                          value={group.id}
-                          onSelect={(currentValue) => {
-                            setValue(
-                              currentValue === value ? '' : currentValue
-                            );
-                            setOpen(false);
-                          }}
-                        >
-                          <Check
-                            className={cn(
-                              'mr-2 h-4 w-4',
-                              value === group.id ? 'opacity-100' : 'opacity-0'
-                            )}
-                          />
-                          {group.name}
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                    <CommandSeparator />
-                    <CommandGroup>
+          <Popover open={open} onOpenChange={setOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                aria-expanded={open}
+                className="w-[250px] justify-between"
+              >
+                {value
+                  ? groups.find((group) => group.id === value)?.name
+                  : 'Select seed group...'}
+                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[250px] p-0">
+              <Command>
+                <CommandInput placeholder="Search seed group..." />
+                <CommandList>
+                  <CommandEmpty>No seed group found.</CommandEmpty>
+                  <CommandGroup heading="Seed Groups">
+                    {groups.map((group) => (
                       <CommandItem
-                        onSelect={() => {
-                          setDialogOpen(true);
+                        key={group.id}
+                        value={group.id}
+                        onSelect={(currentValue) => {
+                          setValue(currentValue === value ? '' : currentValue);
                           setOpen(false);
                         }}
                       >
-                        <Plus className="mr-2 h-4 w-4" />
-                        Add new seed group
+                        <Check
+                          className={cn(
+                            'mr-2 h-4 w-4',
+                            value === group.id ? 'opacity-100' : 'opacity-0'
+                          )}
+                        />
+                        {group.name}
                       </CommandItem>
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
+                    ))}
+                  </CommandGroup>
+                  <CommandSeparator />
+                  <CommandGroup>
+                    <CommandItem
+                      onSelect={() => {
+                        setDialogOpen(true);
+                        setOpen(false);
+                      }}
+                    >
+                      <Plus className="mr-2 h-4 w-4" />
+                      Add new seed group
+                    </CommandItem>
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
 
-            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Add New Seed Group</DialogTitle>
-                </DialogHeader>
-                <div className="grid gap-4 py-4">
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="name" className="text-right">
-                      Name
-                    </Label>
-                    <Input
-                      id="name"
-                      value={newGroupName}
-                      onChange={(e) => setNewGroupName(e.target.value)}
-                      className="col-span-3"
-                    />
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button
-                    type="submit"
-                    onClick={() => addNewGroup(newGroupName)}
-                  >
-                    Add Group
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          </div>
-
-          <div className="ml-auto flex items-center gap-2">
-            <Settings
-              className="h-5 w-5 text-gray-500"
-              onClick={handleSettingsClick}
-            />
-            <User className="h-5 w-5 text-gray-500" />
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="secondary"
-                  size="icon"
-                  className="rounded-full"
-                >
-                  <CircleUser className="h-5 w-5" />
-                  <span className="sr-only">Toggle user menu</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleSettingsClick}>
-                  Settings
-                </DropdownMenuItem>
-                <DropdownMenuItem>Support</DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>Logout</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+          <Settings
+            className="h-5 w-5 text-gray-500 cursor-pointer"
+            onClick={handleSettingsClick}
+          />
+          <User className="h-5 w-5 text-gray-500" />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="secondary" size="icon" className="rounded-full">
+                <CircleUser className="h-5 w-5" />
+                <span className="sr-only">Toggle user menu</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleSettingsClick}>
+                Settings
+              </DropdownMenuItem>
+              <DropdownMenuItem>Support</DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>Logout</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
+
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Add New Seed Group</DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="name" className="text-right">
+                  Name
+                </Label>
+                <Input
+                  id="name"
+                  value={newGroupName}
+                  onChange={(e) => setNewGroupName(e.target.value)}
+                  className="col-span-3"
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="submit" onClick={() => addNewGroup(newGroupName)}>
+                Add Group
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </header>
       <Tabs defaultValue="sandbox" className="w-full">
         <TabsList className="w-full grid grid-cols-3">
