@@ -102,7 +102,9 @@ const Header = () => {
   useEffect(() => {
     const fetchGraphs = async () => {
       try {
-        const response = await fetch('http://localhost:3001/api/graphs');
+        const response = await fetch(
+          `${process.env.REACT_APP_API_BASE_URL}/api/graphs`
+        );
         const result = await response.json();
         setGraphs(result); // Only set graphs, ignoring variants
       } catch (error) {
@@ -120,7 +122,7 @@ const Header = () => {
 
     try {
       const response = await fetch(
-        `http://localhost:3001/api/graphs/${graphId}`
+        `${process.env.REACT_APP_API_BASE_URL}/api/graphs/${graphId}`
       );
       const result = await response.json();
 
@@ -138,14 +140,14 @@ const Header = () => {
     setSelectedVariant(variantId); // Set the selected variant
   };
 
-  const handleAddSeedGroup = () => {
-    if (newSeedGroup) {
-      const newGroup = {id: Date.now().toString(), name: newSeedGroup};
-      setSeedGroups([...seedGroups, newGroup]);
-      setSelectedSeedGroup(newGroup);
-      setNewSeedGroup('');
-    }
-  };
+  // const handleAddSeedGroup = () => {
+  //   if (newSeedGroup) {
+  //     const newGroup = {id: Date.now().toString(), name: newSeedGroup};
+  //     setSeedGroups([...seedGroups, newGroup]);
+  //     setSelectedSeedGroup(newGroup);
+  //     setNewSeedGroup('');
+  //   }
+  // };
 
   return (
     <>
@@ -157,8 +159,9 @@ const Header = () => {
           onClick={handleLogoClick}
         />
         <div className="flex items-center gap-4">
+          <Label htmlFor="graph-select">Graph</Label>
           <Select onValueChange={handleGraphChange}>
-            <SelectTrigger className="w-[200px]">
+            <SelectTrigger className="w-[200px]" id="graph-select">
               <SelectValue placeholder="Select a graph" />
             </SelectTrigger>
             <SelectContent>
@@ -170,12 +173,13 @@ const Header = () => {
             </SelectContent>
           </Select>
 
+          <Label htmlFor="variant-select">Variant/Proposal</Label>
           <Select
             value={selectedVariant || ''}
             onValueChange={handleVariantChange}
             disabled={!selectedGraph}
           >
-            <SelectTrigger className="w-[200px]">
+            <SelectTrigger className="w-[200px]" id="variant-select">
               <SelectValue placeholder="Variant / Proposal" />
             </SelectTrigger>
             <SelectContent>
@@ -198,8 +202,9 @@ const Header = () => {
             </SelectContent>
           </Select>
 
+          <Label htmlFor="seed-group-select">Seed Group</Label>
           <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger asChild>
+            <PopoverTrigger asChild id="seed-group-select">
               <Button
                 variant="outline"
                 role="combobox"

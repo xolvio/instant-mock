@@ -253,7 +253,7 @@ export default class SeedManager {
   }: {
     operationName: string;
     variables: Record<string, unknown>;
-    operationMock: {data: Record<string, unknown>; errors: object[]};
+    operationMock: {data: Record<string, unknown>; errors?: object[]};
     sequenceId: string;
     mockServer: MockServer;
     query: string;

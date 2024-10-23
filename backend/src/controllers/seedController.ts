@@ -3,13 +3,15 @@ import {Seed} from '../models/seed';
 import {SeedRepository} from '../repositories/seedRepository';
 import {SeedType} from '../seed/SeedManager';
 import {MockService} from '../service/mockService';
+import {MikroORM} from '@mikro-orm/core';
+import {getEntityManager} from '../db';
 
 export default class SeedController {
   private seedRepository: SeedRepository;
   private mockService: MockService;
 
-  constructor() {
-    this.seedRepository = new SeedRepository();
+  constructor(orm: MikroORM) {
+    this.seedRepository = new SeedRepository(orm.em);
     this.mockService = MockService.getInstance();
     this.getSeeds = this.getSeeds.bind(this);
     this.findSeedById = this.findSeedById.bind(this);
@@ -19,7 +21,7 @@ export default class SeedController {
   }
 
   async getSeeds(req: Request, res: Response) {
-    // TODO is it possible to simplify it?
+    const em = await getEntityManager();
     const graphId = req.query.graphId as string;
     const variantName = req.query.variantName as string;
 
@@ -28,12 +30,7 @@ export default class SeedController {
     }
 
     try {
-      // TODO add graphId to the method
-      const seeds: Seed[] =
-        await this.seedRepository.findByGraphIdAndVariantName(
-          graphId,
-          variantName
-        );
+      const seeds = await em.find(Seed, {graphId, variantName});
       res.json(seeds);
     } catch (error) {
       console.error('Error fetching seeds:', error);
@@ -75,7 +72,7 @@ export default class SeedController {
       seedResponse,
       operationName,
       operationMatchArguments,
-      sequenceId,
+      seedGroupId: sequenceId,
       graphId,
     };
 
@@ -89,11 +86,15 @@ export default class SeedController {
     );
 
     try {
-      mockServer.seedManager.registerSeed(seed.sequenceId, SeedType.Operation, {
-        operationName: seed.operationName,
-        seedResponse: seedResponse,
-        operationMatchArguments: operationMatchArguments,
-      });
+      mockServer.seedManager.registerSeed(
+        seed.seedGroupId,
+        SeedType.Operation,
+        {
+          operationName: seed.operationName,
+          seedResponse: seedResponse,
+          operationMatchArguments: operationMatchArguments,
+        }
+      );
 
       await this.seedRepository.createSeed(seed);
 
@@ -122,7 +123,7 @@ export default class SeedController {
       seedResponse,
       operationName,
       operationMatchArguments,
-      sequenceId,
+      seedGroupId: sequenceId,
       graphId,
     };
 
@@ -137,7 +138,7 @@ export default class SeedController {
 
     try {
       mockServer.seedManager.updateSeed(
-        seed.sequenceId,
+        seed.seedGroupId,
         oldOperationMatchArguments,
         {
           operationName: seed.operationName,

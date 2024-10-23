@@ -56,13 +56,17 @@ export class MockService {
     );
 
     for (const seed of seeds) {
-      mockServer.seedManager.registerSeed(seed.sequenceId, SeedType.Operation, {
-        operationName: seed.operationName,
-        // @ts-expect-error
-        seedResponse: seed.seedResponse,
-        // @ts-expect-error
-        operationMatchArguments: seed.operationMatchArguments,
-      });
+      mockServer.seedManager.registerSeed(
+        seed.seedGroupId,
+        SeedType.Operation,
+        {
+          operationName: seed.operationName,
+          // @ts-expect-error
+          seedResponse: seed.seedResponse,
+          // @ts-expect-error
+          operationMatchArguments: seed.operationMatchArguments,
+        }
+      );
     }
     mockInstances[graphId] = mockInstances[graphId] || {};
     mockInstances[graphId][variantName] = mockServer;
