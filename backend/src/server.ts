@@ -1,24 +1,24 @@
 require('dotenv').config();
 
-import express from 'express';
+import {
+  EntityManager,
+  EntityRepository,
+  MikroORM,
+  RequestContext,
+} from '@mikro-orm/core';
 import cors from 'cors';
+import express from 'express';
+import {parse} from 'graphql';
 import path from 'path';
 import swaggerJsdoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
-import {
-  MikroORM,
-  RequestContext,
-  EntityManager,
-  EntityRepository,
-} from '@mikro-orm/core';
-import mikroOrmConfig from './mikro-orm.config';
 import * as Undici from 'undici';
+import mikroOrmConfig from './mikro-orm.config';
+import {Seed} from './models/seed';
 import graphsRoutes from './routes/graphs.routes';
 import proposalsRoutes from './routes/proposals.routes';
 import seedsRoutes from './routes/seeds.routes';
-import {Seed} from './models/seed';
 import {MockService} from './service/mockService';
-import {parse} from 'graphql';
 
 const ProxyAgent = Undici.ProxyAgent;
 const setGlobalDispatcher = Undici.setGlobalDispatcher;
@@ -47,7 +47,7 @@ const port = process.env.PORT || 3001;
   DI.em = DI.orm.em;
   DI.seeds = DI.orm.em.getRepository(Seed);
 
-  const mockService = MockService.getInstance();
+  const mockService = MockService.getInstance(DI.em);
 
   app.use(cors());
   app.use(express.json());

@@ -1,3 +1,4 @@
+import {EntityManager} from '@mikro-orm/core';
 import {Mutex} from 'async-mutex';
 import Client from '../graphql/client';
 import mockInstances from '../mockInstances';
@@ -12,15 +13,15 @@ export class MockService {
   private seedRepository: SeedRepository;
   private mutex: Mutex;
 
-  constructor() {
+  constructor(private em: EntityManager) {
     this.client = new Client();
-    this.seedRepository = new SeedRepository();
+    this.seedRepository = new SeedRepository(this.em);
     this.mutex = new Mutex();
   }
 
-  public static getInstance(): MockService {
+  public static getInstance(em: EntityManager): MockService {
     if (!MockService.instance) {
-      MockService.instance = new MockService();
+      MockService.instance = new MockService(em);
     }
     return MockService.instance;
   }
@@ -61,9 +62,7 @@ export class MockService {
         SeedType.Operation,
         {
           operationName: seed.operationName,
-          // @ts-expect-error
           seedResponse: seed.seedResponse,
-          // @ts-expect-error
           operationMatchArguments: seed.operationMatchArguments,
         }
       );

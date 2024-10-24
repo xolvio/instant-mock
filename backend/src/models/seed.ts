@@ -22,4 +22,20 @@ export class Seed {
 
   @Property()
   seedGroupId!: string;
+
+  constructor(
+    graphId: string,
+    variantName: string,
+    operationName: string,
+    seedResponse: any,
+    operationMatchArguments: any,
+    seedGroupId: string
+  ) {
+    this.graphId = graphId;
+    this.variantName = variantName;
+    this.operationName = operationName;
+    this.seedResponse = seedResponse;
+    this.operationMatchArguments = operationMatchArguments;
+    this.seedGroupId = seedGroupId;
+  }
 }

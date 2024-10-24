@@ -1,9 +1,9 @@
+import {MikroORM} from '@mikro-orm/core';
 import {Request, Response} from 'express';
 import {Seed} from '../models/seed';
 import {SeedRepository} from '../repositories/seedRepository';
 import {SeedType} from '../seed/SeedManager';
 import {MockService} from '../service/mockService';
-import {MikroORM} from '@mikro-orm/core';
 
 export default class SeedController {
   private seedRepository: SeedRepository;
@@ -11,7 +11,7 @@ export default class SeedController {
 
   constructor(orm: MikroORM) {
     this.seedRepository = new SeedRepository(orm.em);
-    this.mockService = MockService.getInstance();
+    this.mockService = MockService.getInstance(orm.em);
 
     // Bind class methods to the instance
     this.getSeeds = this.getSeeds.bind(this);
@@ -69,14 +69,14 @@ export default class SeedController {
       return res.status(400).send('Variant name is required');
     }
 
-    const seed: Seed = {
+    const seed: Seed = new Seed(
       graphId,
       variantName,
       seedResponse,
       operationName,
       operationMatchArguments,
-      seedGroupId: sequenceId,
-    };
+      sequenceId
+    );
 
     try {
       const mockServer = await this.mockService.getOrStartNewMockServer(

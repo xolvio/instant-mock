@@ -1,12 +1,13 @@
 import {Request, Response} from 'express';
 import mockInstances from '../mockInstances';
+import {DI} from '../server';
 import {MockService} from '../service/mockService';
 
 export default class MockController {
   private mockService: MockService;
 
   constructor() {
-    this.mockService = MockService.getInstance();
+    this.mockService = MockService.getInstance(DI.em);
     this.startNewMockInstance = this.startNewMockInstance.bind(this);
   }
 
