@@ -1,0 +1,1 @@
+postgres_db:5432:*:instant_mock:strongpassword
