@@ -136,3 +136,4 @@ dist
 .pnp.*
 
 seeds.db
+.pgpass

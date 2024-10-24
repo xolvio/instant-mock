@@ -1,15 +1,7 @@
-import React, {useEffect} from 'react';
-import {useNavigate} from 'react-router';
-import GraphDashboard from './/graph-dashboard';
+import React from 'react';
 
 const Home = () => {
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    navigate('/graphs', {replace: true});
-  }, [navigate]);
-
-  return <GraphDashboard />;
+  return <></>;
 };
 
 export default Home;

@@ -1,8 +1,8 @@
-import express, {Router} from 'express';
-import SeedController from '../controllers/seedController';
+import express, {Router, Request, Response} from 'express';
+
+import {DI} from '../server';
 
 const router: Router = express.Router();
-const seedController = new SeedController(); // Initialize SeedController
 
 /**
  * @openapi
@@ -53,9 +53,20 @@ const seedController = new SeedController(); // Initialize SeedController
  *       500:
  *         description: Server error while fetching seeds.
  */
-router.get('/seeds', seedController.getSeeds);
+router.get('/seeds', async (req: Request, res: Response) => {
+  const graphId = req.query.graphId as string;
+  const variantName = req.query.variantName as string;
+  if (!variantName)
+    return res.status(400).json({message: 'Variant name is required'});
 
-router.get('/seeds/:id', seedController.findSeedById);
+  const seeds = await DI.seeds.find({graphId, variantName});
+  res.json(seeds);
+});
+
+router.get('/seeds/:id', async (req: Request, res: Response) => {
+  const seed = await DI.seeds.findOne({id: parseInt(req.params.id)});
+  seed ? res.json(seed) : res.status(404).json({message: 'Seed not found'});
+});
 
 /**
  * @openapi
@@ -112,7 +123,29 @@ router.get('/seeds/:id', seedController.findSeedById);
  *       500:
  *         description: Server error while registering seed.
  */
-router.post('/seeds', seedController.createSeed);
+router.post('/seeds', async (req: Request, res: Response) => {
+  const {
+    graphId,
+    variantName,
+    seedResponse,
+    operationName,
+    operationMatchArguments,
+    seedGroupId,
+  } = req.body;
+  if (!variantName)
+    return res.status(400).json({message: 'Variant name is required'});
+
+  const seed = DI.seeds.create({
+    graphId,
+    variantName,
+    seedResponse,
+    operationName,
+    operationMatchArguments,
+    seedGroupId,
+  });
+
+  res.status(201).json({message: 'Seed registered successfully'});
+});
 
 /**
  * @openapi
@@ -175,7 +208,18 @@ router.post('/seeds', seedController.createSeed);
  *                   type: string
  *                   example: "Detailed error message"
  */
-router.delete('/seeds/:id', seedController.deleteSeed);
-router.patch('/seeds', seedController.updateSeed);
+router.delete('/seeds/:id', async (req: Request, res: Response) => {
+  const seed = await DI.seeds.findOne({id: parseInt(req.params.id)});
+  if (!seed) return res.status(404).json({message: 'Seed not found'});
+  res.json({message: 'Seed deleted successfully'});
+});
+
+router.patch('/seeds', async (req: Request, res: Response) => {
+  const {id, ...updateData} = req.body;
+  const seed = await DI.seeds.findOne({id});
+  if (!seed) return res.status(404).json({message: 'Seed not found'});
+  DI.seeds.assign(seed, updateData);
+  res.json({message: 'Seed updated successfully'});
+});
 
 export default router;
