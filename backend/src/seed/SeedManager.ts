@@ -32,9 +32,9 @@ type SeedCacheInstance = {
 export default class SeedManager {
   private seedCache: Record<string, Record<string, SeedCacheInstance[]>> = {};
 
-  private validateSequenceId(sequenceId: string): boolean {
-    if (!sequenceId || typeof sequenceId !== 'string') {
-      throw new Error('sequenceId is required');
+  private validateSeedGroupId(seedGroupId: string): boolean {
+    if (!seedGroupId || typeof seedGroupId !== 'string') {
+      throw new Error('seedGroupId is required');
     }
 
     return true;
@@ -81,18 +81,18 @@ export default class SeedManager {
   }
 
   registerSeed(
-    sequenceId: string,
+    seedGroupId: string,
     type: SeedType,
     seed: Seed,
     {usesLeft, partialArgs, statusCode}: SeedOptions = {}
   ): void {
-    this.validateSequenceId(sequenceId);
+    this.validateSeedGroupId(seedGroupId);
     this.validateSeed(type, seed);
 
     const {operationName, seedResponse, operationMatchArguments = {}} = seed;
-    this.seedCache[sequenceId] ??= {};
-    this.seedCache[sequenceId][operationName] ??= [];
-    this.seedCache[sequenceId][operationName].push({
+    this.seedCache[seedGroupId] ??= {};
+    this.seedCache[seedGroupId][operationName] ??= [];
+    this.seedCache[seedGroupId][operationName].push({
       type,
       seedResponse,
       operationMatchArguments,
@@ -105,14 +105,14 @@ export default class SeedManager {
   }
 
   updateSeed(
-    sequenceId: string,
+    seedGroupId: string,
     oldOperationMatchArguments: OperationMatchArguments,
     seed: Seed
     // {usesLeft, partialArgs, statusCode}: SeedOptions = {}
   ): void {
     this.validateSeed(SeedType.Operation, seed);
     const seedCacheInstance = this.findSeed(
-      sequenceId,
+      seedGroupId,
       seed.operationName,
       oldOperationMatchArguments
     );
@@ -122,28 +122,28 @@ export default class SeedManager {
   }
 
   deleteSeed(
-    sequenceId: string,
+    seedGroupId: string,
     operationName: string,
     oldOperationMatchArguments: OperationMatchArguments
     // {usesLeft, partialArgs, statusCode}: SeedOptions = {}
   ): void {
     const {seedIndex} = this.findSeed(
-      sequenceId,
+      seedGroupId,
       operationName,
       oldOperationMatchArguments
     );
 
     if (seedIndex !== -1) {
-      delete this.seedCache[sequenceId][operationName][seedIndex];
+      delete this.seedCache[seedGroupId][operationName][seedIndex];
     }
   }
 
   // @ts-expect-error TODO fix types
-  private maybeDiscardSeed(sequenceId, operationName, seedIndex): void {
-    const seed = this.seedCache[sequenceId][operationName][seedIndex];
+  private maybeDiscardSeed(seedGroupId, operationName, seedIndex): void {
+    const seed = this.seedCache[seedGroupId][operationName][seedIndex];
     seed.options.usesLeft -= 1;
     if (seed.options.usesLeft === 0) {
-      this.seedCache[sequenceId][operationName].splice(seedIndex, 1);
+      this.seedCache[seedGroupId][operationName].splice(seedIndex, 1);
     }
   }
 
@@ -181,7 +181,7 @@ export default class SeedManager {
 
   // @ts-expect-error TODO fix types
   private findSeed(
-    sequenceId,
+    seedGroupId,
     operationName,
     operationArguments
   ): {
@@ -189,13 +189,13 @@ export default class SeedManager {
     seedIndex: number;
   } {
     if (
-      sequenceId === undefined ||
-      !this.seedCache[sequenceId] ||
-      !this.seedCache[sequenceId][operationName]
+      seedGroupId === undefined ||
+      !this.seedCache[seedGroupId] ||
+      !this.seedCache[seedGroupId][operationName]
     ) {
       GraphqlMockingContextLogger.info(
         `🟡 no matching seed found for operationName: ${operationName}`,
-        sequenceId
+        seedGroupId
       );
       return {
         seed: {},
@@ -203,7 +203,7 @@ export default class SeedManager {
       };
     }
 
-    const seedIndex = this.seedCache[sequenceId][operationName].findLastIndex(
+    const seedIndex = this.seedCache[seedGroupId][operationName].findLastIndex(
       (seedDefinition) => {
         const argsMatch = this.matchArguments(
           seedDefinition.operationMatchArguments,
@@ -222,7 +222,7 @@ export default class SeedManager {
       }
     );
 
-    const seed = this.seedCache[sequenceId][operationName][seedIndex] || {};
+    const seed = this.seedCache[seedGroupId][operationName][seedIndex] || {};
 
     if (seedIndex === -1) {
       GraphqlMockingContextLogger.info(
@@ -231,10 +231,10 @@ export default class SeedManager {
           null,
           2
         )} are not a match `,
-        sequenceId
+        seedGroupId
       );
     } else {
-      GraphqlMockingContextLogger.info(`🟢 found matching seed`, sequenceId);
+      GraphqlMockingContextLogger.info(`🟢 found matching seed`, seedGroupId);
     }
 
     return {
@@ -247,14 +247,14 @@ export default class SeedManager {
     operationName,
     variables,
     operationMock,
-    sequenceId,
+    seedGroupId,
     mockServer,
     query,
   }: {
     operationName: string;
     variables: Record<string, unknown>;
     operationMock: {data: Record<string, unknown>; errors?: object[]};
-    sequenceId: string;
+    seedGroupId: string;
     mockServer: MockServer;
     query: string;
   }): Promise<{
@@ -262,7 +262,7 @@ export default class SeedManager {
     statusCode: number;
   }> {
     const {seed, seedIndex} = this.findSeed(
-      sequenceId,
+      seedGroupId,
       operationName,
       variables
     );
@@ -282,7 +282,7 @@ export default class SeedManager {
               operationName,
             }
           );
-          this.maybeDiscardSeed(sequenceId, operationName, seedIndex);
+          this.maybeDiscardSeed(seedGroupId, operationName, seedIndex);
           return {
             operationResponse: {
               data: seededMock.data.data as Record<string, unknown>,
@@ -294,7 +294,7 @@ export default class SeedManager {
             statusCode: validSeed.options.statusCode,
           };
         case SeedType.NetworkError:
-          this.maybeDiscardSeed(sequenceId, operationName, seedIndex);
+          this.maybeDiscardSeed(seedGroupId, operationName, seedIndex);
           return Promise.resolve({
             operationResponse: validSeed.seedResponse,
             statusCode: validSeed.options.statusCode,
