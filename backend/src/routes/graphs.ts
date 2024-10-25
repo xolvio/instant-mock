@@ -1,6 +1,6 @@
 import express, {Request, Response, Router} from 'express';
-import Client from '../graphql/client';
 import {buildASTSchema, parse} from 'graphql';
+import Client from '../graphql/client';
 import {createProposedSubgraphsFromOperationsMissingFields} from '../utilities/operationToSchema';
 
 const router: Router = express.Router();
@@ -45,6 +45,7 @@ router.get('/graphs/:graphId', async (req: Request, res: Response) => {
       ? await client.getGraphWithSubgraphs(graphId)
       : await client.getGraph(graphId);
 
+    //@ts-ignore
     const proposals = graph.proposals?.proposals.map((p) => ({
       ...p,
       key: p.key.id,
@@ -91,9 +92,11 @@ router.post('/graphs/:graphId/reset', async (req: Request, res: Response) => {
   try {
     const graph = await client.getGraph(graphId);
     const openProposals = graph.proposals.proposals.filter(
+      //@ts-ignore
       (p) => p.status !== 'CLOSED'
     );
     await Promise.all(
+      //@ts-ignore
       openProposals.map((p) => client.updateProposalStatus(p.id, 'CLOSED'))
     );
     res.json('success');
