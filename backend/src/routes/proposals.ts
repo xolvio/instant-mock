@@ -1,6 +1,6 @@
 import express, {Request, Response, Router} from 'express';
+import {buildASTSchema, GraphQLSchema, parse} from 'graphql';
 import Client from '../graphql/client';
-import {buildASTSchema, parse, GraphQLSchema} from 'graphql';
 import {createProposedSubgraphsFromOperationsMissingFields} from '../utilities/operationToSchema';
 
 const router: Router = express.Router();
@@ -112,6 +112,7 @@ router.post(
           revision.proposal.publishSubgraphs.id
         );
         const latestLaunch = proposalStatus.activities?.edges?.find(
+          //@ts-ignore
           (edge) => edge?.node?.target?.launch?.id === latestLaunchId
         );
 
