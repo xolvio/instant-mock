@@ -1,4 +1,4 @@
-import express, {Router, Request, Response} from 'express';
+import express, {Request, Response, Router} from 'express';
 
 import {DI} from '../server';
 
@@ -45,7 +45,7 @@ const router: Router = express.Router();
  *                   operationMatchArguments:
  *                     type: string
  *                     example: "{\"arg1\": \"value1\", \"arg2\": \"value2\"}"
- *                   sequenceId:
+ *                   seedGroupId:
  *                     type: string
  *                     example: "seq-001"
  *       400:
@@ -103,7 +103,7 @@ router.get('/seeds/:id', async (req: Request, res: Response) => {
  *                 type: string
  *                 description: The arguments to match the operation.
  *                 example: "{\"arg1\": \"value1\", \"arg2\": \"value2\"}"
- *               sequenceId:
+ *               seedGroupId:
  *                 type: string
  *                 description: The sequence ID for matching requests.
  *                 example: "seq-001"
@@ -143,6 +143,8 @@ router.post('/seeds', async (req: Request, res: Response) => {
     operationMatchArguments,
     seedGroupId,
   });
+
+  await DI.seeds.getEntityManager().persistAndFlush(seed);
 
   res.status(201).json({message: 'Seed registered successfully'});
 });
