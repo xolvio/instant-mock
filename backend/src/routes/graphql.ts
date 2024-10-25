@@ -1,6 +1,6 @@
+import {Mutex} from 'async-mutex';
 import {Request, Response, Router} from 'express';
 import {parse} from 'graphql';
-import {Mutex} from 'async-mutex';
 import Client from '../graphql/client';
 import mockInstances from '../mockInstances';
 import MockServer from '../MockServer';
@@ -62,7 +62,7 @@ const handleGraphQLRequest = async (
 ) => {
   const {query = '', variables = {}} = req.body;
   const operationName = req.body.operationName;
-  const sequenceId = req.headers['mocking-sequence-id'] as string;
+  const seedGroupId = req.headers['mocking-sequence-id'] as string;
 
   console.log('Handling GraphQL Request:', {
     graphId,
@@ -101,7 +101,7 @@ const handleGraphQLRequest = async (
         operationName,
         variables,
         operationMock: operationResult,
-        sequenceId,
+        seedGroupId,
         mockServer,
         query: typenamedQuery,
       });
