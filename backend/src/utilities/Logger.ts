@@ -2,23 +2,23 @@ import chalk from 'chalk';
 
 class Logger {
   // @ts-expect-error TODO fix types
-  info(message, sequenceId) {
-    console.log(chalk.blue(this.formatMessage(message, sequenceId)));
+  info(message, seedGroupId) {
+    console.log(chalk.blue(this.formatMessage(message, seedGroupId)));
   }
 
   // @ts-expect-error TODO fix types
-  warning(message, sequenceId) {
-    console.log(chalk.yellow(this.formatMessage(message, sequenceId)));
+  warning(message, seedGroupId) {
+    console.log(chalk.yellow(this.formatMessage(message, seedGroupId)));
   }
 
   // @ts-expect-error TODO fix types
-  error(message, sequenceId) {
-    console.log(chalk.red(this.formatMessage(message, sequenceId)));
+  error(message, seedGroupId) {
+    console.log(chalk.red(this.formatMessage(message, seedGroupId)));
   }
 
   // @ts-expect-error TODO fix types
-  private formatMessage(message, sequenceId): string {
-    return `[${this.formatTimestamp()} | sequenceId: ${sequenceId}]: ${message}`;
+  private formatMessage(message, seedGroupId): string {
+    return `[${this.formatTimestamp()} | seedGroupId: ${seedGroupId}]: ${message}`;
   }
 
   private formatTimestamp(): string {
