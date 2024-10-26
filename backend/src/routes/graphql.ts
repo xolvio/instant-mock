@@ -41,7 +41,7 @@ const startNewMockServer = async (
   const seeds = await DI.seeds.find({graphId, variantName});
 
   seeds.forEach((seed) => {
-    mockServer.seedManager.registerSeed(seed.seedGroupId, SeedType.Operation, {
+    mockServer.seedManager.registerSeed(seed.seedGroup.id, SeedType.Operation, {
       operationName: seed.operationName,
       seedResponse: seed.seedResponse,
       operationMatchArguments: seed.operationMatchArguments,

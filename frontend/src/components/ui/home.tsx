@@ -1,7 +1,6 @@
 import {ApolloSandbox} from '@apollo/sandbox/react';
 import {zodResolver} from '@hookform/resolvers/zod';
 import {
-  Check,
   ChevronsUpDown,
   CircleUser,
   MoreHorizontal,
@@ -14,7 +13,6 @@ import {useForm} from 'react-hook-form';
 import {useNavigate} from 'react-router';
 import {z} from 'zod';
 import logo from '../../assets/logo.png';
-import {cn} from '../../lib/utils';
 import {getSeeds} from '../../services/SeedService';
 import {Button} from './button';
 import {
@@ -87,55 +85,135 @@ import {toast} from './use-toast';
 const Home = () => {
   const navigate = useNavigate();
   const [selectedGraph, setSelectedGraph] = useState(null);
-  const [selectedVariant, setSelectedVariant] = useState(null); // Track selected variant
+  const [selectedVariant, setSelectedVariant] = useState(null);
   const [variants, setVariants] = useState([]);
   const [proposals, setProposals] = useState([]);
   const [seedGroups, setSeedGroups] = useState([]);
   const [selectedSeedGroup, setSelectedSeedGroup] = useState(null);
-  const [newSeedGroup, setNewSeedGroup] = useState('');
   const [graphs, setGraphs] = useState([]);
   const [open, setOpen] = useState(false);
-  const [value, setValue] = useState('');
-  const [groups, setGroups] = useState(seedGroups);
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [newGroupName, setNewGroupName] = React.useState('');
   const [seedWithArguments, setSeedWithArguments] = useState(false);
   const [seeds, setSeeds] = useState([]);
   const serverBaseUrl = process.env.REACT_APP_API_BASE_URL;
 
-  const addNewGroup = (newGroupName: string) => {
-    const newGroup = {
-      id: (groups.length + 1).toString(),
-      name: newGroupName,
-    };
-    setGroups([...groups, newGroup]);
-    setValue(newGroup.id);
-    setDialogOpen(false);
-  };
-
-  // Navigation handlers
   const handleSettingsClick = () => navigate('/settings');
   const handleLogoClick = () => navigate('/graphs');
 
-  // Fetch only graphs on component mount
   useEffect(() => {
-    const fetchGraphs = async () => {
-      try {
-        const response = await fetch(`${serverBaseUrl}/api/graphs`);
-        const result = await response.json();
-        setGraphs(result); // Only set graphs, ignoring variants
-      } catch (error) {
-        console.error('Error fetching graphs:', error);
-      }
+    const fetchSeedGroups = () => {
+      console.log('Fetching seed groups...');
+      return fetch(`${serverBaseUrl}/api/seedGroups`)
+        .then((response) => response.json())
+        .then((result) => {
+          console.log('Seed groups fetched:', result);
+          setSeedGroups(result);
+
+          const defaultGroup = result.find((group) => group.id === 1);
+          if (defaultGroup) {
+            console.log('Default group found:', defaultGroup);
+            setSelectedSeedGroup(defaultGroup);
+          } else {
+            console.warn('No default group found.');
+          }
+
+          return defaultGroup; // Return for use in next steps
+        })
+        .catch((error) => console.error('Error fetching seed groups:', error));
     };
-    fetchGraphs();
+
+    const fetchGraphDetails = (graphId) => {
+      console.log(`Fetching details for graph ID: ${graphId}...`);
+      return fetch(`${serverBaseUrl}/api/graphs/${graphId}`)
+        .then((response) => response.json())
+        .then((graphDetails) => {
+          console.log('Graph details fetched:', graphDetails);
+          setVariants(graphDetails.variants || []);
+          setProposals(graphDetails.proposals || []);
+
+          const firstVariant = graphDetails.variants?.[0];
+          if (firstVariant) {
+            console.log('First variant found:', firstVariant);
+            setSelectedVariant(firstVariant);
+          } else {
+            console.warn('No variants found in graph details.');
+          }
+
+          return firstVariant; // Return for use in fetchSeeds
+        })
+        .catch((error) =>
+          console.error(`Error fetching details for graph ${graphId}:`, error)
+        );
+    };
+
+    const fetchGraphs = () => {
+      console.log('Fetching graphs...');
+      return fetch(`${serverBaseUrl}/api/graphs`)
+        .then((response) => response.json())
+        .then((result) => {
+          console.log('Graphs fetched:', result);
+          setGraphs(result);
+
+          if (result.length > 0) {
+            const firstGraph = result[0];
+            console.log('First graph found:', firstGraph);
+            setSelectedGraph(firstGraph);
+
+            return fetchGraphDetails(firstGraph.id);
+          } else {
+            console.warn('No graphs available.');
+          }
+        })
+        .catch((error) => console.error('Error fetching graphs:', error));
+    };
+
+    fetchSeedGroups()
+      .then((defaultGroup) => {
+        if (!defaultGroup) {
+          console.warn('No default seed group available, skipping seed fetch.');
+          throw new Error('No default group found');
+        }
+
+        return fetchGraphs().then((firstVariant) => {
+          console.log('Graphs and variants processed.');
+          return {defaultGroup, firstVariant};
+        });
+      })
+      .then(({defaultGroup, firstVariant}) => {
+        if (firstVariant && defaultGroup) {
+          console.log(
+            'Fetching seeds with:',
+            `Graph Key: ${firstVariant.key.split('@')[0]}`,
+            `Variant Name: ${firstVariant.key.split('@')[1]}`,
+            `Group ID: ${defaultGroup.id}`
+          );
+
+          fetchSeeds(
+            firstVariant.key.split('@')[0],
+            firstVariant.key.split('@')[1],
+            defaultGroup.id
+          );
+        } else {
+          console.warn('Could not fetch seeds: missing variant or group.');
+        }
+      })
+      .catch((error) =>
+        console.error('Error during data fetching or processing:', error)
+      );
   }, []);
 
-  // Fetch variants and proposals for the selected graph
+  useEffect(() => {
+    if (selectedSeedGroup && selectedVariant && selectedGraph) {
+      console.log('selectedSeedGroup', selectedSeedGroup);
+      const [graphId, variantName] = selectedVariant.key.split('@');
+      fetchSeeds(graphId, variantName, selectedSeedGroup.id);
+    }
+  }, [selectedSeedGroup, selectedVariant, selectedGraph]);
+
   const handleGraphChange = async (graphId) => {
     const selectedGraph = graphs.find((g) => g.id === graphId) || null;
     setSelectedGraph(selectedGraph);
-    setSelectedVariant(null); // Clear variant when a new graph is selected
 
     try {
       const response = await fetch(`${serverBaseUrl}/api/graphs/${graphId}`);
@@ -143,6 +221,11 @@ const Home = () => {
 
       setVariants(result.variants || []);
       setProposals(result.proposals || []);
+
+      // Automatically select the first variant for the new graph
+      if (result.variants && result.variants.length > 0) {
+        setSelectedVariant(result.variants[0]);
+      }
     } catch (error) {
       console.error('Error fetching graph details:', error);
       setVariants([]);
@@ -150,19 +233,24 @@ const Home = () => {
     }
   };
 
+  const fetchSeeds = (graphId, variantName, seedGroupId) => {
+    console.log('fetching seeds');
+    getSeeds(graphId, variantName, seedGroupId)
+      .then((seeds) => {
+        setSeeds(seeds);
+      })
+      .catch((e) => {
+        console.error('Error fetching seeds: ', e);
+        setSeeds([]);
+      });
+  };
+
   const handleVariantChange = (variant) => {
     setSelectedVariant(variant);
     console.log('Selected variant is:', variant);
-    // TODO replace with real name
-    getSeeds(selectedGraph.id, variant.name)
-      .then((fetchedSeeds) => {
-        setSeeds(fetchedSeeds);
-        console.log('Seeds are: ', fetchedSeeds);
-      })
-      .catch((error) => {
-        console.error('Error fetching seeds:', error);
-        setSeeds([]);
-      });
+
+    const [graphId, variantName] = variant.key.split('@');
+    fetchSeeds(graphId, variantName, selectedSeedGroup.id);
   };
 
   const jsonValidator = z.string().refine(
@@ -200,17 +288,18 @@ const Home = () => {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
+      const [graphId, variantName] = selectedVariant.key.split('@');
       const normalizedValues = {
         ...values,
-        variantName: selectedVariant.name,
-        // TODO use real one
-        seedGroupId: newGroupName,
-        graphId: selectedGraph.id,
+        variantName,
+        seedGroupId: selectedSeedGroup.id,
+        graphId,
         operationMatchArguments: JSON.parse(values.operationMatchArguments),
         seedResponse: JSON.parse(values.seedResponse),
       };
+
       const response: Response = await fetch(
-        `${serverBaseUrl}/api/seeds?variantName=${selectedVariant.name}&graphId=${selectedGraph.id}`,
+        `${serverBaseUrl}/api/seeds?variantName=${variantName}&graphId=${graphId}`,
         {
           method: 'POST',
           headers: {
@@ -248,14 +337,32 @@ const Home = () => {
     }
   }
 
-  // const handleAddSeedGroup = () => {
-  //   if (newSeedGroup) {
-  //     const newGroup = {id: Date.now().toString(), name: newSeedGroup};
-  //     setSeedGroups([...seedGroups, newGroup]);
-  //     setSelectedSeedGroup(newGroup);
-  //     setNewSeedGroup('');
-  //   }
-  // };
+  useEffect(() => {}, []);
+
+  const addSeedGroup = async (newGroupName) => {
+    if (!newGroupName.trim()) return;
+    try {
+      const response = await fetch(`${serverBaseUrl}/api/seedGroups`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({name: newGroupName}),
+      });
+
+      if (response.ok) {
+        const newGroup = await response.json();
+        setSeedGroups([...seedGroups, newGroup]);
+        setSelectedSeedGroup(newGroup);
+        setDialogOpen(false);
+        setNewGroupName('');
+        toast({title: 'New seed group added successfully!'});
+      } else {
+        toast({variant: 'destructive', title: 'Failed to add seed group.'});
+      }
+    } catch (error) {
+      console.error('Error creating new seed group:', error);
+      toast({variant: 'destructive', title: 'Error adding new seed group.'});
+    }
+  };
 
   return (
     <>
@@ -269,9 +376,15 @@ const Home = () => {
         />
         <div className="flex items-center gap-4">
           <Label htmlFor="graph-select">Graph</Label>
-          <Select onValueChange={handleGraphChange}>
+
+          <Select
+            onValueChange={handleGraphChange}
+            value={selectedGraph?.id || ''}
+          >
             <SelectTrigger className="w-[200px]" id="graph-select">
-              <SelectValue placeholder="Select a graph" />
+              <SelectValue placeholder="Select a graph">
+                {selectedGraph?.name || 'Select a graph'}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               {graphs.map((graph) => (
@@ -282,35 +395,36 @@ const Home = () => {
             </SelectContent>
           </Select>
 
-          <Label htmlFor="variant-select">Variant/Proposal</Label>
+          <div>Variant</div>
           <Select
-            value={selectedVariant || ''}
-            onValueChange={handleVariantChange}
+            onValueChange={(value) => handleVariantChange(value)}
+            value={selectedVariant?.displayName || ''}
             disabled={!selectedGraph}
           >
             <SelectTrigger className="w-[200px]" id="variant-select">
-              <SelectValue placeholder="Variant / Proposal" />
+              <SelectValue placeholder="Select a variant">
+                {selectedVariant?.displayName || 'Select a variant'}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
                 <SelectLabel>Variants</SelectLabel>
                 {variants.map((variant) => (
                   <SelectItem key={variant.id} value={variant}>
-                    {variant.name}
+                    {variant.displayName}
                   </SelectItem>
                 ))}
               </SelectGroup>
               <SelectGroup>
                 <SelectLabel>Proposals</SelectLabel>
                 {proposals.map((proposal) => (
-                  <SelectItem key={proposal.id} value={proposal.id}>
+                  <SelectItem key={proposal.id} value={proposal}>
                     {proposal.displayName}
                   </SelectItem>
                 ))}
               </SelectGroup>
             </SelectContent>
           </Select>
-
           <Label htmlFor="seed-group-select">Seed Group</Label>
           <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild id="seed-group-select">
@@ -320,8 +434,8 @@ const Home = () => {
                 aria-expanded={open}
                 className="w-[250px] justify-between"
               >
-                {value
-                  ? groups.find((group) => group.id === value)?.name
+                {selectedSeedGroup
+                  ? selectedSeedGroup.name
                   : 'Select seed group...'}
                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
               </Button>
@@ -332,22 +446,30 @@ const Home = () => {
                 <CommandList>
                   <CommandEmpty>No seed group found.</CommandEmpty>
                   <CommandGroup heading="Seed Groups">
-                    {groups.map((group) => (
+                    {seedGroups.map((g) => (
                       <CommandItem
-                        key={group.id}
-                        value={group.id}
-                        onSelect={(currentValue) => {
-                          setValue(currentValue === value ? '' : currentValue);
+                        key={g.id}
+                        value={g.name}
+                        onSelect={(seedGroupName) => {
+                          const selectedGroup = seedGroups.find(
+                            (g) => g.name === seedGroupName
+                          );
+                          if (selectedGroup) {
+                            console.log(
+                              '[home.tsx:446] Selected group:',
+                              selectedGroup
+                            );
+                            setSelectedSeedGroup(selectedGroup);
+                          } else {
+                            console.warn(
+                              'Group not found for value:',
+                              seedGroupName
+                            );
+                          }
                           setOpen(false);
                         }}
                       >
-                        <Check
-                          className={cn(
-                            'mr-2 h-4 w-4',
-                            value === group.id ? 'opacity-100' : 'opacity-0'
-                          )}
-                        />
-                        {group.name}
+                        {g.name}
                       </CommandItem>
                     ))}
                   </CommandGroup>
@@ -412,7 +534,7 @@ const Home = () => {
               </div>
             </div>
             <DialogFooter>
-              <Button type="submit" onClick={() => addNewGroup(newGroupName)}>
+              <Button type="submit" onClick={() => addSeedGroup(newGroupName)}>
                 Add Group
               </Button>
             </DialogFooter>
@@ -427,12 +549,12 @@ const Home = () => {
         </TabsList>
         <TabsContent value="sandbox" className="w-full h-[calc(100vh-64px)]">
           <ApolloSandbox
-            key={selectedGraph?.id + selectedVariant}
+            key={selectedGraph?.id + selectedVariant?.key}
             endpointIsEditable={false}
             initialEndpoint={
               selectedGraph && selectedVariant
-                ? `${serverBaseUrl}/api/${selectedGraph.id}/${selectedVariant.name}/graphql`
-                : 'localhost:9012/graphql'
+                ? `${serverBaseUrl}/api/${selectedVariant.key.replace('@', '/')}/graphql`
+                : 'http://an-error-occurred'
             }
             className="w-full h-full"
           />

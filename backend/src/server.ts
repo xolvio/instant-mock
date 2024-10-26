@@ -9,6 +9,7 @@ import {
 } from '@mikro-orm/core';
 import mikroOrmConfig from './mikro-orm.config';
 import {Seed} from './models/seed';
+import {SeedGroup} from './models/seedGroup';
 import cors from 'cors';
 import express from 'express';
 import * as Undici from 'undici';
@@ -19,6 +20,7 @@ import graphqlRoutes from './routes/graphql';
 import graphsRoutes from './routes/graphs';
 import proposalsRoutes from './routes/proposals';
 import seedsRoutes from './routes/seeds';
+import seedGroupsRoutes from './routes/seedGroups';
 
 const ProxyAgent = Undici.ProxyAgent;
 const setGlobalDispatcher = Undici.setGlobalDispatcher;
@@ -37,6 +39,7 @@ export const DI = {} as {
   orm: MikroORM;
   em: EntityManager;
   seeds: EntityRepository<Seed>;
+  seedGroups: EntityRepository<SeedGroup>;
 };
 
 const app = express();
@@ -46,6 +49,16 @@ const port = process.env.PORT || 3001;
   DI.orm = await MikroORM.init(mikroOrmConfig);
   DI.em = DI.orm.em;
   DI.seeds = DI.orm.em.getRepository(Seed);
+  DI.seedGroups = DI.orm.em.getRepository(SeedGroup);
+
+  const em = DI.orm.em.fork();
+  const defaultGroup = await em
+    .getRepository(SeedGroup)
+    .findOne({name: 'default'});
+  if (!defaultGroup) {
+    const newGroup = em.getRepository(SeedGroup).create({name: 'default'});
+    await em.persistAndFlush(newGroup);
+  }
 
   app.use(cors());
   app.use(express.json());
@@ -54,6 +67,7 @@ const port = process.env.PORT || 3001;
   app.use('/api', graphsRoutes);
   app.use('/api', proposalsRoutes);
   app.use('/api', graphqlRoutes);
+  app.use('/api', seedGroupsRoutes);
 
   const options = {
     definition: {

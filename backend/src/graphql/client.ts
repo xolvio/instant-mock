@@ -68,7 +68,6 @@ export default class Client {
       query: GET_GRAPH,
       variables: {
         graphId: graphId,
-        // TODO remove it after summit, consumers should define filters themselvers
         filterBy: {
           status: ['APPROVED', 'DRAFT', 'IMPLEMENTED', 'OPEN'],
         },
@@ -102,12 +101,16 @@ export default class Client {
   }
 
   async getSchema(graphId: string, name: string) {
-    const {data} = await this.apolloClient.query({
-      query: GET_SCHEMA,
-      variables: {graphId: graphId, name},
-    });
+    try {
+      const {data} = await this.apolloClient.query({
+        query: GET_SCHEMA,
+        variables: {graphId: graphId, name},
+      });
 
-    return data.graph.variant.latestPublication.schema.document;
+      return data.graph.variant.latestPublication.schema.document;
+    } catch (e) {
+      console.error('getSchema error:\n', e);
+    }
   }
 
   async proposalLaunches(proposalId: string) {

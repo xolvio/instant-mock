@@ -32,8 +32,8 @@ type SeedCacheInstance = {
 export default class SeedManager {
   private seedCache: Record<string, Record<string, SeedCacheInstance[]>> = {};
 
-  private validateSeedGroupId(seedGroupId: string): boolean {
-    if (!seedGroupId || typeof seedGroupId !== 'string') {
+  private validateSeedGroupId(seedGroupId: number): boolean {
+    if (!seedGroupId || typeof seedGroupId !== 'number') {
       throw new Error('seedGroupId is required');
     }
 
@@ -81,7 +81,7 @@ export default class SeedManager {
   }
 
   registerSeed(
-    seedGroupId: string,
+    seedGroupId: number,
     type: SeedType,
     seed: Seed,
     {usesLeft, partialArgs, statusCode}: SeedOptions = {}

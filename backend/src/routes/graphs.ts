@@ -26,6 +26,25 @@ const prepareSubgraphSchema = (subgraph: {
   return {name: subgraph.name, schema};
 };
 
+const unifyVariantAndProposalDataShapes = (graph) => {
+  const {
+    proposals: {proposals},
+  } = graph;
+
+  const updatedProposals = proposals.map(
+    ({displayName, key, latestPublication}) => ({
+      displayName,
+      key: key.key,
+      latestPublication: latestPublication.latestPublication,
+    })
+  );
+
+  return {
+    ...graph,
+    proposals: updatedProposals,
+  };
+};
+
 router.get('/graphs', async (_: Request, res: Response) => {
   try {
     const graphs = await client.getGraphs();
@@ -42,15 +61,14 @@ router.get('/graphs/:graphId', async (req: Request, res: Response) => {
 
   try {
     const graph = withSubgraphs
-      ? await client.getGraphWithSubgraphs(graphId)
+      ? //TODO: really gotta handle the different possible shapes here and ideally we'd break into two routes
+        await client.getGraphWithSubgraphs(graphId)
       : await client.getGraph(graphId);
 
-    //@ts-ignore
-    const proposals = graph.proposals?.proposals.map((p) => ({
-      ...p,
-      key: p.key.id,
-    }));
-    res.json({...graph, proposals});
+    const graphDataWithUnifiedVariantAndProposalShapes =
+      unifyVariantAndProposalDataShapes(graph);
+
+    res.json(graphDataWithUnifiedVariantAndProposalShapes);
   } catch (error) {
     console.error(error);
     res.status(500).send({error: 'Error querying GraphQL API'});

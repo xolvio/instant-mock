@@ -23,7 +23,7 @@ services:
       - "5050:80"
     volumes:
       - ./servers.json:/pgadmin4/servers.json
-      - ./pgpass:/pgpass
+      - ./.pgpass:/pgpass
     restart: unless-stopped
     user: root
   backend:

@@ -1,4 +1,5 @@
 import express, {Request, Response, Router} from 'express';
+import {SeedGroup} from '../models/seedGroup';
 
 import {DI} from '../server';
 
@@ -53,19 +54,23 @@ const router: Router = express.Router();
  *       500:
  *         description: Server error while fetching seeds.
  */
+
 router.get('/seeds', async (req: Request, res: Response) => {
-  const graphId = req.query.graphId as string;
-  const variantName = req.query.variantName as string;
-  if (!variantName)
-    return res.status(400).json({message: 'Variant name is required'});
+  console.log('fetching seeds');
+  const {graphId, variantName, seedGroupId} = req.query;
 
-  const seeds = await DI.seeds.find({graphId, variantName});
-  res.json(seeds);
-});
-
-router.get('/seeds/:id', async (req: Request, res: Response) => {
-  const seed = await DI.seeds.findOne({id: parseInt(req.params.id)});
-  seed ? res.json(seed) : res.status(404).json({message: 'Seed not found'});
+  try {
+    const seeds = await DI.seeds.find({
+      graphId: graphId as string,
+      variantName: variantName as string,
+      seedGroup: {id: seedGroupId as unknown as number},
+    });
+    console.log('[seeds.ts:60] seedGroupID:', seedGroupId);
+    res.json(seeds);
+  } catch (error) {
+    console.error('Error fetching seeds:', error);
+    res.status(500).json({message: 'An error occurred', error});
+  }
 });
 
 /**
@@ -135,17 +140,18 @@ router.post('/seeds', async (req: Request, res: Response) => {
   if (!variantName)
     return res.status(400).json({message: 'Variant name is required'});
 
+  const seedGroup = DI.em.getReference(SeedGroup, seedGroupId);
+
   const seed = DI.seeds.create({
     graphId,
     variantName,
     seedResponse,
     operationName,
     operationMatchArguments,
-    seedGroupId,
+    seedGroup,
   });
 
-  await DI.seeds.getEntityManager().persistAndFlush(seed);
-
+  await DI.em.persistAndFlush(seed);
   res.status(201).json({message: 'Seed registered successfully'});
 });
 

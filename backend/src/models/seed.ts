@@ -1,4 +1,5 @@
-import {Entity, PrimaryKey, Property} from '@mikro-orm/core';
+import {Entity, PrimaryKey, Property, ManyToOne} from '@mikro-orm/core';
+import {SeedGroup} from './seedGroup';
 
 @Entity()
 export class Seed {
@@ -20,8 +21,8 @@ export class Seed {
   @Property({type: 'jsonb'})
   operationMatchArguments!: any;
 
-  @Property()
-  seedGroupId!: string;
+  @ManyToOne()
+  seedGroup!: SeedGroup;
 
   constructor(
     graphId: string,
@@ -29,13 +30,13 @@ export class Seed {
     operationName: string,
     seedResponse: any,
     operationMatchArguments: any,
-    seedGroupId: string
+    seedGroup: SeedGroup
   ) {
     this.graphId = graphId;
     this.variantName = variantName;
     this.operationName = operationName;
     this.seedResponse = seedResponse;
     this.operationMatchArguments = operationMatchArguments;
-    this.seedGroupId = seedGroupId;
+    this.seedGroup = seedGroup;
   }
 }

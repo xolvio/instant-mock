@@ -5,8 +5,8 @@ export const GET_GRAPH = gql`
     graph(id: $graphId) {
       name
       variants {
-        id
-        name
+        key: id
+        displayName: name
         latestPublication {
           publishedAt
           schema {
@@ -15,21 +15,12 @@ export const GET_GRAPH = gql`
         }
       }
       proposals(filterBy: $filterBy) {
-        totalCount
         proposals {
           displayName
           key: backingVariant {
-            id
+            key: id
           }
-          status
-          id
-          createdAt
-          createdBy {
-            name
-          }
-          backingVariant {
-            id
-            name
+          latestPublication: backingVariant {
             latestPublication {
               schema {
                 document
