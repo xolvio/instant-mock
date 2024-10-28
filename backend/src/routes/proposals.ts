@@ -6,6 +6,8 @@ import {createProposedSubgraphsFromOperationsMissingFields} from '../utilities/o
 const router: Router = express.Router();
 const client = new Client();
 
+const APOLLO_STUDIO_BASE_URL = 'https://studio.apollographql.com';
+
 const prepareSubgraphSchema = (subgraph: {
   name: string;
   activePartialSchema: {sdl: string};
@@ -21,44 +23,71 @@ const prepareSubgraphSchema = (subgraph: {
     directive @key(fields: FieldSet!, resolvable: Boolean = true) repeatable on OBJECT | INTERFACE
     ${subgraph.activePartialSchema.sdl}
   `;
-
-  const schema = buildASTSchema(parse(schemaStringWithDirectives));
-  return {name: subgraph.name, schema};
+  return {
+    name: subgraph.name,
+    schema: buildASTSchema(parse(schemaStringWithDirectives)),
+  };
 };
 
-router.post(
-  '/proposals/:proposalId/revisions',
-  async (req: Request, res: Response) => {
-    const {proposalId} = req.params;
-    const {subgraphInputs, summary, revision, previousLaunchId} = req.body;
+const generateFailureLink = (graphId: string, variantName: string): string => {
+  return `${APOLLO_STUDIO_BASE_URL}/graph/${graphId}/proposal/${variantName}/checks/`;
+};
 
-    try {
-      const data = await client.publishProposalRevision(
-        proposalId,
-        subgraphInputs,
-        summary,
-        revision,
-        previousLaunchId
-      );
+const handleLaunchStatus = async (
+  proposalId: string,
+  latestLaunchId: string,
+  graphId: string
+): Promise<{status: string; message?: string}> => {
+  const sleep = (ms: number) =>
+    new Promise((resolve) => setTimeout(resolve, ms));
 
-      if (data.proposal.message) {
-        return res.status(400).json({error: data.proposal.message});
-      } else if (data.proposal.publishSubgraphs.message) {
-        return res
-          .status(400)
-          .json({error: data.proposal.publishSubgraphs.message});
-      }
+  while (true) {
+    const {backingVariant, activities} =
+      await client.proposalLaunches(proposalId);
 
-      res.json({
-        latestLaunchId:
-          data.proposal.publishSubgraphs.backingVariant.latestLaunch.id,
-      });
-    } catch (error) {
-      console.error(error);
-      res.status(500).send({error: 'Error querying GraphQL API'});
+    const latestLaunch = activities?.edges?.find(
+      //@ts-ignore
+      (edge) => edge?.node?.target?.launch?.id === latestLaunchId
+    );
+
+    const status = latestLaunch?.node?.target?.launch?.status;
+
+    switch (status) {
+      case 'LAUNCH_INITIATED':
+        console.log(`[Polling] Launch ${latestLaunchId} initiated. Waiting...`);
+        await sleep(1000);
+        break;
+
+      case 'LAUNCH_FAILED':
+        console.error(`[Polling] Launch ${latestLaunchId} failed.`);
+        const failureLink = generateFailureLink(graphId, backingVariant.name);
+        return {
+          status: 'FAILED',
+          message: `Launch ${latestLaunchId} failed. Check details here: ${failureLink}`,
+        };
+
+      case 'LAUNCH_COMPLETED':
+        console.log(`[Polling] Launch ${latestLaunchId} completed.`);
+        return {status: 'COMPLETED'};
+
+      default:
+        console.warn(`Unexpected status: ${status}. Exiting polling.`);
+        return {
+          status: `${status}`,
+          message: `Unexpected status encountered: ${status}. Please check the logs.`,
+        };
     }
   }
-);
+};
+
+const getCurrentTimestamp = (): string => {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(
+    now.getDate()
+  ).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(
+    now.getMinutes()
+  ).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+};
 
 router.post(
   '/create-or-update-schema-proposal-by-operation',
@@ -79,52 +108,41 @@ router.post(
       );
 
       let revision;
+      const timestamp = getCurrentTimestamp();
       if (variant.isProposal) {
         revision = await client.publishProposalRevision(
           variant.proposal.id,
           subgraphInputs,
-          'Auto-updating',
-          'auto-updated',
+          `Auto-updating at ${timestamp}`,
+          `auto-updated at ${timestamp}`,
           variant.latestLaunch.id
         );
       } else {
         const data = await client.createProposal(
           graphId,
           variantName,
-          'Auto-generated',
+          `Auto-generated at ${timestamp}`,
           ''
         );
         revision = await client.publishProposalRevision(
           data.graph.createProposal.proposal.id,
           subgraphInputs,
-          'Auto-generated',
-          'auto-generated',
+          `Auto-generated at ${timestamp}`,
+          `auto-generated at ${timestamp}`,
           data.graph.createProposal.latestLaunch.id
         );
       }
 
       const latestLaunchId =
         revision.proposal.publishSubgraphs.backingVariant.latestLaunch.id;
-      let launchCompleted = false;
+      const launchStatus = await handleLaunchStatus(
+        revision.proposal.publishSubgraphs.id,
+        latestLaunchId,
+        graphId
+      );
 
-      while (!launchCompleted) {
-        const proposalStatus = await client.proposalLaunches(
-          revision.proposal.publishSubgraphs.id
-        );
-        const latestLaunch = proposalStatus.activities?.edges?.find(
-          //@ts-ignore
-          (edge) => edge?.node?.target?.launch?.id === latestLaunchId
-        );
-
-        if (latestLaunch?.node?.target?.launch?.status === 'LAUNCH_COMPLETED') {
-          launchCompleted = true;
-          console.log(`[Polling] Launch ${latestLaunchId} is completed.`);
-        } else {
-          console.log(
-            `[Polling] Waiting for launch ${latestLaunchId} to complete...`
-          );
-          await new Promise((resolve) => setTimeout(resolve, 1000));
-        }
+      if (launchStatus.status === 'FAILED') {
+        return res.status(400).json({error: launchStatus.message});
       }
 
       revision.proposal.key =
@@ -132,7 +150,9 @@ router.post(
       res.json(revision);
     } catch (error) {
       console.error(error);
-      res.status(500).send({error: 'An unexpected error occurred'});
+      res.status(500).send({
+        error: 'An unexpected error occurred while processing your request.',
+      });
     }
   }
 );

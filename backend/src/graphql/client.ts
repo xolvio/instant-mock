@@ -118,7 +118,6 @@ export default class Client {
       query: PROPOSAL_LAUNCHES,
       variables: {proposalId},
     });
-
     return data.proposal;
   }
 

@@ -61,8 +61,7 @@ router.get('/graphs/:graphId', async (req: Request, res: Response) => {
 
   try {
     const graph = withSubgraphs
-      ? //TODO: really gotta handle the different possible shapes here and ideally we'd break into two routes
-        await client.getGraphWithSubgraphs(graphId)
+      ? await client.getGraphWithSubgraphs(graphId)
       : await client.getGraph(graphId);
 
     const graphDataWithUnifiedVariantAndProposalShapes =
@@ -123,56 +122,5 @@ router.post('/graphs/:graphId/reset', async (req: Request, res: Response) => {
     res.status(500).send({error: 'Error resetting graph'});
   }
 });
-
-router.post(
-  '/graphs/:graphId/:variantName/operations',
-  async (req: Request, res: Response) => {
-    const {operation, key} = req.body;
-    const [graphId, variantName] = key.split('@');
-
-    try {
-      const variant = await client.getVariant(graphId, variantName);
-      const supergraph = buildASTSchema(
-        parse(variant.latestPublication.schema.document)
-      );
-      const subgraphs = variant.subgraphs.map(prepareSubgraphSchema);
-      const subgraphInputs = createProposedSubgraphsFromOperationsMissingFields(
-        supergraph,
-        subgraphs,
-        operation
-      );
-
-      let revision;
-      if (variant.isProposal) {
-        revision = await client.publishProposalRevision(
-          variant.proposal.id,
-          subgraphInputs,
-          'Auto-updating',
-          'auto-updated',
-          variant.latestLaunch.id
-        );
-      } else {
-        const data = await client.createProposal(
-          graphId,
-          variantName,
-          'Auto-generated',
-          ''
-        );
-        revision = await client.publishProposalRevision(
-          data.graph.createProposal.proposal.id,
-          subgraphInputs,
-          'Auto-generated',
-          'auto-generated',
-          data.graph.createProposal.latestLaunch.id
-        );
-      }
-
-      res.json(revision);
-    } catch (error) {
-      console.error(error);
-      res.status(500).send({error: 'An unexpected error occurred'});
-    }
-  }
-);
 
 export default router;
