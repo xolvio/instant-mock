@@ -254,7 +254,7 @@ export default class SeedManager {
     operationName: string;
     variables: Record<string, unknown>;
     operationMock: {data: Record<string, unknown>; errors?: object[]};
-    seedGroupId: string;
+    seedGroupId: number;
     mockServer: MockServer;
     query: string;
   }): Promise<{
