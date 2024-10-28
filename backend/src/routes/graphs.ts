@@ -1,7 +1,6 @@
 import express, {Request, Response, Router} from 'express';
 import {buildASTSchema, parse} from 'graphql';
 import Client from '../graphql/client';
-import {createProposedSubgraphsFromOperationsMissingFields} from '../utilities/operationToSchema';
 
 const router: Router = express.Router();
 const client = new Client();
@@ -26,12 +25,14 @@ const prepareSubgraphSchema = (subgraph: {
   return {name: subgraph.name, schema};
 };
 
+// @ts-ignore
 const unifyVariantAndProposalDataShapes = (graph) => {
   const {
     proposals: {proposals},
   } = graph;
 
   const updatedProposals = proposals.map(
+    // @ts-ignore
     ({displayName, key, latestPublication}) => ({
       displayName,
       key: key.key,

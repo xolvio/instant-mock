@@ -62,7 +62,8 @@ const handleGraphQLRequest = async (
 ) => {
   const {query = '', variables = {}} = req.body;
   const operationName = req.body.operationName;
-  const seedGroupId = req.headers['mocking-sequence-id'] as string;
+  // TODO I think it should be name, not id
+  const seedGroupId = parseInt(req.headers['seed-group'] as string, 10);
 
   console.log('Handling GraphQL Request:', {
     graphId,
@@ -96,12 +97,17 @@ const handleGraphQLRequest = async (
       operationName,
     });
 
+    if (operationName === 'IntrospectionQuery') {
+      res.status(200);
+      return res.json(operationResult);
+    }
+
     const {operationResponse, statusCode} =
       await mockServer.seedManager.mergeOperationResponse({
         operationName,
         variables,
         operationMock: operationResult,
-        seedGroupId,
+        seedGroupId: seedGroupId,
         mockServer,
         query: typenamedQuery,
       });
