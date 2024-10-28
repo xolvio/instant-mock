@@ -3,14 +3,6 @@
 import {Seed} from '@/models/Seed';
 import React, {useEffect, useRef, useState} from 'react';
 import {useParams} from 'react-router';
-import {Link as RouterLink} from 'react-router-dom';
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbSeparator,
-} from './breadcrumb';
 import {Button} from './button';
 import {Card, CardContent, CardHeader, CardTitle} from './card';
 
@@ -30,7 +22,7 @@ export default function SeedDetails() {
   const responseRef = useRef<HTMLPreElement>(null);
 
   const operationName = seed?.operationName;
-  const sequenceId = seed?.sequenceId;
+  const seedGroupId = seed?.seedGroupId;
   const operationMatchArguments = seed?.operationMatchArguments
     ? seed.operationMatchArguments
     : {};
@@ -96,7 +88,7 @@ export default function SeedDetails() {
         operationName: operationName,
         seedResponse: JSON.parse(updatedResponse), // Updated response
         operationMatchArguments: JSON.parse(updatedMatchArguments),
-        sequenceId: sequenceId,
+        seedGroupId: seedGroupId,
         graphId: seed?.graphId,
         variantName: seed?.variantName,
         oldOperationMatchArguments: operationMatchArguments,
@@ -130,26 +122,8 @@ export default function SeedDetails() {
   return (
     <div className="flex justify-center items-start p-4 bg-muted/40">
       <div className="w-full max-w-4xl space-y-4">
-        <Breadcrumb className="hidden md:flex">
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink asChild>
-                <RouterLink to="/">Proposals Dashboard</RouterLink>
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbLink asChild>
-                <RouterLink to={`/proposals/${proposalId}`}>
-                  Proposal details
-                </RouterLink>
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>Seed Details</BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
-
+        {/*TODO improve loading*/}
+        {/*TODO add an error page when a seed with given ID doesn't exist*/}
         {loading ? (
           <p>Loading...</p>
         ) : error ? (
@@ -174,7 +148,7 @@ export default function SeedDetails() {
                   <span>{`Operation name: ${operationName}`}</span>
                 </div>
                 <div className="flex items-center mb-2">
-                  <span>{`Sequence ID: ${sequenceId}`}</span>
+                  <span>{`Sequence ID: ${seedGroupId}`}</span>
                 </div>
               </CardContent>
             </Card>

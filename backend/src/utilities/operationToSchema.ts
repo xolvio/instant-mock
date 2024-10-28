@@ -50,7 +50,8 @@ export function createProposedSubgraphsFromOperationsMissingFields(
       missingFields
     );
 
-    //remove all the extra stuff we had to add
+    console.log('PRE-sanitization', updatedSubgraph.updatedSchemaString);
+
     const sanitizedSubgraphString = updatedSubgraph.updatedSchemaString.replace(
       `directive @link(url: String!, as: String, for: link__Purpose, import: [link__Import]) repeatable on SCHEMA
 
@@ -61,20 +62,16 @@ scalar FieldSet
 scalar link__Import
 
 enum link__Purpose {
-  """
-  \`SECURITY\` features provide metadata necessary to securely resolve fields.
-  """
   SECURITY
-  """
-  \`EXECUTION\` features provide metadata necessary for operation execution.
-  """
   EXECUTION
 }
 
 `,
       ''
     );
-    console.log('the output');
+
+    console.log('POST-sanitization', sanitizedSubgraphString);
+
     console.log(
       JSON.stringify(
         {

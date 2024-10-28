@@ -3,9 +3,9 @@ import {gql} from '@apollo/client';
 export const GET_GRAPH_WITH_SUBGRAPHS = gql`
   query GetGraph($graphId: ID!, $filterBy: ProposalsFilterInput) {
     graph(id: $graphId) {
-      name
       variants {
         key: id
+        displayName: name
         name
         latestPublication {
           publishedAt
@@ -21,27 +21,12 @@ export const GET_GRAPH_WITH_SUBGRAPHS = gql`
         }
       }
       proposals(filterBy: $filterBy) {
-        totalCount
         proposals {
-          key: backingVariant {
-            id
-          }
           displayName
-          status
-          id
-          createdAt
-          createdBy {
-            name
+          key: backingVariant {
+            key: id
           }
-          backingVariant {
-            id
-            name
-            subgraphs {
-              name
-              activePartialSchema {
-                sdl
-              }
-            }
+          latestPublication: backingVariant {
             latestPublication {
               schema {
                 document

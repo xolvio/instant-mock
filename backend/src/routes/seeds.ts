@@ -1,8 +1,9 @@
-import express, {Router} from 'express';
-import SeedController from '../controllers/seedController';
+import express, {Request, Response, Router} from 'express';
+import {SeedGroup} from '../models/seedGroup';
+
+import {DI} from '../server';
 
 const router: Router = express.Router();
-const seedController = new SeedController(); // Initialize SeedController
 
 /**
  * @openapi
@@ -45,7 +46,7 @@ const seedController = new SeedController(); // Initialize SeedController
  *                   operationMatchArguments:
  *                     type: string
  *                     example: "{\"arg1\": \"value1\", \"arg2\": \"value2\"}"
- *                   sequenceId:
+ *                   seedGroupId:
  *                     type: string
  *                     example: "seq-001"
  *       400:
@@ -53,9 +54,24 @@ const seedController = new SeedController(); // Initialize SeedController
  *       500:
  *         description: Server error while fetching seeds.
  */
-router.get('/seeds', seedController.getSeeds);
 
-router.get('/seeds/:id', seedController.findSeedById);
+router.get('/seeds', async (req: Request, res: Response) => {
+  console.log('fetching seeds');
+  const {graphId, variantName, seedGroupId} = req.query;
+
+  try {
+    const seeds = await DI.seeds.find({
+      graphId: graphId as string,
+      variantName: variantName as string,
+      seedGroup: {id: seedGroupId as unknown as number},
+    });
+    console.log('[seeds.ts:60] seedGroupID:', seedGroupId);
+    res.json(seeds);
+  } catch (error) {
+    console.error('Error fetching seeds:', error);
+    res.status(500).json({message: 'An error occurred', error});
+  }
+});
 
 /**
  * @openapi
@@ -92,7 +108,7 @@ router.get('/seeds/:id', seedController.findSeedById);
  *                 type: string
  *                 description: The arguments to match the operation.
  *                 example: "{\"arg1\": \"value1\", \"arg2\": \"value2\"}"
- *               sequenceId:
+ *               seedGroupId:
  *                 type: string
  *                 description: The sequence ID for matching requests.
  *                 example: "seq-001"
@@ -112,7 +128,32 @@ router.get('/seeds/:id', seedController.findSeedById);
  *       500:
  *         description: Server error while registering seed.
  */
-router.post('/seeds', seedController.createSeed);
+router.post('/seeds', async (req: Request, res: Response) => {
+  const {
+    graphId,
+    variantName,
+    seedResponse,
+    operationName,
+    operationMatchArguments,
+    seedGroupId,
+  } = req.body;
+  if (!variantName)
+    return res.status(400).json({message: 'Variant name is required'});
+
+  const seedGroup = DI.em.getReference(SeedGroup, seedGroupId);
+
+  const seed = DI.seeds.create({
+    graphId,
+    variantName,
+    seedResponse,
+    operationName,
+    operationMatchArguments,
+    seedGroup,
+  });
+
+  await DI.em.persistAndFlush(seed);
+  res.status(201).json({message: 'Seed registered successfully'});
+});
 
 /**
  * @openapi
@@ -175,7 +216,18 @@ router.post('/seeds', seedController.createSeed);
  *                   type: string
  *                   example: "Detailed error message"
  */
-router.delete('/seeds/:id', seedController.deleteSeed);
-router.patch('/seeds', seedController.updateSeed);
+router.delete('/seeds/:id', async (req: Request, res: Response) => {
+  const seed = await DI.seeds.findOne({id: parseInt(req.params.id)});
+  if (!seed) return res.status(404).json({message: 'Seed not found'});
+  res.json({message: 'Seed deleted successfully'});
+});
+
+router.patch('/seeds', async (req: Request, res: Response) => {
+  const {id, ...updateData} = req.body;
+  const seed = await DI.seeds.findOne({id});
+  if (!seed) return res.status(404).json({message: 'Seed not found'});
+  DI.seeds.assign(seed, updateData);
+  res.json({message: 'Seed updated successfully'});
+});
 
 export default router;

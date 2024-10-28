@@ -3,7 +3,7 @@ export type Seed = {
   operationName: string;
   seedResponse: string;
   operationMatchArguments: string;
-  sequenceId: string;
+  seedGroupId: string;
   variantName: string;
   graphId: string;
 };

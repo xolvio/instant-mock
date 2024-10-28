@@ -5,6 +5,7 @@ export const PROPOSAL_LAUNCHES = gql`
     proposal(id: $proposalId) {
       backingVariant {
         id
+        name
       }
       activities {
         edges {

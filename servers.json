@@ -1,0 +1,14 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "instant_mock_db",
+      "Group": "Servers",
+      "Host": "postgres_db",
+      "Port": 5432,
+      "MaintenanceDB": "instant_mock_db",
+      "Username": "instant_mock",
+      "PassFile": "/pgpass",
+      "SSLMode": "prefer"
+    }
+  }
+}

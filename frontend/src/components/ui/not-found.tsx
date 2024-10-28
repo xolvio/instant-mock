@@ -51,7 +51,7 @@ export default function NotFound() {
           className="flex flex-col sm:flex-row justify-center gap-4"
         >
           <Button
-            onClick={() => navigate(`/graphs`)}
+            onClick={() => navigate(`/`)}
             className="flex items-center justify-center gap-2"
           >
             <Home className="w-4 h-4" />

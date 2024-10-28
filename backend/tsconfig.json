@@ -12,6 +12,8 @@
     "jsx": "react",
     "typeRoots": ["./node_modules/@types", "./src/types"],
     "sourceMap": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules"]
