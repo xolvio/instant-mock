@@ -549,8 +549,16 @@ const Home = () => {
         </TabsList>
         <TabsContent value="sandbox" className="w-full h-[calc(100vh-64px)]">
           <ApolloSandbox
-            key={selectedGraph?.id + selectedVariant?.key}
+            key={
+              selectedGraph?.id + selectedVariant?.key + selectedSeedGroup?.id
+            }
             endpointIsEditable={false}
+            initialState={{
+              sharedHeaders: {
+                // TODO I think we should use the name, because id in the header can be misleading
+                'seed-group': selectedSeedGroup?.id.toString(),
+              },
+            }}
             initialEndpoint={
               selectedGraph && selectedVariant
                 ? `${serverBaseUrl}/api/${selectedVariant.key.replace('@', '/')}/graphql`
