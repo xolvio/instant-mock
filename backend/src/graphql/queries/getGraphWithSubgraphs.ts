@@ -26,7 +26,7 @@ export const GET_GRAPH_WITH_SUBGRAPHS = gql`
           key: backingVariant {
             key: id
           }
-          latestPublication: backingVariant {
+          backingVariant {
             latestPublication {
               schema {
                 document
