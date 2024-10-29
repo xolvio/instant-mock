@@ -22,7 +22,8 @@ export default function SeedDetails() {
   const responseRef = useRef<HTMLPreElement>(null);
 
   const operationName = seed?.operationName;
-  const seedGroupId = seed?.seedGroupId;
+  // TODO I think this should be name, id can be confusing
+  const seedGroupId = seed?.seedGroup;
   const operationMatchArguments = seed?.operationMatchArguments
     ? seed.operationMatchArguments
     : {};
@@ -41,12 +42,12 @@ export default function SeedDetails() {
     try {
       setLoading(true);
       const response = await fetch(`${apiUrl}/api/seeds/${seedId}`);
-
       if (!response.ok) {
         throw new Error('Failed to fetch seed data');
       }
 
       const data = await response.json();
+      console.log(seed);
       setSeed(data);
       setEditedMatchArguments(
         JSON.stringify(data.operationMatchArguments, null, 2)
