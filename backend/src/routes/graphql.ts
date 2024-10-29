@@ -11,7 +11,7 @@ const router = Router();
 const client = new Client();
 const mutex = new Mutex();
 
-const getOrStartNewMockServer = async (
+export const getOrStartNewMockServer = async (
   graphId: string,
   variantName: string
 ): Promise<MockServer> => {
