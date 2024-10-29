@@ -1,7 +1,9 @@
 import express, {Request, Response, Router} from 'express';
 import {SeedGroup} from '../models/seedGroup';
+import {SeedType} from '../seed/SeedManager';
 
 import {DI} from '../server';
+import {getOrStartNewMockServer} from './graphql';
 
 const router: Router = express.Router();
 
@@ -73,6 +75,11 @@ router.get('/seeds', async (req: Request, res: Response) => {
   }
 });
 
+router.get('/seeds/:id', async (req: Request, res: Response) => {
+  const seed = await DI.seeds.findOne({id: parseInt(req.params.id)});
+  seed ? res.json(seed) : res.status(404).json({message: 'Seed not found'});
+});
+
 /**
  * @openapi
  * /api/seeds:
@@ -140,6 +147,7 @@ router.post('/seeds', async (req: Request, res: Response) => {
   if (!variantName)
     return res.status(400).json({message: 'Variant name is required'});
 
+  const mockServer = await getOrStartNewMockServer(graphId, variantName);
   const seedGroup = DI.em.getReference(SeedGroup, seedGroupId);
 
   const seed = DI.seeds.create({
@@ -152,6 +160,12 @@ router.post('/seeds', async (req: Request, res: Response) => {
   });
 
   await DI.em.persistAndFlush(seed);
+  // TODO we probably need to unify types, currently we have 2 seed types - gqmock type and entity
+  mockServer.seedManager.registerSeed(seedGroupId, SeedType.Operation, {
+    seedResponse: seedResponse,
+    operationMatchArguments: operationMatchArguments,
+    operationName: operationName,
+  });
   res.status(201).json({message: 'Seed registered successfully'});
 });
 
@@ -227,6 +241,7 @@ router.patch('/seeds', async (req: Request, res: Response) => {
   const seed = await DI.seeds.findOne({id});
   if (!seed) return res.status(404).json({message: 'Seed not found'});
   DI.seeds.assign(seed, updateData);
+  await DI.em.persistAndFlush(seed);
   res.json({message: 'Seed updated successfully'});
 });
 
