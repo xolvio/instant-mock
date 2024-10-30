@@ -1,5 +1,6 @@
 import {Seed} from '@/models/Seed';
 import {ApolloSandbox} from '@apollo/sandbox/react';
+import {HandleRequest} from '@apollo/sandbox/src/helpers/postMessageRelayHelpers';
 import {zodResolver} from '@hookform/resolvers/zod';
 import {
   ChevronsUpDown,
@@ -223,6 +224,29 @@ const Home = () => {
     }
   }, [selectedSeedGroup, selectedVariant, selectedGraph]);
 
+  const customFetcher: HandleRequest = async (endpointUrl, requestOptions) => {
+    console.log('Fetching custom fetcher');
+    const result = await fetch(endpointUrl, requestOptions);
+    console.log(result);
+    const responseBody = await result.json(); // Parse the response JSON
+    const requestBody = JSON.parse(requestOptions.body?.toString()!);
+
+    const isIntrospectionQuery =
+      requestBody.operationName === 'IntrospectionQuery';
+    const isSuccess = result.ok && !responseBody.errors; // Check if HTTP response is ok and no GraphQL errors
+
+    if (!isIntrospectionQuery && isSuccess) {
+      setIsSeedButtonVisible(true);
+      // populateSeedForm(requestBody, responseBody); // Pass responseBody to your function
+    }
+
+    return new Response(JSON.stringify(responseBody), {
+      status: result.status,
+      statusText: result.statusText,
+      headers: result.headers,
+    });
+  };
+
   const handleGraphChange = async (graphId) => {
     const selectedGraph = graphs.find((g) => g.id === graphId) || null;
     setSelectedGraph(selectedGraph);
@@ -297,6 +321,8 @@ const Home = () => {
       operationMatchArguments: '{}',
     },
   });
+
+  const {setValue} = form;
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
@@ -614,6 +640,7 @@ const Home = () => {
               selectedGraph?.id + selectedVariant?.key + selectedSeedGroup?.id
             }
             endpointIsEditable={false}
+            handleRequest={customFetcher}
             initialState={{
               sharedHeaders: {
                 'seed-group': selectedSeedGroup?.id.toString(),
