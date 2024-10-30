@@ -108,8 +108,13 @@ const Home = () => {
   const [seeds, setSeeds] = useState([]);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedSeed, setSelectedSeed] = useState(null);
-  const [isSeedButtonVisible, setIsSeedButtonVisible] = useState(true);
+  const [isSeedButtonVisible, setIsSeedButtonVisible] = useState(false);
   const serverBaseUrl = process.env.REACT_APP_API_BASE_URL;
+
+  //TODO: refine names
+  const [seedArgs, setSeedArgs] = useState('{}');
+  const [seedResponse, setSeedResponse] = useState('');
+  const [operationName, setOperationName] = useState('');
 
   const handleSettingsClick = () => navigate('/settings');
   const handleLogoClick = () => navigate('/graphs');
@@ -225,19 +230,21 @@ const Home = () => {
   }, [selectedSeedGroup, selectedVariant, selectedGraph]);
 
   const customFetcher: HandleRequest = async (endpointUrl, requestOptions) => {
-    console.log('Fetching custom fetcher');
+    console.log('Fetching with custom fetcher');
     const result = await fetch(endpointUrl, requestOptions);
     console.log(result);
-    const responseBody = await result.json(); // Parse the response JSON
+    const responseBody = await result.json();
     const requestBody = JSON.parse(requestOptions.body?.toString()!);
 
     const isIntrospectionQuery =
       requestBody.operationName === 'IntrospectionQuery';
-    const isSuccess = result.ok && !responseBody.errors; // Check if HTTP response is ok and no GraphQL errors
+    const isSuccess = result.ok && !responseBody.errors;
 
     if (!isIntrospectionQuery && isSuccess) {
+      setSeedResponse(responseBody);
       setIsSeedButtonVisible(true);
-      // populateSeedForm(requestBody, responseBody); // Pass responseBody to your function
+      setSeedArgs(requestBody.variables);
+      setOperationName(requestBody.operationName);
     }
 
     return new Response(JSON.stringify(responseBody), {
@@ -423,9 +430,20 @@ const Home = () => {
     }
   }
 
-  const populateSeedForm = () => {
+  async function populateSeedForm() {
     console.log('gonna populate the form');
-  };
+    setValue('operationName', operationName);
+
+    const hasVariables = seedArgs && Object.keys(seedArgs).length > 0;
+    if (hasVariables) {
+      setValue('operationMatchArguments', JSON.stringify(seedArgs, null, 2));
+      setSeedWithArguments(true);
+    }
+
+    setValue('seedResponse', JSON.stringify(seedResponse, null, 2));
+  }
+
+  //TODO: implemenmt
   // const handleDelete = async () => {
   //   try {
   //     // const [graphId, variantName] = selectedVariant.key.split('@');
