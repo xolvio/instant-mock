@@ -14,6 +14,16 @@ import {useNavigate} from 'react-router';
 import {z} from 'zod';
 import logo from '../../assets/logo.png';
 import {getSeeds} from '../../services/SeedService';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from './alert-dialog';
 import {Button} from './button';
 import {
   Card,
@@ -33,9 +43,7 @@ import {
 } from './command';
 import {
   Dialog,
-  DialogClose,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -315,15 +323,14 @@ const Home = () => {
         const errorData = await response.json();
         toast({
           variant: 'destructive',
-          title: 'There was an error creating the seed!',
-          // description: getCurrentDateTime(),
-          description: 'lalala',
+          title: 'Error Creating Seed',
+          description:
+            'An unexpected error occurred while creating the seed. Please try again.',
         });
       } else {
         toast({
-          title: 'Seed created successfully!',
-          // description: getCurrentDateTime(),
-          description: 'lalala',
+          title: 'Seed Created Successfully!',
+          description: 'Your new seed has been created and is ready for use.',
         });
         form.reset({
           operationName: '', // Optionally set specific values
@@ -334,14 +341,12 @@ const Home = () => {
       }
     } catch (error) {
       toast({
-        variant: 'destructive',
-        title: 'There was an error creating the seed!',
-        // description: getCurrentDateTime(),
+        title: 'Error Creating Seed',
+        description:
+          'An unexpected error occurred while creating the seed. Please try again.',
       });
     }
   }
-
-  useEffect(() => {}, []);
 
   const addSeedGroup = async (newGroupName) => {
     if (!newGroupName.trim()) return;
@@ -391,26 +396,26 @@ const Home = () => {
     }
   }
 
-  const handleDelete = async (seed: Seed) => {
-    try {
-      const [graphId, variantName] = selectedVariant.key.split('@');
-      await deleteSeed(seed);
-      fetchSeeds(graphId, variantName, selectedSeedGroup.id);
-    } catch (error) {
-      console.error('Failed to delete seed:', error);
-    }
-  };
+  // const handleDelete = async () => {
+  //   try {
+  //     // const [graphId, variantName] = selectedVariant.key.split('@');
+  //     // await deleteSeed(seed);
+  //     // toast({
+  //     //   title: 'Seed Deleted',
+  //     //   description: 'The selected seed has been successfully removed.',
+  //     // });
+  //     // fetchSeeds(graphId, variantName, selectedSeedGroup.id);
+  //     console.log('deleting seeed lalalalalalala');
+  //     setIsDeleteDialogOpen(false);
+  //     setSelectedSeed(null);
+  //   } catch (error) {
+  //     console.error('Failed to delete seed:', error);
+  //   }
+  // };
 
   const handleDeleteClick = (seed: Seed) => {
-    // @ts-ignore
     setSelectedSeed(seed);
     setIsDeleteDialogOpen(true);
-  };
-
-  const handleConfirmDelete = () => {
-    // @ts-ignore
-    handleDelete(selectedSeed); // Call your delete function here
-    setIsDeleteDialogOpen(false);
   };
 
   return (
@@ -729,6 +734,27 @@ const Home = () => {
                   </Table>
                 )}
               </CardContent>
+              <AlertDialog
+                open={isDeleteDialogOpen}
+                onOpenChange={setIsDeleteDialogOpen}
+              >
+                {/*<AlertDialogTrigger asChild>*/}
+                {/*  <Button variant="destructive">Delete Seed</Button>*/}
+                {/*</AlertDialogTrigger>*/}
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Confirm Deletion</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to delete this seed? This action
+                      cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction>Delete</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </Card>
 
             <Card className="w-full">
@@ -855,25 +881,6 @@ const Home = () => {
           {/* Add content for Narratives tab */}
         </TabsContent>
       </Tabs>
-      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Confirm Deletion</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to delete this seed? This action cannot be
-              undone.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button variant="secondary">Cancel</Button>
-            </DialogClose>
-            <Button variant="destructive" onClick={handleConfirmDelete}>
-              Delete
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </>
   );
 };
