@@ -107,6 +107,7 @@ const Home = () => {
   const [seeds, setSeeds] = useState([]);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedSeed, setSelectedSeed] = useState(null);
+  const [isSeedButtonVisible, setIsSeedButtonVisible] = useState(false);
   const serverBaseUrl = process.env.REACT_APP_API_BASE_URL;
 
   const handleSettingsClick = () => navigate('/settings');
@@ -601,7 +602,10 @@ const Home = () => {
           <TabsTrigger value="seeds">Seeds</TabsTrigger>
           <TabsTrigger value="narratives">Narratives</TabsTrigger>
         </TabsList>
-        <TabsContent value="sandbox" className="w-full h-[calc(100vh-64px)]">
+        <TabsContent
+          value="sandbox"
+          className="w-full h-[calc(100vh-64px)] relative"
+        >
           <ApolloSandbox
             key={
               selectedGraph?.id + selectedVariant?.key + selectedSeedGroup?.id
@@ -609,7 +613,6 @@ const Home = () => {
             endpointIsEditable={false}
             initialState={{
               sharedHeaders: {
-                // TODO I think we should use the name, because id in the header can be misleading
                 'seed-group': selectedSeedGroup?.id.toString(),
               },
             }}
@@ -620,6 +623,11 @@ const Home = () => {
             }
             className="w-full h-full"
           />
+          {isSeedButtonVisible && (
+            <Button className="absolute top-28 right-64 z-10">
+              Create seed
+            </Button>
+          )}
         </TabsContent>
         <TabsContent value="seeds" className="space-y-4 p-4">
           <div className="grid gap-6 md:grid-cols-2">
