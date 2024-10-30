@@ -9,7 +9,7 @@ import {
   Settings,
   User,
 } from 'lucide-react';
-import React, {useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {useForm} from 'react-hook-form';
 import {useNavigate} from 'react-router';
 import {z} from 'zod';
@@ -229,30 +229,59 @@ const Home = () => {
     }
   }, [selectedSeedGroup, selectedVariant, selectedGraph]);
 
-  const customFetcher: HandleRequest = async (endpointUrl, requestOptions) => {
-    console.log('Fetching with custom fetcher');
-    const result = await fetch(endpointUrl, requestOptions);
-    console.log(result);
-    const responseBody = await result.json();
-    const requestBody = JSON.parse(requestOptions.body?.toString()!);
+  const customFetcher: HandleRequest = useCallback(
+    async (endpointUrl, requestOptions) => {
+      console.log('Fetching with custom fetcher');
 
-    const isIntrospectionQuery =
-      requestBody.operationName === 'IntrospectionQuery';
-    const isSuccess = result.ok && !responseBody.errors;
+      const result = await fetch(endpointUrl, requestOptions);
+      const responseBody = await result.json();
+      const requestBody = JSON.parse(requestOptions.body?.toString()!);
 
-    if (!isIntrospectionQuery && isSuccess) {
-      setSeedResponse(responseBody);
-      setIsSeedButtonVisible(true);
-      setSeedArgs(requestBody.variables);
-      setOperationName(requestBody.operationName);
-    }
+      const isIntrospectionQuery =
+        requestBody.operationName === 'IntrospectionQuery';
+      const isSuccess = result.ok && !responseBody.errors;
 
-    return new Response(JSON.stringify(responseBody), {
-      status: result.status,
-      statusText: result.statusText,
-      headers: result.headers,
-    });
-  };
+      // Only update state if it's not an introspection query and the fetch was successful
+      if (!isIntrospectionQuery && isSuccess) {
+        setSeedResponse(responseBody); // Only set the response when needed
+        setIsSeedButtonVisible(true); // Trigger visibility only for non-introspection queries
+        setSeedArgs(requestBody.variables); // Update variables only if needed
+        setOperationName(requestBody.operationName); // Track the operation name only when necessary
+      }
+
+      return new Response(JSON.stringify(responseBody), {
+        status: result.status,
+        statusText: result.statusText,
+        headers: result.headers,
+      });
+    },
+    [setSeedResponse, setIsSeedButtonVisible, setSeedArgs, setOperationName]
+  );
+
+  // const customFetcher: HandleRequest = async (endpointUrl, requestOptions) => {
+  //   console.log('Fetching with custom fetcher');
+  //   const result = await fetch(endpointUrl, requestOptions);
+  //   console.log(result);
+  //   const responseBody = await result.json();
+  //   const requestBody = JSON.parse(requestOptions.body?.toString()!);
+  //
+  //   const isIntrospectionQuery =
+  //     requestBody.operationName === 'IntrospectionQuery';
+  //   const isSuccess = result.ok && !responseBody.errors;
+  //
+  //   if (!isIntrospectionQuery && isSuccess) {
+  //     setSeedResponse(responseBody);
+  //     setIsSeedButtonVisible(true);
+  //     setSeedArgs(requestBody.variables);
+  //     setOperationName(requestBody.operationName);
+  //   }
+  //
+  //   return new Response(JSON.stringify(responseBody), {
+  //     status: result.status,
+  //     statusText: result.statusText,
+  //     headers: result.headers,
+  //   });
+  // };
 
   const handleGraphChange = async (graphId) => {
     const selectedGraph = graphs.find((g) => g.id === graphId) || null;
