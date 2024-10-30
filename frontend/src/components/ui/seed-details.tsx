@@ -149,7 +149,7 @@ export default function SeedDetails() {
                   <span>{`Operation name: ${operationName}`}</span>
                 </div>
                 <div className="flex items-center mb-2">
-                  <span>{`Sequence ID: ${seedGroupId}`}</span>
+                  <span>{`Seed group: ${seedGroupId}`}</span>
                 </div>
               </CardContent>
             </Card>
