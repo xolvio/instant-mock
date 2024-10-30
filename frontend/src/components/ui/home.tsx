@@ -107,7 +107,7 @@ const Home = () => {
   const [seeds, setSeeds] = useState([]);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedSeed, setSelectedSeed] = useState(null);
-  const [isSeedButtonVisible, setIsSeedButtonVisible] = useState(false);
+  const [isSeedButtonVisible, setIsSeedButtonVisible] = useState(true);
   const serverBaseUrl = process.env.REACT_APP_API_BASE_URL;
 
   const handleSettingsClick = () => navigate('/settings');
@@ -397,6 +397,9 @@ const Home = () => {
     }
   }
 
+  const populateSeedForm = () => {
+    console.log('gonna populate the form');
+  };
   // const handleDelete = async () => {
   //   try {
   //     // const [graphId, variantName] = selectedVariant.key.split('@');
@@ -624,7 +627,11 @@ const Home = () => {
             className="w-full h-full"
           />
           {isSeedButtonVisible && (
-            <Button className="absolute top-28 right-64 z-10">
+            <Button
+              onClick={populateSeedForm}
+              className="absolute"
+              style={{right: '176px', top: '115px'}}
+            >
               Create seed
             </Button>
           )}
