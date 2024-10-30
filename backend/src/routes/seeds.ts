@@ -233,6 +233,7 @@ router.post('/seeds', async (req: Request, res: Response) => {
 router.delete('/seeds/:id', async (req: Request, res: Response) => {
   const seed = await DI.seeds.findOne({id: parseInt(req.params.id)});
   if (!seed) return res.status(404).json({message: 'Seed not found'});
+  await DI.em.removeAndFlush(seed);
   res.json({message: 'Seed deleted successfully'});
 });
 
