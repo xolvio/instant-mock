@@ -1,8 +1,8 @@
+import {Seed} from '@/models/Seed';
 import {ApolloSandbox} from '@apollo/sandbox/react';
 import {zodResolver} from '@hookform/resolvers/zod';
 import {
   ChevronsUpDown,
-  CircleUser,
   MoreHorizontal,
   Plus,
   Settings,
@@ -33,7 +33,9 @@ import {
 } from './command';
 import {
   Dialog,
+  DialogClose,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -43,7 +45,6 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from './dropdown-menu';
 import {
@@ -96,6 +97,8 @@ const Home = () => {
   const [newGroupName, setNewGroupName] = React.useState('');
   const [seedWithArguments, setSeedWithArguments] = useState(false);
   const [seeds, setSeeds] = useState([]);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [selectedSeed, setSelectedSeed] = useState(null);
   const serverBaseUrl = process.env.REACT_APP_API_BASE_URL;
 
   const handleSettingsClick = () => navigate('/settings');
@@ -327,6 +330,7 @@ const Home = () => {
           operationMatchArguments: '{}', // Set to the initial default value
           seedResponse: '',
         });
+        fetchSeeds(graphId, variantName, selectedSeedGroup.id);
       }
     } catch (error) {
       toast({
@@ -362,6 +366,51 @@ const Home = () => {
       console.error('Error creating new seed group:', error);
       toast({variant: 'destructive', title: 'Error adding new seed group.'});
     }
+  };
+
+  async function deleteSeed(seed: Seed) {
+    try {
+      const response = await fetch(`${serverBaseUrl}/api/seeds/${seed.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to delete seed with ID ${seed.id}`);
+      }
+
+      const result = await response.json();
+      console.log(`Seed with ID ${seed.id} deleted successfully`, result);
+
+      return result; // Assuming the API returns the deleted seed or a confirmation message
+    } catch (error) {
+      console.error('Error deleting seed:', error);
+      throw error; // Re-throw the error to handle it elsewhere if needed
+    }
+  }
+
+  const handleDelete = async (seed: Seed) => {
+    try {
+      const [graphId, variantName] = selectedVariant.key.split('@');
+      await deleteSeed(seed);
+      fetchSeeds(graphId, variantName, selectedSeedGroup.id);
+    } catch (error) {
+      console.error('Failed to delete seed:', error);
+    }
+  };
+
+  const handleDeleteClick = (seed: Seed) => {
+    // @ts-ignore
+    setSelectedSeed(seed);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    // @ts-ignore
+    handleDelete(selectedSeed); // Call your delete function here
+    setIsDeleteDialogOpen(false);
   };
 
   return (
@@ -495,24 +544,24 @@ const Home = () => {
             onClick={handleSettingsClick}
           />
           <User className="h-5 w-5 text-gray-500" />
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="secondary" size="icon" className="rounded-full">
-                <CircleUser className="h-5 w-5" />
-                <span className="sr-only">Toggle user menu</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleSettingsClick}>
-                Settings
-              </DropdownMenuItem>
-              <DropdownMenuItem>Support</DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>Logout</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {/*<DropdownMenu>*/}
+          {/*  <DropdownMenuTrigger asChild>*/}
+          {/*    <Button variant="secondary" size="icon" className="rounded-full">*/}
+          {/*      <CircleUser className="h-5 w-5" />*/}
+          {/*      <span className="sr-only">Toggle user menu</span>*/}
+          {/*    </Button>*/}
+          {/*  </DropdownMenuTrigger>*/}
+          {/*  <DropdownMenuContent align="end">*/}
+          {/*    <DropdownMenuLabel>My Account</DropdownMenuLabel>*/}
+          {/*    <DropdownMenuSeparator />*/}
+          {/*    <DropdownMenuItem onClick={handleSettingsClick}>*/}
+          {/*      Settings*/}
+          {/*    </DropdownMenuItem>*/}
+          {/*    <DropdownMenuItem>Support</DropdownMenuItem>*/}
+          {/*    <DropdownMenuSeparator />*/}
+          {/*    <DropdownMenuItem>Logout</DropdownMenuItem>*/}
+          {/*  </DropdownMenuContent>*/}
+          {/*</DropdownMenu>*/}
         </div>
 
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -618,7 +667,7 @@ const Home = () => {
                           <TableCell className="font-medium">
                             {seed.operationName}
                           </TableCell>
-                          <TableCell>{seed.seedGroupId}</TableCell>
+                          <TableCell>{selectedSeedGroup.id}</TableCell>
                           <TableCell className="hidden md:table-cell">
                             <HoverCard>
                               <HoverCardTrigger className="cursor-pointer underline">
@@ -666,7 +715,11 @@ const Home = () => {
                                 >
                                   View
                                 </DropdownMenuItem>
-                                <DropdownMenuItem>Delete</DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => handleDeleteClick(seed)}
+                                >
+                                  Delete
+                                </DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
                           </TableCell>
@@ -683,9 +736,8 @@ const Home = () => {
                 <CardTitle>Create new seed</CardTitle>
                 <CardDescription>
                   <div>
-                    1. Go to Apollo Studio or use the embedded GraphiQL to
-                    generate a dummy response for the operation you want to
-                    mock.
+                    1. Use the embedded Apollo Sandbox to generate a dummy
+                    response for the operation you want to mock.
                   </div>
                   <div>
                     2. Paste the dummy response in here and adjust it to fit
@@ -803,6 +855,25 @@ const Home = () => {
           {/* Add content for Narratives tab */}
         </TabsContent>
       </Tabs>
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Deletion</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this seed? This action cannot be
+              undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="secondary">Cancel</Button>
+            </DialogClose>
+            <Button variant="destructive" onClick={handleConfirmDelete}>
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };
