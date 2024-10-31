@@ -8,6 +8,7 @@ import {useForm} from 'react-hook-form';
 import {useNavigate} from 'react-router';
 import {z} from 'zod';
 import logo from '../../assets/logo.png';
+import narrative from '../../assets/narrative.png';
 import {getSeeds} from '../../services/SeedService';
 import {Button} from './button';
 import {
@@ -768,7 +769,37 @@ const Home = () => {
         value="narratives"
         className="w-full h-[calc(100vh-64px)] relative"
       >
-        {/* Add content for Narratives tab */}
+        <section className="py-16">
+          <div className="container">
+            <div className="grid items-center gap-4 lg:grid-cols-2">
+              <div className="flex flex-col items-center text-center lg:items-start lg:text-left">
+                <h1 className="my-4 text-pretty text-3xl font-bold lg:text-4xl">
+                  {' '}
+                  {/* Reduced margin */}
+                  Get more from InstantMock by connecting it to Narrative, the
+                  Collaborative Modeling Studio
+                </h1>
+                <p className="mb-6 max-w-xl text-muted-foreground lg:text-lg">
+                  {' '}
+                  {/* Reduced margin */}
+                  Collaborate with your team on your data <br /> Annotate
+                  designs directly from your schema <br /> Drive your queries
+                  from designs
+                </p>
+                <div className="flex w-full flex-col justify-center gap-2 sm:flex-row lg:justify-start">
+                  <Button className="w-full sm:w-auto" size={'lg'}>
+                    Sign up
+                  </Button>
+                </div>
+              </div>
+              <img
+                src={narrative}
+                alt="placeholder hero"
+                className="max-h-[40rem] w-full rounded-md object-cover lg:max-h-[50rem]"
+              />
+            </div>
+          </div>
+        </section>
       </TabsContent>
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent>
