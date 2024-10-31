@@ -704,7 +704,7 @@ const Home = () => {
             <Button
               onClick={populateSeedForm}
               className="absolute"
-              style={{right: '176px', top: '115px'}}
+              style={{right: '18px', top: '52px'}}
             >
               Create seed
             </Button>
