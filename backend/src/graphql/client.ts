@@ -7,17 +7,17 @@ import {
 } from '@apollo/client';
 import {setContext} from '@apollo/client/link/context';
 import {
+  CreateProposalMutation,
   GetGraphQuery,
   GetGraphsQuery,
-  GetVariantQuery,
   GetGraphWithSubgraphsQuery,
-  ProposalLaunchesQuery,
-  CreateProposalMutation,
-  UpdateProposalStatusMutation,
   GetOrganizationIdQuery,
   GetSchemaQuery,
-  PublishProposalRevisionMutationVariables,
+  GetVariantQuery,
+  ProposalLaunchesQuery,
   PublishProposalRevisionMutation,
+  PublishProposalRevisionMutationVariables,
+  UpdateProposalStatusMutation,
 } from './apollo/types/graphql';
 import {CREATE_PROPOSAL} from './mutations/createProposal';
 import {PUBLISH_PROPOSAL_REVISION} from './mutations/publishProposalRevision';
@@ -72,7 +72,7 @@ export default class Client {
       variables: {organizationId: this.organizationId},
     });
 
-    if (data.organization?.__typename === 'Account') {
+    if (data.organization?.__typename === 'Organization') {
       return data.organization.graphs;
     }
 
