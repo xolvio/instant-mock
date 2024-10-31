@@ -2,7 +2,7 @@ import {Seed} from '@/models/Seed';
 import {ApolloSandbox} from '@apollo/sandbox/react';
 import {HandleRequest} from '@apollo/sandbox/src/helpers/postMessageRelayHelpers';
 import {zodResolver} from '@hookform/resolvers/zod';
-import {ChevronsUpDown, Plus, Settings, User} from 'lucide-react';
+import {ChevronsUpDown, Plus, Settings, Trash, User} from 'lucide-react';
 import React, {useCallback, useEffect, useState} from 'react';
 import {useForm} from 'react-hook-form';
 import {useNavigate} from 'react-router';
@@ -575,7 +575,7 @@ const Home = () => {
         className="w-full h-[calc(100vh-64px)] relative"
       >
         <div className="flex flex-col h-full">
-          <div className="w-full p-6 bg-background">
+          <div className="w-full p-4 bg-background">
             <div className="flex items-center space-x-4">
               <Label htmlFor="seed-group-select">Seed Group</Label>
               <Popover open={open} onOpenChange={setOpen}>
@@ -643,8 +643,50 @@ const Home = () => {
               </Popover>
             </div>
           </div>
-          <div className="flex-1 overflow-auto p-6">
-            <Card className="w-full">
+
+          {/* Flex container to divide sidebar and main content */}
+          <div className="flex flex-1 overflow-auto p-4 space-x-4">
+            {/* Sidebar as a Card with a Table */}
+            <Card className="w-[250px] flex-shrink-0 flex-grow-0 p-4">
+              <div className="overflow-y-auto">
+                <table className="w-full text-left">
+                  <thead>
+                    <tr>
+                      <th className="border-b p-2 flex justify-between items-center">
+                        <span>Seeds</span>
+                        <button
+                          onClick={() => setDialogOpen(true)}
+                          className="text-gray-500 hover:text-blue-600 transition duration-150"
+                        >
+                          <Plus className="h-4 w-4" />
+                        </button>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {seeds.map((seed) => (
+                      <tr
+                        key={seed.id}
+                        className="group transition-colors duration-150"
+                      >
+                        <td className="p-2 flex items-center justify-between">
+                          {seed.operationName}
+                          <button
+                            className="invisible group-hover:visible text-gray-500 hover:text-red-600 transition duration-150"
+                            onClick={() => handleDeleteClick(seed)}
+                          >
+                            <Trash className="h-4 w-4" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
+
+            {/* Main Content as a Card */}
+            <Card className="flex-1 h-full">
               <CardHeader>
                 <CardTitle>Create new seed</CardTitle>
                 <CardDescription>
@@ -686,7 +728,6 @@ const Home = () => {
                         </FormItem>
                       )}
                     />
-
                     <FormItem>
                       <FormControl>
                         <div className="flex items-center space-x-2">
@@ -730,7 +771,6 @@ const Home = () => {
                         </FormItem>
                       )}
                     />
-
                     <FormField
                       control={form.control}
                       name="seedResponse"
@@ -765,6 +805,7 @@ const Home = () => {
           </div>
         </div>
       </TabsContent>
+
       <TabsContent
         value="narratives"
         className="w-full h-[calc(100vh-64px)] relative"
