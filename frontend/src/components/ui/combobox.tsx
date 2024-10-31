@@ -1,5 +1,10 @@
 'use client';
 
+import {Check, ChevronsUpDown} from 'lucide-react';
+import * as React from 'react';
+
+import {cn} from '../../lib/utils';
+import {Button} from './button';
 import {
   Command,
   CommandEmpty,
@@ -7,12 +12,7 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from '@/components/ui/command';
-import {Check, ChevronsUpDown} from 'lucide-react';
-import * as React from 'react';
-
-import {cn} from '../../lib/utils';
-import {Button} from './button';
+} from './command';
 import {Popover, PopoverContent, PopoverTrigger} from './popover';
 
 const frameworks = [
