@@ -72,7 +72,7 @@ export default class Client {
       variables: {organizationId: this.organizationId},
     });
 
-    if (data.organization?.__typename === 'Account') {
+    if (data.organization?.__typename === 'Organization') {
       return data.organization.graphs;
     }
 

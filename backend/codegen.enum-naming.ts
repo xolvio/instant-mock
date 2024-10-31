@@ -1,4 +1,4 @@
-import {pascalCase} from 'pascal-case';
+const {pascalCase} = require('pascal-case');
 
 function FixEnumValueNaming(str) {
   const hasLowercase = /[a-z]/.test(str);
