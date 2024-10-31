@@ -1,7 +1,7 @@
 import {gql} from '@apollo/client';
 
 export const GET_GRAPH_WITH_SUBGRAPHS = gql`
-  query GetGraph($graphId: ID!, $filterBy: ProposalsFilterInput) {
+  query GetGraphWithSubgraphs($graphId: ID!, $filterBy: ProposalsFilterInput) {
     graph(id: $graphId) {
       variants {
         key: id
