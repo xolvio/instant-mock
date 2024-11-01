@@ -10,6 +10,16 @@ import {z} from 'zod';
 import logo from '../../assets/logo.png';
 import narrative from '../../assets/narrative.png';
 import {getSeeds} from '../../services/SeedService';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from './alert-dialog';
 import {Button} from './button';
 import {
   Card,
@@ -56,6 +66,14 @@ import {
   SelectValue,
 } from './select';
 import {Switch} from './switch';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from './table';
 import {Tabs, TabsContent, TabsList, TabsTrigger} from './tabs';
 import {Textarea} from './textarea';
 import {Toaster} from './toaster';
@@ -381,6 +399,7 @@ const Home = () => {
   };
 
   async function deleteSeed(seed: Seed) {
+    console.log('Deleting seed with id: ', seed.id);
     try {
       const response = await fetch(`${serverBaseUrl}/api/seeds/${seed.id}`, {
         method: 'DELETE',
@@ -416,23 +435,21 @@ const Home = () => {
     setValue('seedResponse', JSON.stringify(seedResponse, null, 2));
   }
 
-  //TODO: implemenmt
-  // const handleDelete = async () => {
-  //   try {
-  //     // const [graphId, variantName] = selectedVariant.key.split('@');
-  //     // await deleteSeed(seed);
-  //     // toast({
-  //     //   title: 'Seed Deleted',
-  //     //   description: 'The selected seed has been successfully removed.',
-  //     // });
-  //     // fetchSeeds(graphId, variantName, selectedSeedGroup.id);
-  //     console.log('deleting seeed lalalalalalala');
-  //     setIsDeleteDialogOpen(false);
-  //     setSelectedSeed(null);
-  //   } catch (error) {
-  //     console.error('Failed to delete seed:', error);
-  //   }
-  // };
+  const handleDelete = async () => {
+    try {
+      const [graphId, variantName] = selectedVariant.key.split('@');
+      await deleteSeed(selectedSeed);
+      toast({
+        title: 'Seed Deleted',
+        description: 'The selected seed has been successfully removed.',
+      });
+      fetchSeeds(graphId, variantName, selectedSeedGroup.id);
+      setIsDeleteDialogOpen(false);
+      setSelectedSeed(null);
+    } catch (error) {
+      console.error('Failed to delete seed:', error);
+    }
+  };
 
   const handleDeleteClick = (seed: Seed) => {
     setSelectedSeed(seed);
@@ -558,7 +575,7 @@ const Home = () => {
               ? `${serverBaseUrl}/api/${selectedVariant.key.replace('@', '/')}/graphql`
               : 'http://an-error-occurred'
           }
-          className="w-full h-full"
+          className="w-full h-full studio-2iiqpx"
         />
         {isSeedButtonVisible && (
           <Button
@@ -646,44 +663,68 @@ const Home = () => {
 
           {/* Flex container to divide sidebar and main content */}
           <div className="flex flex-1 overflow-auto p-4 space-x-4">
-            {/* Sidebar as a Card with a Table */}
-            <Card className="w-[250px] flex-shrink-0 flex-grow-0 p-4">
+            <div className="w-[250px] flex-shrink-0 flex-grow-0 p-4">
               <div className="overflow-y-auto">
-                <table className="w-full text-left">
-                  <thead>
-                    <tr>
-                      <th className="border-b p-2 flex justify-between items-center">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="flex justify-between items-center">
                         <span>Seeds</span>
-                        <button
-                          onClick={() => setDialogOpen(true)}
-                          className="text-gray-500 hover:text-blue-600 transition duration-150"
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-gray-500 hover:text-blue-600"
                         >
                           <Plus className="h-4 w-4" />
-                        </button>
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
+                        </Button>
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
                     {seeds.map((seed) => (
-                      <tr
-                        key={seed.id}
-                        className="group transition-colors duration-150"
-                      >
-                        <td className="p-2 flex items-center justify-between">
-                          {seed.operationName}
-                          <button
-                            className="invisible group-hover:visible text-gray-500 hover:text-red-600 transition duration-150"
+                      <TableRow key={seed.id} className="group">
+                        <TableCell className="flex items-center justify-between">
+                          <span>{seed.operationName}</span>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 opacity-0 group-hover:opacity-100 text-gray-500 hover:text-red-600"
                             onClick={() => handleDeleteClick(seed)}
                           >
                             <Trash className="h-4 w-4" />
-                          </button>
-                        </td>
-                      </tr>
+                          </Button>
+                        </TableCell>
+                      </TableRow>
                     ))}
-                  </tbody>
-                </table>
+                  </TableBody>
+                </Table>
               </div>
-            </Card>
+              <AlertDialog
+                open={isDeleteDialogOpen}
+                onOpenChange={setIsDeleteDialogOpen}
+              >
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>
+                      Are you absolutely sure?
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Deleting this seed is permanent and cannot be undone.
+                      Please confirm if you want to proceed.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleDelete}
+                      className="bg-red-600 hover:bg-red-700"
+                    >
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
 
             {/* Main Content as a Card */}
             <Card className="flex-1 h-full">
