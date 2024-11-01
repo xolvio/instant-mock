@@ -7,8 +7,9 @@ import React, {useCallback, useEffect, useState} from 'react';
 import {useForm} from 'react-hook-form';
 import {useNavigate} from 'react-router';
 import {z} from 'zod';
-import logo from '../../assets/logo.png';
+import instant_mock_logo from '../../assets/instant_mock_logo.svg';
 import narrative from '../../assets/narrative.png';
+import logo from '../../assets/xolvio_logo.png';
 import {getSeeds} from '../../services/SeedService';
 import {
   AlertDialog,
@@ -94,8 +95,10 @@ const Home = () => {
   const [seedWithArguments, setSeedWithArguments] = useState(false);
   const [seeds, setSeeds] = useState([]);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [selectedSeed, setSelectedSeed] = useState(null);
+  const [seedToDelete, setSeedToDelete] = useState(null);
+  const [seedToView, setSeedToView] = useState(null);
   const [isSeedButtonVisible, setIsSeedButtonVisible] = useState(false);
+  const [isCreateSeedView, setIsCreateSeedView] = useState(true);
   const serverBaseUrl = process.env.REACT_APP_API_BASE_URL;
 
   //TODO: refine names
@@ -438,21 +441,25 @@ const Home = () => {
   const handleDelete = async () => {
     try {
       const [graphId, variantName] = selectedVariant.key.split('@');
-      await deleteSeed(selectedSeed);
+      await deleteSeed(seedToDelete);
       toast({
         title: 'Seed Deleted',
         description: 'The selected seed has been successfully removed.',
       });
       fetchSeeds(graphId, variantName, selectedSeedGroup.id);
+      if (seedToDelete === seedToView) {
+        setSeedToView(null);
+        setIsCreateSeedView(true);
+      }
       setIsDeleteDialogOpen(false);
-      setSelectedSeed(null);
+      setSeedToDelete(null);
     } catch (error) {
       console.error('Failed to delete seed:', error);
     }
   };
 
   const handleDeleteClick = (seed: Seed) => {
-    setSelectedSeed(seed);
+    setSeedToDelete(seed);
     setIsDeleteDialogOpen(true);
   };
 
@@ -468,7 +475,13 @@ const Home = () => {
               className="h-14 w-24 object-cover cursor-pointer"
               onClick={handleLogoClick}
             />
-            <TabsList className="w-max h-auto p-0 pl-4 bg-transparent border-0 gap-8">
+            <img
+              src={instant_mock_logo}
+              alt="Logo"
+              className="object-cover cursor-pointer"
+              onClick={handleLogoClick}
+            />
+            <TabsList className="w-max h-auto p-2 pl-4 bg-transparent border-0 gap-8 mt-2">
               <TabsTrigger
                 value="sandbox"
                 className="px-0 pb-2 pt-0 text-lg font-medium border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none rounded-none bg-transparent"
@@ -660,10 +673,8 @@ const Home = () => {
               </Popover>
             </div>
           </div>
-
-          {/* Flex container to divide sidebar and main content */}
           <div className="flex flex-1 overflow-auto p-4 space-x-4">
-            <div className="w-[250px] flex-shrink-0 flex-grow-0 p-4">
+            <Card className="w-[250px] flex-shrink-0 flex-grow-0 p-4">
               <div className="overflow-y-auto">
                 <Table>
                   <TableHeader>
@@ -671,6 +682,7 @@ const Home = () => {
                       <TableHead className="flex justify-between items-center">
                         <span>Seeds</span>
                         <Button
+                          onClick={() => setIsCreateSeedView(true)}
                           variant="ghost"
                           size="icon"
                           className="h-8 w-8 text-gray-500 hover:text-blue-600"
@@ -683,7 +695,13 @@ const Home = () => {
                   <TableBody>
                     {seeds.map((seed) => (
                       <TableRow key={seed.id} className="group">
-                        <TableCell className="flex items-center justify-between">
+                        <TableCell
+                          onClick={() => {
+                            setSeedToView(seed);
+                            setIsCreateSeedView(false);
+                          }}
+                          className="flex items-center justify-between"
+                        >
                           <span>{seed.operationName}</span>
                           <Button
                             variant="ghost"
@@ -724,124 +742,188 @@ const Home = () => {
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
-            </div>
+            </Card>
 
             {/* Main Content as a Card */}
             <Card className="flex-1 h-full">
-              <CardHeader>
-                <CardTitle>Create new seed</CardTitle>
-                <CardDescription>
-                  <div>
-                    1. Use the embedded Apollo Sandbox to generate a dummy
-                    response for the operation you want to mock.
-                  </div>
-                  <div>
-                    2. Paste the dummy response in here and adjust it to fit
-                    your specific needs.
-                  </div>
-                  <div>
-                    3. If your operation contains arguments, please define them.
-                    The operation will only match against these specified
-                    arguments.
-                  </div>
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Form {...form}>
-                  <form
-                    onSubmit={form.handleSubmit(onSubmit)}
-                    className="space-y-4"
-                  >
-                    <FormField
-                      control={form.control}
-                      name="operationName"
-                      render={({field}) => (
+              {isCreateSeedView ? (
+                <>
+                  <CardHeader>
+                    <CardTitle>Create new seed</CardTitle>
+                    <CardDescription>
+                      <div>
+                        1. Use the embedded Apollo Sandbox to generate a dummy
+                        response for the operation you want to mock.
+                      </div>
+                      <div>
+                        2. Paste the dummy response in here and adjust it to fit
+                        your specific needs.
+                      </div>
+                      <div>
+                        3. If your operation contains arguments, please define
+                        them. The operation will only match against these
+                        specified arguments.
+                      </div>
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Form {...form}>
+                      <form
+                        onSubmit={form.handleSubmit(onSubmit)}
+                        className="space-y-4"
+                      >
+                        <FormField
+                          control={form.control}
+                          name="operationName"
+                          render={({field}) => (
+                            <FormItem>
+                              <FormLabel>Operation name</FormLabel>
+                              <FormControl>
+                                <Input
+                                  placeholder="Operation name..."
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormDescription>
+                                Name of the GraphQL operation that will be sent
+                                to the mock
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
                         <FormItem>
-                          <FormLabel>Operation name</FormLabel>
                           <FormControl>
-                            <Input placeholder="Operation name..." {...field} />
+                            <div className="flex items-center space-x-2">
+                              <Switch
+                                id="seed-with-arguments"
+                                checked={seedWithArguments}
+                                onCheckedChange={() =>
+                                  setSeedWithArguments(!seedWithArguments)
+                                }
+                              />
+                              <Label htmlFor="seed-with-arguments">
+                                Seed with arguments
+                              </Label>
+                            </div>
                           </FormControl>
-                          <FormDescription>
-                            Name of the GraphQL operation that will be sent to
-                            the mock
-                          </FormDescription>
-                          <FormMessage />
                         </FormItem>
-                      )}
-                    />
-                    <FormItem>
-                      <FormControl>
-                        <div className="flex items-center space-x-2">
-                          <Switch
-                            id="seed-with-arguments"
-                            checked={seedWithArguments}
-                            onCheckedChange={() =>
-                              setSeedWithArguments(!seedWithArguments)
-                            }
-                          />
-                          <Label htmlFor="seed-with-arguments">
-                            Seed with arguments
-                          </Label>
+                        <FormField
+                          control={form.control}
+                          name="operationMatchArguments"
+                          render={({field}) => (
+                            <FormItem
+                              className={`transition-all duration-500 ease-in-out ${
+                                seedWithArguments
+                                  ? 'max-h-[500px] opacity-100 visible'
+                                  : 'max-h-0 opacity-0 invisible'
+                              }`}
+                            >
+                              <FormLabel>Matching arguments (JSON)</FormLabel>
+                              <FormControl>
+                                <Textarea
+                                  placeholder="Matching arguments ..."
+                                  {...field}
+                                  className="h-48"
+                                />
+                              </FormControl>
+                              <FormDescription>
+                                Parameters used for matching a seed with GraphQL
+                                operations.
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="seedResponse"
+                          render={({field}) => (
+                            <FormItem>
+                              <FormLabel>Response (JSON)</FormLabel>
+                              <FormControl>
+                                <Textarea
+                                  placeholder="Response..."
+                                  {...field}
+                                  className="h-48"
+                                />
+                              </FormControl>
+                              <FormDescription>
+                                Data to be returned for the combination of the
+                                defined operation name, seed group id and
+                                parameters
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <div className="flex space-x-2">
+                          <Button type="button" variant="secondary">
+                            Discard
+                          </Button>
+                          <Button type="submit">Save seed</Button>
                         </div>
-                      </FormControl>
-                    </FormItem>
-                    <FormField
-                      control={form.control}
-                      name="operationMatchArguments"
-                      render={({field}) => (
-                        <FormItem
-                          className={`transition-all duration-500 ease-in-out ${
-                            seedWithArguments
-                              ? 'max-h-[500px] opacity-100 visible'
-                              : 'max-h-0 opacity-0 invisible'
+                      </form>
+                    </Form>
+                  </CardContent>
+                </>
+              ) : (
+                <>
+                  <CardHeader>
+                    <CardTitle>Seed Details</CardTitle>
+                    <CardDescription>
+                      View and edit seed information
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="flex items-center mb-2">
+                        <span>{`Operation name: ${seedToView?.operationName}`}</span>
+                      </div>
+                      <div>
+                        <h3 className="font-semibold">Matching Arguments</h3>
+                        <pre
+                          // ref={matchArgumentsRef}
+                          // contentEditable={isEditing}
+                          suppressContentEditableWarning={true}
+                          className={`bg-gray-100 p-4 rounded overflow-auto focus:border-primary focus:outline-none ${
+                            false
+                              ? 'border-[1px] border-[hsl(var(--primary))]'
+                              : 'border-[1px] border-transparent'
                           }`}
+                          style={{minHeight: '100px'}}
                         >
-                          <FormLabel>Matching arguments (JSON)</FormLabel>
-                          <FormControl>
-                            <Textarea
-                              placeholder="Matching arguments ..."
-                              {...field}
-                              className="h-48"
-                            />
-                          </FormControl>
-                          <FormDescription>
-                            Parameters used for matching a seed with GraphQL
-                            operations.
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="seedResponse"
-                      render={({field}) => (
-                        <FormItem>
-                          <FormLabel>Response (JSON)</FormLabel>
-                          <FormControl>
-                            <Textarea
-                              placeholder="Response..."
-                              {...field}
-                              className="h-48"
-                            />
-                          </FormControl>
-                          <FormDescription>
-                            Data to be returned for the combination of the
-                            defined operation name, seed group id and parameters
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <div className="flex space-x-2">
-                      <Button type="button" variant="secondary">
-                        Discard
-                      </Button>
-                      <Button type="submit">Save seed</Button>
+                          <code className="text-sm">
+                            {JSON.stringify(
+                              seedToView?.operationMatchArguments,
+                              null,
+                              2
+                            )}
+                          </code>
+                        </pre>
+                      </div>
+                      <div>
+                        <h3 className="font-semibold">Response</h3>
+                        <pre
+                          // ref={responseRef}
+                          // contentEditable={isEditing}
+                          suppressContentEditableWarning={true}
+                          className={`bg-gray-100 p-4 rounded overflow-auto focus:border-primary focus:outline-none ${
+                            false
+                              ? 'border-[1px] border-[hsl(var(--primary))]'
+                              : 'border-[1px] border-transparent'
+                          }`}
+                          style={{minHeight: '100px'}}
+                        >
+                          <code className="text-sm">
+                            {JSON.stringify(seedToView?.seedResponse, null, 2)}
+                          </code>
+                        </pre>
+                      </div>
                     </div>
-                  </form>
-                </Form>
-              </CardContent>
+                  </CardContent>
+                </>
+              )}
             </Card>
           </div>
         </div>
