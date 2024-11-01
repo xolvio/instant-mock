@@ -1,5 +1,9 @@
 import express, {Request, Response, Router} from 'express';
 import {buildASTSchema, GraphQLSchema, parse} from 'graphql';
+import {
+  CreateProposalMutation,
+  LaunchStatus,
+} from '../graphql/apollo/types/graphql';
 import Client from '../graphql/client';
 import {createProposedSubgraphsFromOperationsMissingFields} from '../utilities/operationToSchema';
 
@@ -42,15 +46,25 @@ const handleLaunchStatus = async (
     new Promise((resolve) => setTimeout(resolve, ms));
 
   while (true) {
-    const {backingVariant, activities} =
-      await client.proposalLaunches(proposalId);
+    const proposalLaunches = await client.proposalLaunches(proposalId);
+    if (!proposalLaunches)
+      return {status: 'FAILED', message: 'no proposal found'};
 
-    const latestLaunch = activities?.edges?.find(
-      //@ts-ignore
-      (edge) => edge?.node?.target?.launch?.id === latestLaunchId
-    );
+    const {backingVariant, activities} = proposalLaunches;
 
-    const status = latestLaunch?.node?.target?.launch?.status;
+    const latestLaunch = activities?.edges?.find((edge) => {
+      const target = edge?.node?.target;
+      return (
+        target?.__typename === 'ProposalRevision' &&
+        target.launch?.id === latestLaunchId
+      );
+    });
+
+    const target = latestLaunch?.node?.target;
+    const status =
+      target && target.__typename === 'ProposalRevision'
+        ? target.launch?.status
+        : undefined;
 
     switch (status) {
       case 'LAUNCH_INITIATED':
@@ -97,10 +111,15 @@ router.post(
 
     try {
       const variant = await client.getVariant(graphId, variantName);
+      if (!variant) return res.status(400).json({error: 'No variant provided'});
+
       const supergraph: GraphQLSchema = buildASTSchema(
-        parse(variant.latestPublication.schema.document)
+        parse(variant.latestPublication?.schema.document)
       );
-      const subgraphs = variant.subgraphs.map(prepareSubgraphSchema);
+      const subgraphs = variant?.subgraphs?.map(prepareSubgraphSchema);
+      if (!subgraphs)
+        return res.status(400).json({error: 'No subgraphs found for variant'});
+
       const subgraphInputs = createProposedSubgraphsFromOperationsMissingFields(
         supergraph,
         subgraphs,
@@ -111,11 +130,11 @@ router.post(
       const timestamp = getCurrentTimestamp();
       if (variant.isProposal) {
         revision = await client.publishProposalRevision(
-          variant.proposal.id,
+          variant.proposal?.id as string,
           subgraphInputs,
           `Auto-updating at ${timestamp}`,
           `auto-updated at ${timestamp}`,
-          variant.latestLaunch.id
+          variant.latestLaunch?.id as string
         );
       } else {
         const data = await client.createProposal(
@@ -124,30 +143,53 @@ router.post(
           `Auto-generated at ${timestamp}`,
           ''
         );
-        revision = await client.publishProposalRevision(
-          data.graph.createProposal.proposal.id,
-          subgraphInputs,
-          `Auto-generated at ${timestamp}`,
-          `auto-generated at ${timestamp}`,
-          data.graph.createProposal.latestLaunch.id
+        if (!data?.graph?.createProposal) {
+          return res.status(500).json({error: 'No graphs found'});
+        }
+
+        if (data.graph.createProposal.__typename === 'GraphVariant') {
+          revision = await client.publishProposalRevision(
+            data.graph.createProposal.proposal?.id as string,
+            subgraphInputs,
+            `Auto-generated at ${timestamp}`,
+            `auto-generated at ${timestamp}`,
+            data.graph.createProposal.latestLaunch?.id as string
+          );
+        } else {
+          return res
+            .status(400)
+            .json({error: data.graph.createProposal?.__typename});
+        }
+      }
+
+      if (
+        revision?.proposal.__typename === 'ProposalMutation' &&
+        revision?.proposal?.publishSubgraphs?.__typename === 'Proposal' &&
+        revision?.proposal?.publishSubgraphs?.backingVariant?.latestLaunch
+          ?.id &&
+        revision.proposal.publishSubgraphs.backingVariant.id
+      ) {
+        const latestLaunchId =
+          revision.proposal.publishSubgraphs.backingVariant.latestLaunch.id;
+
+        const launchStatus = await handleLaunchStatus(
+          revision.proposal.publishSubgraphs.id,
+          latestLaunchId,
+          graphId
         );
+
+        if (launchStatus.status === 'FAILED') {
+          return res.status(400).json({error: launchStatus.message});
+        }
+
+        //TODO: fix typing for key prop which is a devex feature
+        //@ts-ignore
+        revision.proposal.key =
+          revision.proposal.publishSubgraphs.backingVariant.id;
+        return res.json(revision);
+      } else {
+        return res.status(400).json({error: 'Incomplete proposal data'});
       }
-
-      const latestLaunchId =
-        revision.proposal.publishSubgraphs.backingVariant.latestLaunch.id;
-      const launchStatus = await handleLaunchStatus(
-        revision.proposal.publishSubgraphs.id,
-        latestLaunchId,
-        graphId
-      );
-
-      if (launchStatus.status === 'FAILED') {
-        return res.status(400).json({error: launchStatus.message});
-      }
-
-      revision.proposal.key =
-        revision.proposal.publishSubgraphs.backingVariant.id;
-      res.json(revision);
     } catch (error) {
       console.error(error);
       res.status(500).send({

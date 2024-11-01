@@ -473,13 +473,11 @@ const Home = () => {
               src={logo}
               alt="Logo"
               className="h-14 w-24 object-cover cursor-pointer"
-              onClick={handleLogoClick}
             />
             <img
               src={instant_mock_logo}
               alt="Logo"
               className="object-cover cursor-pointer"
-              onClick={handleLogoClick}
             />
             <TabsList className="w-max h-auto p-2 pl-4 bg-transparent border-0 gap-8 mt-2">
               <TabsTrigger

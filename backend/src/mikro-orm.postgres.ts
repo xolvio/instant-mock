@@ -12,7 +12,7 @@ export default defineConfig({
   host: process.env.POSTGRES_HOST,
   port: Number(process.env.POSTGRES_PORT),
   migrations: {
-    path: './src/migrations',
+    path: './src/migrations/postgres',
   },
   extensions: [Migrator],
 });
