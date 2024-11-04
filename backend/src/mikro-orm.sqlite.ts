@@ -7,7 +7,7 @@ import {SqliteDriver} from '@mikro-orm/sqlite';
 export default defineConfig({
   debug: true,
   entities: [Seed, SeedGroup],
-  dbName: './src/instant-mock.db',
+  dbName: './instant-mock.db',
   driver: SqliteDriver,
   migrations: {
     path: './dist/migrations/sqlite',

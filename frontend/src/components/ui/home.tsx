@@ -82,6 +82,7 @@ import {toast} from './use-toast';
 
 const Home = () => {
   const navigate = useNavigate();
+  const [selectedTab, setSelectedTab] = useState('sandbox');
   const [selectedGraph, setSelectedGraph] = useState(null);
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [variants, setVariants] = useState([]);
@@ -107,7 +108,12 @@ const Home = () => {
   const [operationName, setOperationName] = useState('');
 
   const handleSettingsClick = () => navigate('/settings');
-  const handleLogoClick = () => navigate('/graphs');
+
+  const handleCreateSeedClick = () => {
+    populateSeedForm();
+    setSelectedTab('seeds');
+    setIsSeedButtonVisible(false);
+  };
 
   useEffect(() => {
     const fetchSeedGroups = () => {
@@ -231,12 +237,11 @@ const Home = () => {
         requestBody.operationName === 'IntrospectionQuery';
       const isSuccess = result.ok && !responseBody.errors;
 
-      // Only update state if it's not an introspection query and the fetch was successful
       if (!isIntrospectionQuery && isSuccess) {
-        setSeedResponse(responseBody); // Only set the response when needed
-        setIsSeedButtonVisible(true); // Trigger visibility only for non-introspection queries
-        setSeedArgs(requestBody.variables); // Update variables only if needed
-        setOperationName(requestBody.operationName); // Track the operation name only when necessary
+        setSeedResponse(responseBody);
+        setIsSeedButtonVisible(true);
+        setSeedArgs(requestBody.variables);
+        setOperationName(requestBody.operationName);
       }
 
       return new Response(JSON.stringify(responseBody), {
@@ -247,7 +252,6 @@ const Home = () => {
     },
     [setSeedResponse, setIsSeedButtonVisible, setSeedArgs, setOperationName]
   );
-
   const handleGraphChange = async (graphId) => {
     const selectedGraph = graphs.find((g) => g.id === graphId) || null;
     setSelectedGraph(selectedGraph);
@@ -464,7 +468,7 @@ const Home = () => {
   };
 
   return (
-    <Tabs defaultValue="sandbox" className="w-full">
+    <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
       <Toaster />
       <header className="sticky top-0 z-50 bg-background border-b">
         <div className="flex items-center justify-between px-4 py-2 md:px-6">
@@ -482,19 +486,19 @@ const Home = () => {
             <TabsList className="w-max h-auto p-2 pl-4 bg-transparent border-0 gap-8 mt-2">
               <TabsTrigger
                 value="sandbox"
-                className="px-0 pb-2 pt-0 text-lg font-medium border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none rounded-none bg-transparent"
+                className="px-0 pb-2 pt-0 text-sm font-small border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none rounded-none bg-transparent"
               >
                 SANDBOX
               </TabsTrigger>
               <TabsTrigger
                 value="seeds"
-                className="px-0 pb-2 pt-0 text-lg font-medium border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none rounded-none bg-transparent"
+                className="px-0 pb-2 pt-0 text-sm font-small border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none rounded-none bg-transparent"
               >
                 SEEDS
               </TabsTrigger>
               <TabsTrigger
                 value="narratives"
-                className="px-0 pb-2 pt-0 text-lg font-medium border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none rounded-none bg-transparent"
+                className="px-0 pb-2 pt-0 text-sm font-small border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none rounded-none bg-transparent"
               >
                 NARRATIVES
               </TabsTrigger>
@@ -590,11 +594,10 @@ const Home = () => {
         />
         {isSeedButtonVisible && (
           <Button
-            onClick={populateSeedForm}
-            className="absolute"
-            style={{right: '176px', top: '115px'}}
+            onClick={handleCreateSeedClick}
+            className="absolute right-[121px] top-[76px] p-3 border border-gray-300 shadow-lg rounded-md text-sm"
           >
-            Create seed
+            Create Seed From Response
           </Button>
         )}
       </TabsContent>

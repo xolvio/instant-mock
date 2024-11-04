@@ -50,6 +50,10 @@ const port = process.env.PORT || 3001;
 
 (async () => {
   DI.orm = await MikroORM.init(mikroOrmConfig);
+
+  const migrator = DI.orm.getMigrator();
+  await migrator.up();
+
   DI.em = DI.orm.em;
   DI.seeds = DI.orm.em.getRepository(Seed);
   DI.seedGroups = DI.orm.em.getRepository(SeedGroup);
