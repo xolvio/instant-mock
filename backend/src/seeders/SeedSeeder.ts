@@ -1,7 +1,7 @@
-import {Seeder} from '@mikro-orm/seeder';
-import {EntityManager} from '@mikro-orm/core';
-import {Seed} from '../models/seed';
 import {faker} from '@faker-js/faker';
+import {EntityManager} from '@mikro-orm/core';
+import {Seeder} from '@mikro-orm/seeder';
+import {Seed} from '../models/seed';
 
 export class DatabaseSeeder extends Seeder {
   async run(em: EntityManager): Promise<void> {
@@ -12,6 +12,7 @@ export class DatabaseSeeder extends Seeder {
         operationName: faker.word.sample(),
         seedResponse: {data: {exampleField: faker.word.sample()}},
         operationMatchArguments: {arg1: faker.word.sample()},
+        // @ts-ignore
         seedGroupId: faker.string.uuid(),
       });
     }

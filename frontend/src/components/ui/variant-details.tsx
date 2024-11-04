@@ -199,7 +199,7 @@ const VariantDetails = () => {
   async function deleteSeed(seed: Seed) {
     try {
       const response = await fetch(
-        `${apiUrl}/api/seeds/${seed.id}?graphId=${seed.graphId}&variantName=${seed.variantName}&seedGroupId=${seed.seedGroupId}`,
+        `${apiUrl}/api/seeds/${seed.id}?graphId=${seed.graphId}&variantName=${seed.variantName}`,
         {
           method: 'DELETE',
           headers: {
@@ -429,7 +429,7 @@ const VariantDetails = () => {
                           <TableCell className="font-medium">
                             {seed.operationName}
                           </TableCell>
-                          <TableCell>{seed.seedGroupId}</TableCell>
+                          <TableCell></TableCell>
                           <TableCell className="hidden md:table-cell">
                             <HoverCard>
                               <HoverCardTrigger>
@@ -578,7 +578,7 @@ const VariantDetails = () => {
                     <FormDescription>
                       A unique string used to match GraphQL requests with
                       registered seed. This id must be included in the request
-                      as 'mocking-sequence-id' header.
+                      as 'seed-group' header.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>

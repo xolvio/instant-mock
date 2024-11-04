@@ -3,27 +3,19 @@
   "version": "1.0.0",
   "main": "dist/server.js",
   "scripts": {
-    "start": "node dist/server.js",
     "build": "npx tsc",
+    "codegen:apollo": "graphql-codegen --config codegen.apollo.ts",
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
-    "prettier": "prettier src/**/* -l",
-    "prettier:fix": "npm run prettier --write",
     "lint": "eslint '*/**/*.{js,ts}'",
     "lint-fix": "eslint '*/**/*.{js,ts}' --fix",
-    "test": "jest",
-    "docker:up": "docker-compose up -d",
-    "docker:down": "docker-compose down",
-    "migrate:create": "dotenv -- npx mikro-orm migration:create",
-    "migrate:up": "dotenv -- npx mikro-orm migration:up",
-    "migrate:down": "dotenv -- npx mikro-orm migration:down",
-    "migrate:list": "dotenv -- npx mikro-orm migration:list",
-    "migrate:pending": "dotenv -- npx mikro-orm migration:pending",
-    "migrate:fresh": "dotenv -- npx mikro-orm migration:fresh",
-    "schema:update": "dotenv -- npx mikro-orm schema:update --run",
-    "schema:create": "dotenv -- npx mikro-orm schema:create",
-    "schema:drop": "dotenv -- npx mikro-orm schema:drop",
-    "seed:run": "dotenv -- npx mikro-orm seeder:run",
-    "seed:create": "dotenv -- npx mikro-orm seeder:create"
+    "migrate:create": "npx mikro-orm migration:create --config src/mikro-orm.config.ts",
+    "migrate:up": "npx mikro-orm migration:up --config src/mikro-orm.config.ts",
+    "prettier": "prettier src/**/* -l",
+    "prettier:fix": "npm run prettier --write",
+    "seed:create": "npx mikro-orm seeder:create --config src/mikro-orm.config.ts",
+    "seed:run": "npx mikro-orm seeder:run --config src/mikro-orm.config.ts",
+    "start": "node dist/server.js",
+    "test": "jest"
   },
   "dependencies": {
     "@apollo/client": "^3.11.1",
@@ -36,6 +28,7 @@
     "@mikro-orm/migrations": "^6.3.13",
     "@mikro-orm/postgresql": "^6.3.13",
     "@mikro-orm/seeder": "^6.3.13",
+    "@mikro-orm/sqlite": "^6.3.13",
     "@types/sqlite3": "^3.1.11",
     "@types/swagger-jsdoc": "^6.0.4",
     "apollo-server-express": "^3.13.0",
@@ -59,9 +52,11 @@
     "sqlite3": "^5.1.7",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
+    "ts-node": "^10.9.2",
     "undici": "^6.19.8"
   },
   "devDependencies": {
+    "@graphql-codegen/cli": "^5.0.3",
     "@mikro-orm/cli": "^6.3.13",
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
@@ -86,6 +81,6 @@
     "prettier": "^3.3.3",
     "ts-jest": "^29.2.5",
     "ts-node-dev": "^1.1.1",
-    "typescript": "^4.9.5"
+    "typescript": "^5.6.3"
   }
 }

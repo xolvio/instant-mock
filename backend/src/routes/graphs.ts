@@ -1,7 +1,7 @@
 import express, {Request, Response, Router} from 'express';
 import {buildASTSchema, parse} from 'graphql';
+import {CreateProposalMutation} from '../graphql/apollo/types/graphql';
 import Client from '../graphql/client';
-import {createProposedSubgraphsFromOperationsMissingFields} from '../utilities/operationToSchema';
 
 const router: Router = express.Router();
 const client = new Client();
@@ -26,12 +26,14 @@ const prepareSubgraphSchema = (subgraph: {
   return {name: subgraph.name, schema};
 };
 
+// @ts-ignore
 const unifyVariantAndProposalDataShapes = (graph) => {
   const {
     proposals: {proposals},
   } = graph;
 
   const updatedProposals = proposals.map(
+    // @ts-ignore
     ({displayName, key, latestPublication}) => ({
       displayName,
       key: key.key,
@@ -91,11 +93,18 @@ router.post(
         displayName,
         description
       );
-      res.json({
-        proposalName: data.graph.createProposal.name,
-        proposalId: data.graph.createProposal.proposal.id,
-        latestLaunchId: data.graph.createProposal.latestLaunch.id,
-      });
+
+      if (!data?.graph?.createProposal) {
+        return res.status(500).json({error: 'Failed to create proposal'});
+      }
+
+      const response = extractProposalData(data.graph?.createProposal);
+
+      if ('error' in response) {
+        return res.status(400).json(response);
+      }
+
+      res.json(response);
     } catch (error) {
       console.error(error);
       res.status(500).send({error: 'Error creating proposal'});
@@ -103,12 +112,36 @@ router.post(
   }
 );
 
+function extractProposalData(
+  createProposal: NonNullable<CreateProposalMutation['graph']>['createProposal']
+) {
+  if (!createProposal) {
+    return {error: 'No data available'};
+  }
+
+  switch (createProposal.__typename) {
+    case 'GraphVariant':
+      return {
+        proposalName: createProposal.name,
+        proposalId: createProposal.proposal?.id ?? null,
+        food: createProposal.proposal?.id ?? null,
+        latestLaunchId: createProposal.latestLaunch?.id ?? null,
+      };
+    case 'CreateProposalError':
+    case 'PermissionError':
+    case 'ValidationError':
+      return {error: createProposal.message};
+    default:
+      return {error: 'Unexpected response type'};
+  }
+}
+
 router.post('/graphs/:graphId/reset', async (req: Request, res: Response) => {
   const graphId = req.params.graphId;
 
   try {
     const graph = await client.getGraph(graphId);
-    const openProposals = graph.proposals.proposals.filter(
+    const openProposals = graph?.proposals.proposals.filter(
       //@ts-ignore
       (p) => p.status !== 'CLOSED'
     );

@@ -7,7 +7,6 @@ import {
   MikroORM,
   RequestContext,
 } from '@mikro-orm/core';
-import mikroOrmConfig from './mikro-orm.config';
 import {Seed} from './models/seed';
 import {SeedGroup} from './models/seedGroup';
 import cors from 'cors';
@@ -21,6 +20,10 @@ import graphsRoutes from './routes/graphs';
 import proposalsRoutes from './routes/proposals';
 import seedsRoutes from './routes/seeds';
 import seedGroupsRoutes from './routes/seedGroups';
+
+const mikroOrmConfig = require(
+  `./mikro-orm.${process.env.MIKRO_ORM_DRIVER || 'sqlite'}${process.env.NODE_ENV === 'production' ? '.js' : '.ts'}`
+).default;
 
 const ProxyAgent = Undici.ProxyAgent;
 const setGlobalDispatcher = Undici.setGlobalDispatcher;
@@ -47,6 +50,10 @@ const port = process.env.PORT || 3001;
 
 (async () => {
   DI.orm = await MikroORM.init(mikroOrmConfig);
+
+  const migrator = DI.orm.getMigrator();
+  await migrator.up();
+
   DI.em = DI.orm.em;
   DI.seeds = DI.orm.em.getRepository(Seed);
   DI.seedGroups = DI.orm.em.getRepository(SeedGroup);
@@ -91,12 +98,10 @@ const port = process.env.PORT || 3001;
     res.send(swaggerSpec);
   });
 
-  // TODO: enable for sinlge-container deploys (also need sqlite)
-  // app.use(express.static(path.join(__dirname, '../../frontend/build')));
-  // // Catch-all route for serving the frontend
-  // app.get('*', (_, res) => {
-  //   res.sendFile(path.join(__dirname, '../../frontend/build', 'index.html'));
-  // });
+  app.use(express.static(path.join(__dirname, '../../frontend/build')));
+  app.get('*', (_, res) => {
+    res.sendFile(path.join(__dirname, '../../frontend/build', 'index.html'));
+  });
 
   app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);

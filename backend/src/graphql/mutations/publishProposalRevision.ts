@@ -1,7 +1,7 @@
 import {gql} from '@apollo/client';
 
 export const PUBLISH_PROPOSAL_REVISION = gql`
-  mutation PublishProposalRevisionMutation(
+  mutation PublishProposalRevision(
     $proposalId: ID!
     $input: PublishProposalSubgraphsInput!
   ) {

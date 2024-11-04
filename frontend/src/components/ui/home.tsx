@@ -1,19 +1,26 @@
+import {Seed} from '@/models/Seed';
 import {ApolloSandbox} from '@apollo/sandbox/react';
+import {HandleRequest} from '@apollo/sandbox/src/helpers/postMessageRelayHelpers';
 import {zodResolver} from '@hookform/resolvers/zod';
-import {
-  ChevronsUpDown,
-  CircleUser,
-  MoreHorizontal,
-  Plus,
-  Settings,
-  User,
-} from 'lucide-react';
-import React, {useEffect, useState} from 'react';
+import {ChevronsUpDown, Plus, Settings, Trash, User} from 'lucide-react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {useForm} from 'react-hook-form';
 import {useNavigate} from 'react-router';
 import {z} from 'zod';
-import logo from '../../assets/logo.png';
+import instant_mock_logo from '../../assets/instant_mock_logo.svg';
+import narrative from '../../assets/narrative.png';
+import logo from '../../assets/xolvio_logo.png';
 import {getSeeds} from '../../services/SeedService';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from './alert-dialog';
 import {Button} from './button';
 import {
   Card,
@@ -39,14 +46,6 @@ import {
   DialogTitle,
 } from './dialog';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from './dropdown-menu';
-import {
   Form,
   FormControl,
   FormDescription,
@@ -55,7 +54,6 @@ import {
   FormLabel,
   FormMessage,
 } from './form';
-import {HoverCard, HoverCardContent, HoverCardTrigger} from './hover-card';
 import {Input} from './input';
 import {Label} from './label';
 import {Popover, PopoverContent, PopoverTrigger} from './popover';
@@ -84,6 +82,7 @@ import {toast} from './use-toast';
 
 const Home = () => {
   const navigate = useNavigate();
+  const [selectedTab, setSelectedTab] = useState('sandbox');
   const [selectedGraph, setSelectedGraph] = useState(null);
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [variants, setVariants] = useState([]);
@@ -96,10 +95,25 @@ const Home = () => {
   const [newGroupName, setNewGroupName] = React.useState('');
   const [seedWithArguments, setSeedWithArguments] = useState(false);
   const [seeds, setSeeds] = useState([]);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [seedToDelete, setSeedToDelete] = useState(null);
+  const [seedToView, setSeedToView] = useState(null);
+  const [isSeedButtonVisible, setIsSeedButtonVisible] = useState(false);
+  const [isCreateSeedView, setIsCreateSeedView] = useState(true);
   const serverBaseUrl = process.env.REACT_APP_API_BASE_URL;
 
+  //TODO: refine names
+  const [seedArgs, setSeedArgs] = useState('{}');
+  const [seedResponse, setSeedResponse] = useState('');
+  const [operationName, setOperationName] = useState('');
+
   const handleSettingsClick = () => navigate('/settings');
-  const handleLogoClick = () => navigate('/graphs');
+
+  const handleCreateSeedClick = () => {
+    populateSeedForm();
+    setSelectedTab('seeds');
+    setIsSeedButtonVisible(false);
+  };
 
   useEffect(() => {
     const fetchSeedGroups = () => {
@@ -211,6 +225,33 @@ const Home = () => {
     }
   }, [selectedSeedGroup, selectedVariant, selectedGraph]);
 
+  const customFetcher: HandleRequest = useCallback(
+    async (endpointUrl, requestOptions) => {
+      console.log('Fetching with custom fetcher');
+
+      const result = await fetch(endpointUrl, requestOptions);
+      const responseBody = await result.json();
+      const requestBody = JSON.parse(requestOptions.body?.toString()!);
+
+      const isIntrospectionQuery =
+        requestBody.operationName === 'IntrospectionQuery';
+      const isSuccess = result.ok && !responseBody.errors;
+
+      if (!isIntrospectionQuery && isSuccess) {
+        setSeedResponse(responseBody);
+        setIsSeedButtonVisible(true);
+        setSeedArgs(requestBody.variables);
+        setOperationName(requestBody.operationName);
+      }
+
+      return new Response(JSON.stringify(responseBody), {
+        status: result.status,
+        statusText: result.statusText,
+        headers: result.headers,
+      });
+    },
+    [setSeedResponse, setIsSeedButtonVisible, setSeedArgs, setOperationName]
+  );
   const handleGraphChange = async (graphId) => {
     const selectedGraph = graphs.find((g) => g.id === graphId) || null;
     setSelectedGraph(selectedGraph);
@@ -286,6 +327,8 @@ const Home = () => {
     },
   });
 
+  const {setValue} = form;
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       const [graphId, variantName] = selectedVariant.key.split('@');
@@ -312,32 +355,30 @@ const Home = () => {
         const errorData = await response.json();
         toast({
           variant: 'destructive',
-          title: 'There was an error creating the seed!',
-          // description: getCurrentDateTime(),
-          description: 'lalala',
+          title: 'Error Creating Seed',
+          description:
+            'An unexpected error occurred while creating the seed. Please try again.',
         });
       } else {
         toast({
-          title: 'Seed created successfully!',
-          // description: getCurrentDateTime(),
-          description: 'lalala',
+          title: 'Seed Created Successfully!',
+          description: 'Your new seed has been created and is ready for use.',
         });
         form.reset({
           operationName: '', // Optionally set specific values
           operationMatchArguments: '{}', // Set to the initial default value
           seedResponse: '',
         });
+        fetchSeeds(graphId, variantName, selectedSeedGroup.id);
       }
     } catch (error) {
       toast({
-        variant: 'destructive',
-        title: 'There was an error creating the seed!',
-        // description: getCurrentDateTime(),
+        title: 'Error Creating Seed',
+        description:
+          'An unexpected error occurred while creating the seed. Please try again.',
       });
     }
   }
-
-  useEffect(() => {}, []);
 
   const addSeedGroup = async (newGroupName) => {
     if (!newGroupName.trim()) return;
@@ -364,19 +405,116 @@ const Home = () => {
     }
   };
 
-  return (
-    <>
-      <Toaster />
-      <header className="sticky top-0 z-50 flex items-center justify-between border-b bg-background px-4 py-2 md:px-6">
-        <img
-          src={logo}
-          alt="Logo"
-          className="h-14 w-24 object-cover cursor-pointer"
-          onClick={handleLogoClick}
-        />
-        <div className="flex items-center gap-4">
-          <Label htmlFor="graph-select">Graph</Label>
+  async function deleteSeed(seed: Seed) {
+    console.log('Deleting seed with id: ', seed.id);
+    try {
+      const response = await fetch(`${serverBaseUrl}/api/seeds/${seed.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
+      if (!response.ok) {
+        throw new Error(`Failed to delete seed with ID ${seed.id}`);
+      }
+
+      const result = await response.json();
+      console.log(`Seed with ID ${seed.id} deleted successfully`, result);
+
+      return result; // Assuming the API returns the deleted seed or a confirmation message
+    } catch (error) {
+      console.error('Error deleting seed:', error);
+      throw error; // Re-throw the error to handle it elsewhere if needed
+    }
+  }
+
+  async function populateSeedForm() {
+    console.log('gonna populate the form');
+    setValue('operationName', operationName);
+
+    const hasVariables = seedArgs && Object.keys(seedArgs).length > 0;
+    if (hasVariables) {
+      setValue('operationMatchArguments', JSON.stringify(seedArgs, null, 2));
+      setSeedWithArguments(true);
+    }
+
+    setValue('seedResponse', JSON.stringify(seedResponse, null, 2));
+  }
+
+  const handleDelete = async () => {
+    try {
+      const [graphId, variantName] = selectedVariant.key.split('@');
+      await deleteSeed(seedToDelete);
+      toast({
+        title: 'Seed Deleted',
+        description: 'The selected seed has been successfully removed.',
+      });
+      fetchSeeds(graphId, variantName, selectedSeedGroup.id);
+      if (seedToDelete === seedToView) {
+        setSeedToView(null);
+        setIsCreateSeedView(true);
+      }
+      setIsDeleteDialogOpen(false);
+      setSeedToDelete(null);
+    } catch (error) {
+      console.error('Failed to delete seed:', error);
+    }
+  };
+
+  const handleDeleteClick = (seed: Seed) => {
+    setSeedToDelete(seed);
+    setIsDeleteDialogOpen(true);
+  };
+
+  return (
+    <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
+      <Toaster />
+      <header className="sticky top-0 z-50 bg-background border-b">
+        <div className="flex items-center justify-between px-4 py-2 md:px-6">
+          <div className="flex items-center gap-4 justify-start">
+            <img
+              src={logo}
+              alt="Logo"
+              className="h-14 w-24 object-cover cursor-pointer"
+            />
+            <img
+              src={instant_mock_logo}
+              alt="Logo"
+              className="object-cover cursor-pointer"
+            />
+            <TabsList className="w-max h-auto p-2 pl-4 bg-transparent border-0 gap-8 mt-2">
+              <TabsTrigger
+                value="sandbox"
+                className="px-0 pb-2 pt-0 text-sm font-small border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none rounded-none bg-transparent"
+              >
+                SANDBOX
+              </TabsTrigger>
+              <TabsTrigger
+                value="seeds"
+                className="px-0 pb-2 pt-0 text-sm font-small border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none rounded-none bg-transparent"
+              >
+                SEEDS
+              </TabsTrigger>
+              <TabsTrigger
+                value="narratives"
+                className="px-0 pb-2 pt-0 text-sm font-small border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none rounded-none bg-transparent"
+              >
+                NARRATIVES
+              </TabsTrigger>
+            </TabsList>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <Settings
+              className="h-5 w-5 text-gray-500 cursor-pointer"
+              onClick={handleSettingsClick}
+            />
+            <User className="h-5 w-5 text-gray-500" />
+          </div>
+        </div>
+        <div className="flex items-center gap-4 px-4 py-2 bg-white border-t">
+          <Label htmlFor="graph-select">Graph</Label>
           <Select
             onValueChange={handleGraphChange}
             value={selectedGraph?.id || ''}
@@ -395,7 +533,7 @@ const Home = () => {
             </SelectContent>
           </Select>
 
-          <div>Variant</div>
+          <Label htmlFor="variant-select">Variant</Label>
           <Select
             onValueChange={(value) => handleVariantChange(value)}
             value={selectedVariant?.displayName || ''}
@@ -425,377 +563,435 @@ const Home = () => {
               </SelectGroup>
             </SelectContent>
           </Select>
-          <Label htmlFor="seed-group-select">Seed Group</Label>
-          <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger asChild id="seed-group-select">
-              <Button
-                variant="outline"
-                role="combobox"
-                aria-expanded={open}
-                className="w-[250px] justify-between"
-              >
-                {selectedSeedGroup
-                  ? selectedSeedGroup.name
-                  : 'Select seed group...'}
-                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-[250px] p-0">
-              <Command>
-                <CommandInput placeholder="Search seed group..." />
-                <CommandList>
-                  <CommandEmpty>No seed group found.</CommandEmpty>
-                  <CommandGroup heading="Seed Groups">
-                    {seedGroups.map((g) => (
-                      <CommandItem
-                        key={g.id}
-                        value={g.name}
-                        onSelect={(seedGroupName) => {
-                          const selectedGroup = seedGroups.find(
-                            (g) => g.name === seedGroupName
-                          );
-                          if (selectedGroup) {
-                            console.log(
-                              '[home.tsx:446] Selected group:',
-                              selectedGroup
-                            );
-                            setSelectedSeedGroup(selectedGroup);
-                          } else {
-                            console.warn(
-                              'Group not found for value:',
-                              seedGroupName
-                            );
-                          }
-                          setOpen(false);
-                        }}
-                      >
-                        {g.name}
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                  <CommandSeparator />
-                  <CommandGroup>
-                    <CommandItem
-                      onSelect={() => {
-                        setDialogOpen(true);
-                        setOpen(false);
-                      }}
-                    >
-                      <Plus className="mr-2 h-4 w-4" />
-                      Add new seed group
-                    </CommandItem>
-                  </CommandGroup>
-                </CommandList>
-              </Command>
-            </PopoverContent>
-          </Popover>
-
-          <Settings
-            className="h-5 w-5 text-gray-500 cursor-pointer"
-            onClick={handleSettingsClick}
-          />
-          <User className="h-5 w-5 text-gray-500" />
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="secondary" size="icon" className="rounded-full">
-                <CircleUser className="h-5 w-5" />
-                <span className="sr-only">Toggle user menu</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleSettingsClick}>
-                Settings
-              </DropdownMenuItem>
-              <DropdownMenuItem>Support</DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>Logout</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
         </div>
-
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Add New Seed Group</DialogTitle>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="name" className="text-right">
-                  Name
-                </Label>
-                <Input
-                  id="name"
-                  value={newGroupName}
-                  onChange={(e) => setNewGroupName(e.target.value)}
-                  className="col-span-3"
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button type="submit" onClick={() => addSeedGroup(newGroupName)}>
-                Add Group
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
       </header>
-      <Tabs defaultValue="sandbox" className="w-full">
-        <TabsList className="w-full grid grid-cols-3">
-          <TabsTrigger value="sandbox">Sandbox</TabsTrigger>
-          <TabsTrigger value="seeds">Seeds</TabsTrigger>
-          <TabsTrigger value="narratives">Narratives</TabsTrigger>
-        </TabsList>
-        <TabsContent value="sandbox" className="w-full h-[calc(100vh-64px)]">
-          <ApolloSandbox
-            key={selectedGraph?.id + selectedVariant?.key}
-            endpointIsEditable={false}
-            initialEndpoint={
-              selectedGraph && selectedVariant
-                ? `${serverBaseUrl}/api/${selectedVariant.key.replace('@', '/')}/graphql`
-                : 'http://an-error-occurred'
-            }
-            className="w-full h-full"
-          />
-        </TabsContent>
-        <TabsContent value="seeds" className="space-y-4 p-4">
-          <div className="grid gap-6 md:grid-cols-2">
-            <Card className="w-full">
-              <CardHeader className="flex flex-row items-center space-y-0 pb-2">
-                <div className="space-y-1">
-                  <CardTitle>Seeds</CardTitle>
-                  <CardDescription>Manage your seeds.</CardDescription>
-                </div>
-              </CardHeader>
-              <CardContent>
-                {!selectedGraph || !selectedVariant ? (
-                  <div className="flex flex-col items-center gap-2 py-8 text-center">
-                    <h3 className="text-lg font-semibold">
-                      Please select both a graph and a variant or proposal
-                    </h3>
-                    <p className="text-sm text-muted-foreground">
-                      You need to select both a graph and variant to view
-                      available seeds.
-                    </p>
-                  </div>
-                ) : seeds.length === 0 ? (
-                  <div className="flex flex-col items-center gap-2 py-8 text-center">
-                    <h3 className="text-lg font-semibold">You have no seeds</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Please create some seeds for this schema proposal.
-                    </p>
-                  </div>
-                ) : (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Operation name</TableHead>
-                        {/*TODO probably not needed*/}
-                        <TableHead>Seed group id</TableHead>
-                        <TableHead className="hidden md:table-cell">
-                          Arguments
-                        </TableHead>
-                        <TableHead className="hidden md:table-cell">
-                          Response
-                        </TableHead>
-                        <TableHead className="w-[80px]">
-                          <span className="sr-only">Actions</span>
-                        </TableHead>
+
+      <TabsContent
+        value="sandbox"
+        className="w-full h-[calc(100vh-64px)] relative"
+        id="hey-hey-hey"
+        style={{
+          marginTop: '-72px',
+          paddingTop: '24px',
+          zIndex: 1,
+        }}
+      >
+        <ApolloSandbox
+          key={selectedGraph?.id + selectedVariant?.key + selectedSeedGroup?.id}
+          endpointIsEditable={true}
+          handleRequest={customFetcher}
+          initialState={{
+            sharedHeaders: {
+              'seed-group': selectedSeedGroup?.id.toString(),
+            },
+          }}
+          initialEndpoint={
+            selectedGraph && selectedVariant
+              ? `${serverBaseUrl}/api/${selectedVariant.key.replace('@', '/')}/graphql`
+              : 'http://an-error-occurred'
+          }
+          className="w-full h-full studio-2iiqpx"
+        />
+        {isSeedButtonVisible && (
+          <Button
+            onClick={handleCreateSeedClick}
+            className="absolute right-[121px] top-[76px] p-3 border border-gray-300 shadow-lg rounded-md text-sm"
+          >
+            Create Seed From Response
+          </Button>
+        )}
+      </TabsContent>
+      <TabsContent
+        value="seeds"
+        className="w-full h-[calc(100vh-64px)] relative"
+      >
+        <div className="flex flex-col h-full">
+          <div className="w-full p-4 bg-background">
+            <div className="flex items-center space-x-4">
+              <Label htmlFor="seed-group-select">Seed Group</Label>
+              <Popover open={open} onOpenChange={setOpen}>
+                <PopoverTrigger asChild id="seed-group-select">
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={open}
+                    className="w-[250px] justify-between"
+                  >
+                    {selectedSeedGroup
+                      ? selectedSeedGroup.name
+                      : 'Select seed group...'}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[250px] p-0">
+                  <Command>
+                    <CommandInput placeholder="Search seed group..." />
+                    <CommandList>
+                      <CommandEmpty>No seed group found.</CommandEmpty>
+                      <CommandGroup heading="Seed Groups">
+                        {seedGroups.map((g) => (
+                          <CommandItem
+                            key={g.id}
+                            value={g.name}
+                            onSelect={(seedGroupName) => {
+                              const selectedGroup = seedGroups.find(
+                                (g) => g.name === seedGroupName
+                              );
+                              if (selectedGroup) {
+                                console.log(
+                                  '[seeds-tab.tsx] Selected group:',
+                                  selectedGroup
+                                );
+                                setSelectedSeedGroup(selectedGroup);
+                              } else {
+                                console.warn(
+                                  'Group not found for value:',
+                                  seedGroupName
+                                );
+                              }
+                              setOpen(false);
+                            }}
+                          >
+                            {g.name}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                      <CommandSeparator />
+                      <CommandGroup>
+                        <CommandItem
+                          onSelect={() => {
+                            setDialogOpen(true);
+                            setOpen(false);
+                          }}
+                        >
+                          <Plus className="mr-2 h-4 w-4" />
+                          Add new seed group
+                        </CommandItem>
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+            </div>
+          </div>
+          <div className="flex flex-1 overflow-auto p-4 space-x-4">
+            <Card className="w-[250px] flex-shrink-0 flex-grow-0 p-4">
+              <div className="overflow-y-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="flex justify-between items-center">
+                        <span>Seeds</span>
+                        <Button
+                          onClick={() => setIsCreateSeedView(true)}
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-gray-500 hover:text-blue-600"
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {seeds.map((seed) => (
+                      <TableRow key={seed.id} className="group">
+                        <TableCell
+                          onClick={() => {
+                            setSeedToView(seed);
+                            setIsCreateSeedView(false);
+                          }}
+                          className="flex items-center justify-between"
+                        >
+                          <span>{seed.operationName}</span>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 opacity-0 group-hover:opacity-100 text-gray-500 hover:text-red-600"
+                            onClick={() => handleDeleteClick(seed)}
+                          >
+                            <Trash className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
                       </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {seeds.map((seed) => (
-                        <TableRow key={seed.operationName}>
-                          <TableCell className="font-medium">
-                            {seed.operationName}
-                          </TableCell>
-                          <TableCell>{seed.seedGroupId}</TableCell>
-                          <TableCell className="hidden md:table-cell">
-                            <HoverCard>
-                              <HoverCardTrigger className="cursor-pointer underline">
-                                View arguments
-                              </HoverCardTrigger>
-                              <HoverCardContent className="w-80">
-                                <pre className="max-h-40 overflow-auto rounded bg-muted p-2 text-xs">
-                                  <code>
-                                    {JSON.stringify(
-                                      seed.operationMatchArguments,
-                                      null,
-                                      2
-                                    )}
-                                  </code>
-                                </pre>
-                              </HoverCardContent>
-                            </HoverCard>
-                          </TableCell>
-                          <TableCell className="hidden md:table-cell">
-                            <HoverCard>
-                              <HoverCardTrigger className="cursor-pointer underline">
-                                View response
-                              </HoverCardTrigger>
-                              <HoverCardContent className="w-80">
-                                <pre className="max-h-40 overflow-auto rounded bg-muted p-2 text-xs">
-                                  <code>
-                                    {JSON.stringify(seed.seedResponse, null, 2)}
-                                  </code>
-                                </pre>
-                              </HoverCardContent>
-                            </HoverCard>
-                          </TableCell>
-                          <TableCell>
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="h-8 w-8 p-0">
-                                  <span className="sr-only">Open menu</span>
-                                  <MoreHorizontal className="h-4 w-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                <DropdownMenuItem
-                                  onClick={() => navigate(`/seeds/${seed.id}`)}
-                                >
-                                  View
-                                </DropdownMenuItem>
-                                <DropdownMenuItem>Delete</DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                )}
-              </CardContent>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+              <AlertDialog
+                open={isDeleteDialogOpen}
+                onOpenChange={setIsDeleteDialogOpen}
+              >
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>
+                      Are you absolutely sure?
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Deleting this seed is permanent and cannot be undone.
+                      Please confirm if you want to proceed.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleDelete}
+                      className="bg-red-600 hover:bg-red-700"
+                    >
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </Card>
 
-            <Card className="w-full">
-              <CardHeader>
-                <CardTitle>Create new seed</CardTitle>
-                <CardDescription>
-                  <div>
-                    1. Go to Apollo Studio or use the embedded GraphiQL to
-                    generate a dummy response for the operation you want to
-                    mock.
-                  </div>
-                  <div>
-                    2. Paste the dummy response in here and adjust it to fit
-                    your specific needs.
-                  </div>
-                  <div>
-                    3. If your operation contains arguments, please define them.
-                    The operation will only match against these specified
-                    arguments.
-                  </div>
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Form {...form}>
-                  <form
-                    onSubmit={form.handleSubmit(onSubmit)}
-                    className="space-y-4"
-                  >
-                    <FormField
-                      control={form.control}
-                      name="operationName"
-                      render={({field}) => (
+            {/* Main Content as a Card */}
+            <Card className="flex-1 h-full">
+              {isCreateSeedView ? (
+                <>
+                  <CardHeader>
+                    <CardTitle>Create new seed</CardTitle>
+                    <CardDescription>
+                      <div>
+                        1. Use the embedded Apollo Sandbox to generate a dummy
+                        response for the operation you want to mock.
+                      </div>
+                      <div>
+                        2. Paste the dummy response in here and adjust it to fit
+                        your specific needs.
+                      </div>
+                      <div>
+                        3. If your operation contains arguments, please define
+                        them. The operation will only match against these
+                        specified arguments.
+                      </div>
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Form {...form}>
+                      <form
+                        onSubmit={form.handleSubmit(onSubmit)}
+                        className="space-y-4"
+                      >
+                        <FormField
+                          control={form.control}
+                          name="operationName"
+                          render={({field}) => (
+                            <FormItem>
+                              <FormLabel>Operation name</FormLabel>
+                              <FormControl>
+                                <Input
+                                  placeholder="Operation name..."
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormDescription>
+                                Name of the GraphQL operation that will be sent
+                                to the mock
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
                         <FormItem>
-                          <FormLabel>Operation name</FormLabel>
                           <FormControl>
-                            <Input placeholder="Operation name..." {...field} />
+                            <div className="flex items-center space-x-2">
+                              <Switch
+                                id="seed-with-arguments"
+                                checked={seedWithArguments}
+                                onCheckedChange={() =>
+                                  setSeedWithArguments(!seedWithArguments)
+                                }
+                              />
+                              <Label htmlFor="seed-with-arguments">
+                                Seed with arguments
+                              </Label>
+                            </div>
                           </FormControl>
-                          <FormDescription>
-                            Name of the GraphQL operation that will be sent to
-                            the mock
-                          </FormDescription>
-                          <FormMessage />
                         </FormItem>
-                      )}
-                    />
-
-                    <FormItem>
-                      <FormControl>
-                        <div className="flex items-center space-x-2">
-                          <Switch
-                            id="seed-with-arguments"
-                            checked={seedWithArguments}
-                            onCheckedChange={() =>
-                              setSeedWithArguments(!seedWithArguments)
-                            }
-                          />
-                          <Label htmlFor="seed-with-arguments">
-                            Seed with arguments
-                          </Label>
+                        <FormField
+                          control={form.control}
+                          name="operationMatchArguments"
+                          render={({field}) => (
+                            <FormItem
+                              className={`transition-all duration-500 ease-in-out ${
+                                seedWithArguments
+                                  ? 'max-h-[500px] opacity-100 visible'
+                                  : 'max-h-0 opacity-0 invisible'
+                              }`}
+                            >
+                              <FormLabel>Matching arguments (JSON)</FormLabel>
+                              <FormControl>
+                                <Textarea
+                                  placeholder="Matching arguments ..."
+                                  {...field}
+                                  className="h-48"
+                                />
+                              </FormControl>
+                              <FormDescription>
+                                Parameters used for matching a seed with GraphQL
+                                operations.
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="seedResponse"
+                          render={({field}) => (
+                            <FormItem>
+                              <FormLabel>Response (JSON)</FormLabel>
+                              <FormControl>
+                                <Textarea
+                                  placeholder="Response..."
+                                  {...field}
+                                  className="h-48"
+                                />
+                              </FormControl>
+                              <FormDescription>
+                                Data to be returned for the combination of the
+                                defined operation name, seed group id and
+                                parameters
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <div className="flex space-x-2">
+                          <Button type="button" variant="secondary">
+                            Discard
+                          </Button>
+                          <Button type="submit">Save seed</Button>
                         </div>
-                      </FormControl>
-                    </FormItem>
-                    <FormField
-                      control={form.control}
-                      name="operationMatchArguments"
-                      render={({field}) => (
-                        <FormItem
-                          className={`transition-all duration-500 ease-in-out ${
-                            seedWithArguments
-                              ? 'max-h-[500px] opacity-100 visible'
-                              : 'max-h-0 opacity-0 invisible'
+                      </form>
+                    </Form>
+                  </CardContent>
+                </>
+              ) : (
+                <>
+                  <CardHeader>
+                    <CardTitle>Seed Details</CardTitle>
+                    <CardDescription>
+                      View and edit seed information
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="flex items-center mb-2">
+                        <span>{`Operation name: ${seedToView?.operationName}`}</span>
+                      </div>
+                      <div>
+                        <h3 className="font-semibold">Matching Arguments</h3>
+                        <pre
+                          // ref={matchArgumentsRef}
+                          // contentEditable={isEditing}
+                          suppressContentEditableWarning={true}
+                          className={`bg-gray-100 p-4 rounded overflow-auto focus:border-primary focus:outline-none ${
+                            false
+                              ? 'border-[1px] border-[hsl(var(--primary))]'
+                              : 'border-[1px] border-transparent'
                           }`}
+                          style={{minHeight: '100px'}}
                         >
-                          <FormLabel>Matching arguments (JSON)</FormLabel>
-                          <FormControl>
-                            <Textarea
-                              placeholder="Matching arguments ..."
-                              {...field}
-                              className="h-48"
-                            />
-                          </FormControl>
-                          <FormDescription>
-                            Parameters used for matching a seed with GraphQL
-                            operations.
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="seedResponse"
-                      render={({field}) => (
-                        <FormItem>
-                          <FormLabel>Response (JSON)</FormLabel>
-                          <FormControl>
-                            <Textarea
-                              placeholder="Response..."
-                              {...field}
-                              className="h-48"
-                            />
-                          </FormControl>
-                          <FormDescription>
-                            Data to be returned for the combination of the
-                            defined operation name, seed group id and parameters
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <div className="flex space-x-2">
-                      <Button type="button" variant="secondary">
-                        Discard
-                      </Button>
-                      <Button type="submit">Save seed</Button>
+                          <code className="text-sm">
+                            {JSON.stringify(
+                              seedToView?.operationMatchArguments,
+                              null,
+                              2
+                            )}
+                          </code>
+                        </pre>
+                      </div>
+                      <div>
+                        <h3 className="font-semibold">Response</h3>
+                        <pre
+                          // ref={responseRef}
+                          // contentEditable={isEditing}
+                          suppressContentEditableWarning={true}
+                          className={`bg-gray-100 p-4 rounded overflow-auto focus:border-primary focus:outline-none ${
+                            false
+                              ? 'border-[1px] border-[hsl(var(--primary))]'
+                              : 'border-[1px] border-transparent'
+                          }`}
+                          style={{minHeight: '100px'}}
+                        >
+                          <code className="text-sm">
+                            {JSON.stringify(seedToView?.seedResponse, null, 2)}
+                          </code>
+                        </pre>
+                      </div>
                     </div>
-                  </form>
-                </Form>
-              </CardContent>
+                  </CardContent>
+                </>
+              )}
             </Card>
           </div>
-        </TabsContent>
-        <TabsContent value="narratives">
-          {/* Add content for Narratives tab */}
-        </TabsContent>
-      </Tabs>
-    </>
+        </div>
+      </TabsContent>
+
+      <TabsContent
+        value="narratives"
+        className="w-full h-[calc(100vh-64px)] relative"
+      >
+        <section className="py-16">
+          <div className="container">
+            <div className="grid items-center gap-4 lg:grid-cols-2">
+              <div className="flex flex-col items-center text-center lg:items-start lg:text-left">
+                <h1 className="my-4 text-pretty text-3xl font-bold lg:text-4xl">
+                  {' '}
+                  {/* Reduced margin */}
+                  Get more from InstantMock by connecting it to Narrative, the
+                  Collaborative Modeling Studio
+                </h1>
+                <p className="mb-6 max-w-xl text-muted-foreground lg:text-lg">
+                  {' '}
+                  {/* Reduced margin */}
+                  Collaborate with your team on your data <br /> Annotate
+                  designs directly from your schema <br /> Drive your queries
+                  from designs
+                </p>
+                <div className="flex w-full flex-col justify-center gap-2 sm:flex-row lg:justify-start">
+                  <Button className="w-full sm:w-auto" size={'lg'}>
+                    Sign up
+                  </Button>
+                </div>
+              </div>
+              <img
+                src={narrative}
+                alt="placeholder hero"
+                className="max-h-[40rem] w-full rounded-md object-cover lg:max-h-[50rem]"
+              />
+            </div>
+          </div>
+        </section>
+      </TabsContent>
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add New Seed Group</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="name" className="text-right">
+                Name
+              </Label>
+              <Input
+                id="name"
+                value={newGroupName}
+                onChange={(e) => setNewGroupName(e.target.value)}
+                className="col-span-3"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button type="submit" onClick={() => addSeedGroup(newGroupName)}>
+              Add Group
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </Tabs>
   );
 };
 
