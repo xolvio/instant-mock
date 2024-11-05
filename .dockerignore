@@ -5,11 +5,14 @@ frontend/build
 backend/node_modules
 backend/package-lock.json
 backend/dist
+backend/instant-mock.db
+backend/data
+backend/.env
+
+helm/
 
 docker-compose.yml
 docker-compose.prod.yml
-
-seeds.db
 
 Dockerfile
 .dockerignore

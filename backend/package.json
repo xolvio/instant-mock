@@ -1,6 +1,6 @@
 {
   "name": "backend",
-  "version": "1.0.0",
+  "version": "1.0.0-beta.1",
   "main": "dist/server.js",
   "scripts": {
     "build": "npx tsc",
@@ -8,12 +8,12 @@
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "lint": "eslint '*/**/*.{js,ts}'",
     "lint-fix": "eslint '*/**/*.{js,ts}' --fix",
-    "migrate:create": "npx mikro-orm migration:create --config src/mikro-orm.config.ts",
-    "migrate:up": "npx mikro-orm migration:up --config src/mikro-orm.config.ts",
+    "migrate:create": "npx mikro-orm migration:create --config src/mikro-orm.sqlite.ts",
+    "migrate:up": "npx mikro-orm migration:up --config src/mikro-orm.sqlite.ts",
     "prettier": "prettier src/**/* -l",
     "prettier:fix": "npm run prettier --write",
-    "seed:create": "npx mikro-orm seeder:create --config src/mikro-orm.config.ts",
-    "seed:run": "npx mikro-orm seeder:run --config src/mikro-orm.config.ts",
+    "seed:create": "npx mikro-orm seeder:create --config src/mikro-orm.sqlite.ts",
+    "seed:run": "npx mikro-orm seeder:run --config src/mikro-orm.sqlite.ts",
     "start": "node dist/server.js",
     "test": "jest"
   },
@@ -82,5 +82,9 @@
     "ts-jest": "^29.2.5",
     "ts-node-dev": "^1.1.1",
     "typescript": "^5.6.3"
+  },
+  "engines": {
+    "node": "20",
+    "npm": "10"
   }
 }

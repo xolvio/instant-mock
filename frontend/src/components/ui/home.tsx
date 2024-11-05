@@ -1,3 +1,4 @@
+import {getApiBaseUrl} from '../../config';
 import {Seed} from '@/models/Seed';
 import {ApolloSandbox} from '@apollo/sandbox/react';
 import {HandleRequest} from '@apollo/sandbox/src/helpers/postMessageRelayHelpers';
@@ -100,7 +101,7 @@ const Home = () => {
   const [seedToView, setSeedToView] = useState(null);
   const [isSeedButtonVisible, setIsSeedButtonVisible] = useState(false);
   const [isCreateSeedView, setIsCreateSeedView] = useState(true);
-  const serverBaseUrl = process.env.REACT_APP_API_BASE_URL;
+  const serverBaseUrl = getApiBaseUrl();
 
   //TODO: refine names
   const [seedArgs, setSeedArgs] = useState('{}');
@@ -278,7 +279,8 @@ const Home = () => {
     console.log('fetching seeds');
     getSeeds(graphId, variantName, seedGroupId)
       .then((seeds) => {
-        setSeeds(seeds);
+        console.log('Fetched seeds:', seeds);
+        setSeeds(seeds || []); // Use an empty array as a fallback
       })
       .catch((e) => {
         console.error('Error fetching seeds: ', e);
@@ -525,11 +527,17 @@ const Home = () => {
               </SelectValue>
             </SelectTrigger>
             <SelectContent>
-              {graphs.map((graph) => (
-                <SelectItem key={graph.id} value={graph.id}>
-                  {graph.name}
+              {Array.isArray(graphs) && graphs.length > 0 ? (
+                graphs.map((graph) => (
+                  <SelectItem key={graph.id} value={graph.id}>
+                    {graph.name}
+                  </SelectItem>
+                ))
+              ) : (
+                <SelectItem disabled value="no-graphs">
+                  No graphs available
                 </SelectItem>
-              ))}
+              )}
             </SelectContent>
           </Select>
 

@@ -29,24 +29,37 @@ import {GET_ORGANIZATION_ID} from './queries/getOrganizationId';
 import {GET_SCHEMA} from './queries/getSchema';
 import {GET_VARIANT} from './queries/getVariant';
 import {PROPOSAL_LAUNCHES} from './queries/proposalLaunches';
+import {DI} from '../server';
+import {RequestContext} from '@mikro-orm/core';
+import {ApolloApiKey} from '../models/apolloApiKey';
 
 export default class Client {
-  private apolloClient: ApolloClient<any>;
+  private apolloClient!: ApolloClient<any>;
   private organizationId: string | undefined;
+  private apiKey: string | undefined;
 
-  constructor() {
+  public async initializeClient() {
     const link = createHttpLink({
       uri: 'https://api.apollographql.com/api/graphql',
     });
 
-    const authLink = setContext((_, {headers}) => ({
-      headers: {
-        ...headers,
-        'apollographql-client-name': 'explorer',
-        'apollographql-client-version': '1.0.0',
-        'X-API-KEY': process.env.APOLLO_API_KEY,
-      },
-    }));
+    const authLink = setContext(async (_, {headers}) => {
+      const em = DI.orm.em.fork();
+      return RequestContext.create(em, async () => {
+        const apiKeyEntity = await em
+          .getRepository(ApolloApiKey)
+          .findOne({id: 1});
+        this.apiKey = apiKeyEntity ? apiKeyEntity.key : '';
+        return {
+          headers: {
+            ...headers,
+            'apollographql-client-name': 'explorer',
+            'apollographql-client-version': '1.0.0',
+            'X-API-KEY': this.apiKey,
+          },
+        };
+      });
+    });
 
     const defaultOptions: DefaultOptions = {
       watchQuery: {fetchPolicy: 'no-cache'},
@@ -59,14 +72,30 @@ export default class Client {
       defaultOptions: defaultOptions,
     });
 
-    this.getOrganizationId().then((organizationId) => {
-      this.organizationId = organizationId;
+    this.organizationId = await this.getOrganizationId();
+    console.log('SET ORG ID TO: ', this.organizationId);
+  }
+
+  public async updateApiKey(newApiKey: string) {
+    console.log('updateApiKey called');
+    const em = DI.orm.em.fork();
+    await RequestContext.create(em, async () => {
+      let apiKeyEntity = await em.getRepository(ApolloApiKey).findOne({id: 1});
+      if (apiKeyEntity) {
+        apiKeyEntity.key = newApiKey;
+      } else {
+        apiKeyEntity = new ApolloApiKey(newApiKey);
+        em.persist(apiKeyEntity);
+      }
+      await em.flush();
     });
+    await this.initializeClient();
   }
 
   async getGraphs(): Promise<
     NonNullable<GetGraphsQuery['organization']>['graphs']
   > {
+    console.log('getGraphs called with org id: ', this.organizationId);
     const {data} = await this.apolloClient.query<GetGraphsQuery>({
       query: GET_GRAPHS,
       variables: {organizationId: this.organizationId},
@@ -246,16 +275,13 @@ export default class Client {
     const {data} = await this.apolloClient.query<GetOrganizationIdQuery>({
       query: GET_ORGANIZATION_ID,
     });
-
     if (data?.me?.__typename === 'User' && data.me.memberships) {
       const memberships = data.me.memberships;
       if (memberships.length > 0 && memberships[0].account?.id) {
         return memberships[0].account.id;
       }
     }
-
-    throw new Error(
-      'Unable to retrieve organization ID. Please ensure your account has the necessary permissions.'
-    );
+    console.error('Organization ID not found');
+    return '';
   }
 }

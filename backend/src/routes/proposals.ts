@@ -1,14 +1,9 @@
 import express, {Request, Response, Router} from 'express';
 import {buildASTSchema, GraphQLSchema, parse} from 'graphql';
-import {
-  CreateProposalMutation,
-  LaunchStatus,
-} from '../graphql/apollo/types/graphql';
-import Client from '../graphql/client';
 import {createProposedSubgraphsFromOperationsMissingFields} from '../utilities/operationToSchema';
+import {DI} from '../server';
 
 const router: Router = express.Router();
-const client = new Client();
 
 const APOLLO_STUDIO_BASE_URL = 'https://studio.apollographql.com';
 
@@ -46,7 +41,7 @@ const handleLaunchStatus = async (
     new Promise((resolve) => setTimeout(resolve, ms));
 
   while (true) {
-    const proposalLaunches = await client.proposalLaunches(proposalId);
+    const proposalLaunches = await DI.apolloClient.proposalLaunches(proposalId);
     if (!proposalLaunches)
       return {status: 'FAILED', message: 'no proposal found'};
 
@@ -110,7 +105,7 @@ router.post(
     const [graphId, variantName] = key.split('@');
 
     try {
-      const variant = await client.getVariant(graphId, variantName);
+      const variant = await DI.apolloClient.getVariant(graphId, variantName);
       if (!variant) return res.status(400).json({error: 'No variant provided'});
 
       const supergraph: GraphQLSchema = buildASTSchema(
@@ -129,7 +124,7 @@ router.post(
       let revision;
       const timestamp = getCurrentTimestamp();
       if (variant.isProposal) {
-        revision = await client.publishProposalRevision(
+        revision = await DI.apolloClient.publishProposalRevision(
           variant.proposal?.id as string,
           subgraphInputs,
           `Auto-updating at ${timestamp}`,
@@ -137,7 +132,7 @@ router.post(
           variant.latestLaunch?.id as string
         );
       } else {
-        const data = await client.createProposal(
+        const data = await DI.apolloClient.createProposal(
           graphId,
           variantName,
           `Auto-generated at ${timestamp}`,
@@ -148,7 +143,7 @@ router.post(
         }
 
         if (data.graph.createProposal.__typename === 'GraphVariant') {
-          revision = await client.publishProposalRevision(
+          revision = await DI.apolloClient.publishProposalRevision(
             data.graph.createProposal.proposal?.id as string,
             subgraphInputs,
             `Auto-generated at ${timestamp}`,

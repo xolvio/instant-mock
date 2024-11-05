@@ -1,5 +1,5 @@
 import React from 'react';
-import {BrowserRouter as Router, Route, Routes} from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Home from './components/ui/home';
 import NotFound from './components/ui/not-found';
 import SeedDetails from './components/ui/seed-details';

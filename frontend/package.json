@@ -1,6 +1,6 @@
 {
   "name": "frontend",
-  "version": "0.1.0",
+  "version": "1.0.0-beta.1",
   "private": true,
   "dependencies": {
     "@apollo/explorer": "^3.7.0",
@@ -31,7 +31,7 @@
     "axios": "^1.7.7",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
-    "cmdk": "^1.0.3",
+    "cmdk": "1.0.2",
     "dayjs": "^1.11.13",
     "graphiql": "^3.4.1",
     "graphql": "^16.9.0",
@@ -78,11 +78,16 @@
     ]
   },
   "devDependencies": {
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "@types/react-syntax-highlighter": "^15.5.13",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-no-only-tests": "^3.3.0",
     "eslint-plugin-prettier": "^5.2.1",
     "prettier": "3.3.3",
     "tsconfig-paths": "^4.2.0"
+  },
+  "engines": {
+    "node": "20",
+    "npm": "10"
   }
 }

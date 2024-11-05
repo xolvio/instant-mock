@@ -1,0 +1,6 @@
+apiVersion: v2
+name: instantmock
+description: A Helm chart for deploying InstantMock
+version: 0.1.0
+appVersion: "1.0.0-beta.1"
+
