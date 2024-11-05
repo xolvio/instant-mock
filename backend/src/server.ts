@@ -7,8 +7,8 @@ import {
   MikroORM,
   RequestContext,
 } from '@mikro-orm/core';
-import {Seed} from './models/seed';
-import {SeedGroup} from './models/seedGroup';
+import { Seed } from './models/seed';
+import { SeedGroup } from './models/seedGroup';
 import cors from 'cors';
 import express from 'express';
 import * as Undici from 'undici';
@@ -20,9 +20,14 @@ import graphsRoutes from './routes/graphs';
 import proposalsRoutes from './routes/proposals';
 import seedsRoutes from './routes/seeds';
 import seedGroupsRoutes from './routes/seedGroups';
+import apolloApiKeysRoutes from './routes/apolloApiKey';
+import Client from './graphql/client';
+import { ApolloApiKey } from './models/apolloApiKey';
+
+const isTypescript = __filename.endsWith('.ts');
 
 const mikroOrmConfig = require(
-  `./mikro-orm.${process.env.MIKRO_ORM_DRIVER || 'sqlite'}${process.env.NODE_ENV === 'production' ? '.js' : '.ts'}`
+  `./mikro-orm.${process.env.MIKRO_ORM_DRIVER || 'sqlite'}${isTypescript ? '.ts' : '.js'}`
 ).default;
 
 const ProxyAgent = Undici.ProxyAgent;
@@ -43,10 +48,12 @@ export const DI = {} as {
   em: EntityManager;
   seeds: EntityRepository<Seed>;
   seedGroups: EntityRepository<SeedGroup>;
+  apolloApiKeys: EntityRepository<ApolloApiKey>;
+  apolloClient: Client;
 };
 
 const app = express();
-const port = process.env.PORT || 3001;
+const port = process.env.PORT || 3007;
 
 (async () => {
   DI.orm = await MikroORM.init(mikroOrmConfig);
@@ -57,13 +64,17 @@ const port = process.env.PORT || 3001;
   DI.em = DI.orm.em;
   DI.seeds = DI.orm.em.getRepository(Seed);
   DI.seedGroups = DI.orm.em.getRepository(SeedGroup);
+  DI.apolloApiKeys = DI.orm.em.getRepository(ApolloApiKey);
+  DI.apolloClient = new Client();
+  await DI.apolloClient.initializeClient();
+  console.log('after client...');
 
   const em = DI.orm.em.fork();
   const defaultGroup = await em
     .getRepository(SeedGroup)
-    .findOne({name: 'default'});
+    .findOne({ name: 'default' });
   if (!defaultGroup) {
-    const newGroup = em.getRepository(SeedGroup).create({name: 'default'});
+    const newGroup = em.getRepository(SeedGroup).create({ name: 'default' });
     await em.persistAndFlush(newGroup);
   }
 
@@ -75,6 +86,7 @@ const port = process.env.PORT || 3001;
   app.use('/api', proposalsRoutes);
   app.use('/api', graphqlRoutes);
   app.use('/api', seedGroupsRoutes);
+  app.use('/api', apolloApiKeysRoutes);
 
   const options = {
     definition: {

@@ -1,10 +1,9 @@
 import express, {Request, Response, Router} from 'express';
 import {buildASTSchema, parse} from 'graphql';
 import {CreateProposalMutation} from '../graphql/apollo/types/graphql';
-import Client from '../graphql/client';
+import {DI} from '../server';
 
 const router: Router = express.Router();
-const client = new Client();
 
 const prepareSubgraphSchema = (subgraph: {
   name: string;
@@ -49,7 +48,7 @@ const unifyVariantAndProposalDataShapes = (graph) => {
 
 router.get('/graphs', async (_: Request, res: Response) => {
   try {
-    const graphs = await client.getGraphs();
+    const graphs = await DI.apolloClient.getGraphs();
     res.json(graphs);
   } catch (error) {
     console.error(error);
@@ -63,8 +62,8 @@ router.get('/graphs/:graphId', async (req: Request, res: Response) => {
 
   try {
     const graph = withSubgraphs
-      ? await client.getGraphWithSubgraphs(graphId)
-      : await client.getGraph(graphId);
+      ? await DI.apolloClient.getGraphWithSubgraphs(graphId)
+      : await DI.apolloClient.getGraph(graphId);
 
     const graphDataWithUnifiedVariantAndProposalShapes =
       unifyVariantAndProposalDataShapes(graph);
@@ -87,7 +86,7 @@ router.post(
     }
 
     try {
-      const data = await client.createProposal(
+      const data = await DI.apolloClient.createProposal(
         graphId,
         variantName,
         displayName,
@@ -140,7 +139,7 @@ router.post('/graphs/:graphId/reset', async (req: Request, res: Response) => {
   const graphId = req.params.graphId;
 
   try {
-    const graph = await client.getGraph(graphId);
+    const graph = await DI.apolloClient.getGraph(graphId);
     const openProposals = graph?.proposals.proposals.filter(
       //@ts-ignore
       (p) => p.status !== 'CLOSED'

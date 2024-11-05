@@ -1,5 +1,6 @@
 'use client';
 
+import {getApiBaseUrl} from '../../config';
 import {AlertTriangle, CheckCircle2, Copy, Plus, Trash2} from 'lucide-react';
 import {useEffect, useState} from 'react';
 import {Alert, AlertDescription, AlertTitle} from './alert';
@@ -25,41 +26,53 @@ interface ApiKey {
 export default function SettingsPage() {
   const [apolloApiKey, setApolloApiKey] = useState('');
   const [isApolloKeySaved, setIsApolloKeySaved] = useState(false);
-  const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
-  const [newKeyName, setNewKeyName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const {toast} = useToast();
+  const serverBaseUrl = getApiBaseUrl();
 
   useEffect(() => {
-    const savedApolloApiKey = localStorage.getItem('apolloApiKey');
-    if (savedApolloApiKey) {
-      setApolloApiKey(savedApolloApiKey);
-      setIsApolloKeySaved(true);
-    }
-
-    const savedApiKeys = localStorage.getItem('apiKeys');
-    if (savedApiKeys) {
-      setApiKeys(JSON.parse(savedApiKeys));
-    }
+    fetch(`${serverBaseUrl}/api/apollo-api-key`)
+      .then((response) => {
+        if (!response.ok) throw new Error('Network response was not ok');
+        return response.json();
+      })
+      .then((data) => {
+        if (data.key) {
+          setApolloApiKey(data.key);
+          setIsApolloKeySaved(true);
+        }
+      })
+      .catch((error) => console.error('Error fetching API key:', error));
   }, []);
 
   const handleSaveApolloApiKey = () => {
     setIsLoading(true);
-    setTimeout(() => {
-      localStorage.setItem('apolloApiKey', apolloApiKey);
-      setIsLoading(false);
-      setIsApolloKeySaved(true);
-      toast({
-        title: 'Apollo API Key Saved',
-        description: 'Your Apollo API key has been saved successfully.',
+    fetch(`${serverBaseUrl}/api/apollo-api-key`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({key: apolloApiKey}),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        setIsLoading(false);
+        if (data.key) {
+          setApolloApiKey(data.key);
+          setIsApolloKeySaved(true);
+          toast({
+            title: 'Apollo API Key Saved',
+            description: 'Your Apollo API key has been saved successfully.',
+          });
+        }
       });
-    }, 1000);
   };
 
   const handleDeleteApolloApiKey = () => {
     setIsLoading(true);
-    setTimeout(() => {
-      localStorage.removeItem('apolloApiKey');
+    fetch(`${serverBaseUrl}/api/apollo-api-key`, {
+      method: 'DELETE',
+    }).then(() => {
       setApolloApiKey('');
       setIsLoading(false);
       setIsApolloKeySaved(false);
@@ -68,76 +81,6 @@ export default function SettingsPage() {
         description: 'Your Apollo API key has been deleted.',
         variant: 'destructive',
       });
-    }, 1000);
-  };
-
-  const generateApiKey = () => {
-    if (!newKeyName.trim()) {
-      toast({
-        title: 'Error',
-        description: 'Please provide a name for your API key.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    setIsLoading(true);
-    setTimeout(() => {
-      const newKey =
-        Math.random().toString(36).substring(2, 15) +
-        Math.random().toString(36).substring(2, 15);
-      const newApiKey: ApiKey = {
-        id: Date.now().toString(),
-        name: newKeyName,
-        key: newKey,
-        isVisible: true,
-      };
-      const updatedKeys = [...apiKeys, newApiKey];
-      setApiKeys(updatedKeys);
-      localStorage.setItem('apiKeys', JSON.stringify(updatedKeys));
-      setNewKeyName('');
-      setIsLoading(false);
-      toast({
-        title: 'API Key Generated',
-        description: `A new API key "${newKeyName}" has been generated for your app.`,
-      });
-    }, 1000);
-  };
-
-  const copyApiKey = (key: string) => {
-    navigator.clipboard.writeText(key);
-    toast({
-      title: 'API Key Copied',
-      description: 'The API key has been copied to your clipboard.',
-    });
-  };
-
-  const deleteApiKey = (id: string) => {
-    setApiKeys(apiKeys.filter((key) => key.id !== id));
-    localStorage.setItem(
-      'apiKeys',
-      JSON.stringify(apiKeys.filter((key) => key.id !== id))
-    );
-    toast({
-      title: 'API Key Deleted',
-      description: 'The selected API key has been deleted.',
-      variant: 'destructive',
-    });
-  };
-
-  const handleCopiedKey = (id: string) => {
-    setApiKeys(
-      apiKeys.map((key) => (key.id === id ? {...key, isVisible: false} : key))
-    );
-    localStorage.setItem(
-      'apiKeys',
-      JSON.stringify(
-        apiKeys.map((key) => (key.id === id ? {...key, isVisible: false} : key))
-      )
-    );
-    toast({
-      title: 'API Key Copied',
-      description: 'Make sure to store your API key securely.',
     });
   };
 
@@ -153,13 +96,13 @@ export default function SettingsPage() {
             {isApolloKeySaved ? (
               <div className="flex items-center space-x-2 text-green-600">
                 <CheckCircle2 className="h-5 w-5" />
-                <span>Apollo API Key is saved and active</span>
+                <span>Apollo API Key: {apolloApiKey}</span>
               </div>
             ) : (
               <div className="space-y-2">
                 <label
                   htmlFor="apolloApiKey"
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  className="text-sm font-medium leading-none"
                 >
                   Apollo API Key
                 </label>
@@ -193,89 +136,6 @@ export default function SettingsPage() {
             </Button>
           )}
         </CardFooter>
-      </Card>
-
-      <Card className="w-full max-w-md mx-auto">
-        <CardHeader>
-          <CardTitle>Generate API Keys</CardTitle>
-          <CardDescription>
-            Create and manage API keys for other apps to use your API.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <label
-                htmlFor="newKeyName"
-                className="text-sm font-medium leading-none"
-              >
-                New API Key Name
-              </label>
-              <div className="flex space-x-2">
-                <Input
-                  id="newKeyName"
-                  placeholder="Enter a name for your new API key"
-                  value={newKeyName}
-                  onChange={(e) => setNewKeyName(e.target.value)}
-                />
-                <Button
-                  onClick={generateApiKey}
-                  disabled={isLoading || !newKeyName.trim()}
-                >
-                  <Plus className="mr-2 h-4 w-4" />
-                  Generate
-                </Button>
-              </div>
-            </div>
-            {apiKeys.map((apiKey) => (
-              <div key={apiKey.id} className="border p-4 rounded-md space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="font-medium">{apiKey.name}</span>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => deleteApiKey(apiKey.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-                {apiKey.isVisible ? (
-                  <div className="space-y-2">
-                    <div className="flex items-center space-x-2">
-                      <Input value={apiKey.key} readOnly />
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => copyApiKey(apiKey.key)}
-                      >
-                        <Copy className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    <Alert variant="default">
-                      <AlertTriangle className="h-4 w-4" />
-                      <AlertTitle>Warning</AlertTitle>
-                      <AlertDescription>
-                        Make sure to copy your API key now. You won't be able to
-                        see it again!
-                      </AlertDescription>
-                    </Alert>
-                    <Button
-                      variant="secondary"
-                      onClick={() => handleCopiedKey(apiKey.id)}
-                    >
-                      I've copied my key
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="flex items-center space-x-2 text-green-600">
-                    <CheckCircle2 className="h-5 w-5" />
-                    <span>API Key is saved and active</span>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </CardContent>
       </Card>
     </div>
   );

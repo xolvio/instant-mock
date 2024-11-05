@@ -69,7 +69,7 @@ export default class MockServer {
       }),
     });
 
-    // @ts-expect-error TODO fix types
+    //@ts-ignore
     this.apolloServerInstance.e;
 
     this.seedManager = new SeedManager();
@@ -142,7 +142,7 @@ export default class MockServer {
       if (!fakerKey) {
         continue;
       }
-      // @ts-expect-error TODO fix types
+      // @ts-ignore
       fakerMethod = fakerMethod[fakerKey];
 
       if (!fakerMethod) {
@@ -150,7 +150,7 @@ export default class MockServer {
       }
     }
 
-    // @ts-expect-error If we got here, it's either a function or undefined
+    // @ts-ignore
     return fakerMethod;
   }
 
@@ -335,13 +335,10 @@ export default class MockServer {
       return (
         unionTypeDefinitions
           .filter((unionTypeDefinition) =>
-            // @ts-expect-error We know this is a union type definition
             unionTypeDefinition?.types?.find(
-              // @ts-expect-error TODO fix types
               (typeDefinition) => typeDefinition.name.value === typeName
             )
           )
-          // @ts-expect-error We know this is a union type definition
           .map((unionTypeDefinition) => unionTypeDefinition.name.value) || []
       );
     }

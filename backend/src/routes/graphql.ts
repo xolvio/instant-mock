@@ -1,14 +1,12 @@
 import {Mutex} from 'async-mutex';
 import {Request, Response, Router} from 'express';
 import {parse} from 'graphql';
-import Client from '../graphql/client';
 import mockInstances from '../mockInstances';
 import MockServer from '../MockServer';
 import {SeedType} from '../seed/SeedManager';
 import {DI} from '../server';
 
 const router = Router();
-const client = new Client();
 const mutex = new Mutex();
 
 export const getOrStartNewMockServer = async (
@@ -31,7 +29,7 @@ const startNewMockServer = async (
   graphId: string,
   variantName: string
 ): Promise<MockServer> => {
-  const schema = await client.getSchema(graphId, variantName);
+  const schema = await DI.apolloClient.getSchema(graphId, variantName);
 
   const mockServer = new MockServer(schema, {
     subgraph: false,
