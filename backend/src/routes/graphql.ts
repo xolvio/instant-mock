@@ -61,7 +61,14 @@ const handleGraphQLRequest = async (
   const {query = '', variables = {}} = req.body;
   const operationName = req.body.operationName;
   // TODO I think it should be name, not id
-  const seedGroupId = parseInt(req.headers['seed-group'] as string, 10);
+  const seedGroupName = req.headers['seed-group'] as string;
+
+  // TODO Accessing the database is not a good idea
+  const seedGroup = await DI.seedGroups.findOne({name: seedGroupName});
+
+  if (!seedGroup) {
+    return res.status(400).json({message: 'Seed group not found'});
+  }
 
   console.log('Handling GraphQL Request:', {
     graphId,
@@ -105,7 +112,7 @@ const handleGraphQLRequest = async (
         operationName,
         variables,
         operationMock: operationResult,
-        seedGroupId: seedGroupId,
+        seedGroupId: seedGroup.id,
         mockServer,
         query: typenamedQuery,
       });
