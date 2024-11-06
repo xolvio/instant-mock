@@ -1,9 +1,8 @@
 'use client';
 
-import {getApiBaseUrl} from '../../config';
-import {AlertTriangle, CheckCircle2, Copy, Plus, Trash2} from 'lucide-react';
+import {CheckCircle2, Trash2} from 'lucide-react';
 import {useEffect, useState} from 'react';
-import {Alert, AlertDescription, AlertTitle} from './alert';
+import {getApiBaseUrl} from '../../config';
 import {Button} from './button';
 import {
   Card,
@@ -31,6 +30,10 @@ export default function SettingsPage() {
   const serverBaseUrl = getApiBaseUrl();
 
   useEffect(() => {
+    fetchApiKey();
+  }, []);
+
+  const fetchApiKey = () => {
     fetch(`${serverBaseUrl}/api/apollo-api-key`)
       .then((response) => {
         if (!response.ok) throw new Error('Network response was not ok');
@@ -43,7 +46,7 @@ export default function SettingsPage() {
         }
       })
       .catch((error) => console.error('Error fetching API key:', error));
-  }, []);
+  };
 
   const handleSaveApolloApiKey = () => {
     setIsLoading(true);
@@ -53,19 +56,17 @@ export default function SettingsPage() {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({key: apolloApiKey}),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        setIsLoading(false);
-        if (data.key) {
-          setApolloApiKey(data.key);
-          setIsApolloKeySaved(true);
-          toast({
-            title: 'Apollo API Key Saved',
-            description: 'Your Apollo API key has been saved successfully.',
-          });
-        }
-      });
+    }).then((response) => {
+      console.log(response.ok);
+      setIsLoading(false);
+      if (response.ok) {
+        fetchApiKey();
+        toast({
+          title: 'Apollo API Key Saved',
+          description: 'Your Apollo API key has been saved successfully.',
+        });
+      }
+    });
   };
 
   const handleDeleteApolloApiKey = () => {

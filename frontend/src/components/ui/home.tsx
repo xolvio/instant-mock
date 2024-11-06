@@ -1,4 +1,3 @@
-import {getApiBaseUrl} from '../../config';
 import {Seed} from '@/models/Seed';
 import {ApolloSandbox} from '@apollo/sandbox/react';
 import {HandleRequest} from '@apollo/sandbox/src/helpers/postMessageRelayHelpers';
@@ -11,6 +10,7 @@ import {z} from 'zod';
 import instant_mock_logo from '../../assets/instant_mock_logo.svg';
 import narrative from '../../assets/narrative.png';
 import logo from '../../assets/xolvio_logo.png';
+import {getApiBaseUrl} from '../../config';
 import {getSeeds} from '../../services/SeedService';
 import {
   AlertDialog,
@@ -585,12 +585,14 @@ const Home = () => {
         }}
       >
         <ApolloSandbox
-          key={selectedGraph?.id + selectedVariant?.key + selectedSeedGroup?.id}
+          key={
+            selectedGraph?.id + selectedVariant?.key + selectedSeedGroup?.name
+          }
           endpointIsEditable={true}
           handleRequest={customFetcher}
           initialState={{
             sharedHeaders: {
-              'seed-group': selectedSeedGroup?.id.toString(),
+              'seed-group': selectedSeedGroup?.name,
             },
           }}
           initialEndpoint={

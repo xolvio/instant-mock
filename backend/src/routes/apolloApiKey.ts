@@ -1,6 +1,5 @@
 import express, {Request, Response} from 'express';
 import {DI} from '../server';
-import {ApolloApiKey} from '../models/apolloApiKey';
 
 const router = express.Router();
 
@@ -15,13 +14,16 @@ router.get('/apollo-api-key', async (_: Request, res: Response) => {
 
 router.post('/apollo-api-key', async (req: Request, res: Response) => {
   const {key} = req.body;
+
   let apiKey = await DI.apolloApiKeys.findOne({id: 1});
+
   if (apiKey) {
     apiKey.key = key;
   } else {
-    apiKey = new ApolloApiKey(key);
+    apiKey = DI.apolloApiKeys.create({id: 1, key});
     DI.em.persist(apiKey);
   }
+
   await DI.em.flush();
 
   await DI.apolloClient.updateApiKey(key);
