@@ -18,7 +18,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@apollo/client": "^3.11.1",
+    "@apollo/client": "3.11.8",
     "@apollo/federation": "^0.38.1",
     "@apollo/server": "^4.11.0",
     "@apollo/subgraph": "^2.8.4",
@@ -31,6 +31,7 @@
     "@mikro-orm/sqlite": "^6.3.13",
     "@types/sqlite3": "^3.1.11",
     "@types/swagger-jsdoc": "^6.0.4",
+    "@xolvio/instant-mock-link": "file:../../instant-mock-link/",
     "apollo-server-express": "^3.13.0",
     "async-mutex": "^0.5.0",
     "cors": "^2.8.5",

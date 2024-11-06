@@ -1,3 +1,4 @@
+//Dont move these
 import 'reflect-metadata';
 require('dotenv').config();
 
@@ -7,8 +8,8 @@ import {
   MikroORM,
   RequestContext,
 } from '@mikro-orm/core';
-import { Seed } from './models/seed';
-import { SeedGroup } from './models/seedGroup';
+import {Seed} from './models/seed';
+import {SeedGroup} from './models/seedGroup';
 import cors from 'cors';
 import express from 'express';
 import * as Undici from 'undici';
@@ -22,10 +23,11 @@ import seedsRoutes from './routes/seeds';
 import seedGroupsRoutes from './routes/seedGroups';
 import apolloApiKeysRoutes from './routes/apolloApiKey';
 import Client from './graphql/client';
-import { ApolloApiKey } from './models/apolloApiKey';
+import {ApolloApiKey} from './models/apolloApiKey';
 
 const isTypescript = __filename.endsWith('.ts');
 
+// Migrations are specified in the config file and run upon config init
 const mikroOrmConfig = require(
   `./mikro-orm.${process.env.MIKRO_ORM_DRIVER || 'sqlite'}${isTypescript ? '.ts' : '.js'}`
 ).default;
@@ -56,6 +58,7 @@ const app = express();
 const port = process.env.PORT || 3007;
 
 (async () => {
+  // Migrations run here
   DI.orm = await MikroORM.init(mikroOrmConfig);
 
   const migrator = DI.orm.getMigrator();
@@ -72,9 +75,9 @@ const port = process.env.PORT || 3007;
   const em = DI.orm.em.fork();
   const defaultGroup = await em
     .getRepository(SeedGroup)
-    .findOne({ name: 'default' });
+    .findOne({name: 'default'});
   if (!defaultGroup) {
-    const newGroup = em.getRepository(SeedGroup).create({ name: 'default' });
+    const newGroup = em.getRepository(SeedGroup).create({name: 'default'});
     await em.persistAndFlush(newGroup);
   }
 

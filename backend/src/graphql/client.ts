@@ -1,3 +1,4 @@
+import {createInstantMockLink, Mode} from '@xolvio/instant-mock-link';
 import {
   ApolloClient,
   ApolloLink,
@@ -66,8 +67,21 @@ export default class Client {
       query: {fetchPolicy: 'no-cache'},
     };
 
+    const instantMockLink = createInstantMockLink({
+      instantMockUrl: 'https://your-mock-server.com', // Your InstantMock server URL
+      graphId: 'example-graph-id',
+      variantName: 'example-variant',
+      seedGroupName: 'example-seed-group',
+      sequenceId: 'example-sequence-id',
+      mode: Mode.Record, // or "playback"
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      onSuccess: (json: any) => console.log('instant mock link Success:', json),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      onError: (error: any) => console.error('instatn mock link Error:', error),
+    });
+
     this.apolloClient = new ApolloClient({
-      link: ApolloLink.from([authLink, link]),
+      link: ApolloLink.from([authLink, instantMockLink, link]),
       cache: new InMemoryCache(),
       defaultOptions: defaultOptions,
     });

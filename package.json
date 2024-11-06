@@ -1,0 +1,22 @@
+{
+  "name": "instant-mock",
+  "version": "1.0.0",
+  "description": "![instant-mock-screen-cap-final](https://github.com/user-attachments/assets/de0f50d4-5a71-4e5a-b479-37c6cfa0481d)",
+  "main": "index.js",
+  "scripts": {
+    "start:frontend": "npm --prefix frontend start",
+    "start:backend": "npm --prefix backend start",
+    "e2e": "cypress open",
+    "start": "npm --prefix frontend run build && npm --prefix backend run build && npm --prefix backend start"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@eslint/js": "^9.14.0",
+    "cypress": "^13.15.2",
+    "eslint": "^9.14.0",
+    "globals": "^15.12.0",
+    "typescript-eslint": "^8.13.0"
+  }
+}
