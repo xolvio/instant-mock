@@ -6,6 +6,9 @@ import {
   InMemoryCache,
 } from '@apollo/client';
 import {setContext} from '@apollo/client/link/context';
+import {RequestContext} from '@mikro-orm/core';
+import {ApolloApiKey} from '../models/apolloApiKey';
+import {DI} from '../server';
 import {
   CreateProposalMutation,
   GetGraphQuery,
@@ -29,9 +32,6 @@ import {GET_ORGANIZATION_ID} from './queries/getOrganizationId';
 import {GET_SCHEMA} from './queries/getSchema';
 import {GET_VARIANT} from './queries/getVariant';
 import {PROPOSAL_LAUNCHES} from './queries/proposalLaunches';
-import {DI} from '../server';
-import {RequestContext} from '@mikro-orm/core';
-import {ApolloApiKey} from '../models/apolloApiKey';
 
 export default class Client {
   private apolloClient!: ApolloClient<any>;
@@ -39,8 +39,13 @@ export default class Client {
   private apiKey: string | undefined;
 
   public async initializeClient() {
+    const apolloPlatformApiUri =
+      process.env.NODE_ENV === 'e2e-test'
+        ? 'http://localhost:3007/api/Apollo-Platform-API-lkwnx/current/graphql'
+        : 'https://api.apollographql.com/api/graphql';
+
     const link = createHttpLink({
-      uri: 'https://api.apollographql.com/api/graphql',
+      uri: apolloPlatformApiUri,
     });
 
     const authLink = setContext(async (_, {headers}) => {
@@ -56,6 +61,8 @@ export default class Client {
             'apollographql-client-name': 'explorer',
             'apollographql-client-version': '1.0.0',
             'X-API-KEY': this.apiKey,
+            //TODO only for mocked Apollo API
+            'seed-group': 'default',
           },
         };
       });
@@ -72,9 +79,13 @@ export default class Client {
         const variantName = 'current';
         const operationName = operation.operationName;
         const operationMatchArguments = operation.variables;
-        const seedResponse = response.data;
+        const seedResponse = response;
 
-        const apiUrl = `http://localhost:3000/api/seeds`;
+        const apiUrl = `http://localhost:3007/api/seeds`;
+
+        if (operationName === 'IntrospectionQuery') {
+          return response;
+        }
 
         fetch(apiUrl, {
           method: 'POST',
