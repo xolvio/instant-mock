@@ -604,6 +604,7 @@ const Home = () => {
         />
         {isSeedButtonVisible && (
           <Button
+            id="create-seed-from-response"
             onClick={handleCreateSeedClick}
             className="absolute right-[121px] top-[76px] p-3 border border-gray-300 shadow-lg rounded-md text-sm"
           >
@@ -622,6 +623,7 @@ const Home = () => {
               <Popover open={open} onOpenChange={setOpen}>
                 <PopoverTrigger asChild id="seed-group-select">
                   <Button
+                    id="seed-group-selec-button"
                     variant="outline"
                     role="combobox"
                     aria-expanded={open}
@@ -693,6 +695,7 @@ const Home = () => {
                       <TableHead className="flex justify-between items-center">
                         <span>Seeds</span>
                         <Button
+                          id="add-seed-button"
                           onClick={() => setIsCreateSeedView(true)}
                           variant="ghost"
                           size="icon"
@@ -715,6 +718,7 @@ const Home = () => {
                         >
                           <span>{seed.operationName}</span>
                           <Button
+                            id="delete-seed-button"
                             variant="ghost"
                             size="icon"
                             className="h-8 w-8 opacity-0 group-hover:opacity-100 text-gray-500 hover:text-red-600"
@@ -869,10 +873,16 @@ const Home = () => {
                           )}
                         />
                         <div className="flex space-x-2">
-                          <Button type="button" variant="secondary">
+                          <Button
+                            id="cancel-seed-button"
+                            type="button"
+                            variant="secondary"
+                          >
                             Discard
                           </Button>
-                          <Button type="submit">Save seed</Button>
+                          <Button id="save-seed-button" type="submit">
+                            Save seed
+                          </Button>
                         </div>
                       </form>
                     </Form>
@@ -995,7 +1005,11 @@ const Home = () => {
             </div>
           </div>
           <DialogFooter>
-            <Button type="submit" onClick={() => addSeedGroup(newGroupName)}>
+            <Button
+              id="add-seed-group-button"
+              type="submit"
+              onClick={() => addSeedGroup(newGroupName)}
+            >
               Add Group
             </Button>
           </DialogFooter>
