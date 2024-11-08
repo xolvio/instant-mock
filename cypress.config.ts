@@ -3,12 +3,19 @@ import { defineConfig } from "cypress";
 export default defineConfig({
   e2e: {
     setupNodeEvents(on, config) {
-      on("before:run", () => {
-        console.log("Before running tests");
+      on("task", {
+        log(message) {
+          console.log(message);
+          return null;
+        }
       });
       return config;
     },
     specPattern: "cypress/e2e/**/*.cy.ts",
-    baseUrl: "http://localhost:3033",
+    chromeWebSecurity: false,
+    viewportWidth: 1280,
+    viewportHeight: 800,
+    defaultCommandTimeout: 10000,
+    requestTimeout: 10000,
   },
 });

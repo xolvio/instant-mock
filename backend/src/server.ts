@@ -28,9 +28,12 @@ require('dotenv').config();
 const isTypescript = __filename.endsWith('.ts');
 
 // Migrations are specified in the config file and run upon config init
-const mikroOrmConfig = require(
-  `./mikro-orm.${process.env.MIKRO_ORM_DRIVER || 'sqlite'}${isTypescript ? '.ts' : '.js'}`
-).default;
+const mikroOrmConfig = {
+  ...require(
+    `./mikro-orm.${process.env.MIKRO_ORM_DRIVER || 'sqlite'}${isTypescript ? '.ts' : '.js'}`
+  ).default,
+  debug: process.env.NODE_ENV !== 'production',
+};
 
 const ProxyAgent = Undici.ProxyAgent;
 const setGlobalDispatcher = Undici.setGlobalDispatcher;

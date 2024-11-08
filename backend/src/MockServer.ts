@@ -111,7 +111,7 @@ export default class MockServer {
       mocks[key] = () => {
         if (Array.isArray(value.args)) {
           return fakerMethod(...value.args);
-        } else if (!!value.args) {
+        } else if (value.args) {
           return fakerMethod(value.args);
         } else {
           return fakerMethod();
