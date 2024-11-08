@@ -47,20 +47,25 @@ describe("InstantMock Basic Tests", () => {
             `  Aria Label: ${textarea.getAttribute("aria-label")}`,
           );
 
-          // Try typing with parseSpecialCharSequences disabled
-          if ($textarea.is(":visible")) {
-            cy.wrap($textarea).type("query ExampleQuery { id }", {
-              delay: 100,
-              force: true,
-              parseSpecialCharSequences: false, // Prevent Cypress from interpreting {}
-            });
-            cy.task("log", `Typed into Textarea ${index + 1}`);
-          } else {
-            cy.task(
-              "log",
-              `Textarea ${index + 1} is not visible, skipping typing`,
-            );
-          }
+          //TODO: first click on Instant Mock Test graph, and then type a products query, and type some arguments, and then create a seed, assert seed button appears, and then assert that seeds ui is working
+          //
+          //TODO: once this journey is complete running directly (npm run cypress;basic) we then need to 1/ run in RECORD mode, and then run in TEST mode to see if the instant mock PLAY server is correctly sending mocked apollo platform api respojsese and if it is we can port to GITHUB ACTIONS for that to run, based on fixtures folder, in CI
+          //
+
+          // // Try typing with parseSpecialCharSequences disabled
+          // if ($textarea.is(":visible")) {
+          //   cy.wrap($textarea).type("query ExampleQuery { id }", {
+          //     delay: 100,
+          //     force: true,
+          //     parseSpecialCharSequences: false, // Prevent Cypress from interpreting {}
+          //   });
+          //   cy.task("log", `Typed into Textarea ${index + 1}`);
+          // } else {
+          //   cy.task(
+          //     "log",
+          //     `Textarea ${index + 1} is not visible, skipping typing`,
+          //   );
+          // }
         });
       });
   });

@@ -41,8 +41,8 @@ export default class Client {
   public async initializeClient() {
     let uri;
     switch (process.env.NODE_ENV) {
-      case 'e2e-play':
-      case 'e2e-test':
+      case 'e2e-play': //has db created in fixtures folder by record mode
+      case 'e2e-test': //has its own ephemeral test db to assert behaviour each instance recreates its db
         uri = `http://localhost:${process.env.PORT_PLAY}/api/Apollo-Platform-API-lkwnx/current/graphql`;
         break;
       case 'e2e-record':
