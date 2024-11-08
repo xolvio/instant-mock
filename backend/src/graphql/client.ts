@@ -39,31 +39,58 @@ export default class Client {
   private apiKey: string | undefined;
 
   public async initializeClient() {
-    const apolloPlatformApiUri =
-      process.env.NODE_ENV === 'e2e-test'
-        ? 'http://localhost:3007/api/Apollo-Platform-API-lkwnx/current/graphql'
-        : 'https://api.apollographql.com/api/graphql';
+    let uri;
+    switch (process.env.NODE_ENV) {
+      case 'e2e-play':
+      case 'e2e-test':
+        uri = `http://localhost:${process.env.PORT_PLAY}/api/Apollo-Platform-API-lkwnx/current/graphql`;
+        break;
+      case 'e2e-record':
+      case 'development':
+      case 'production':
+      default:
+        uri = 'https://api.apollographql.com/api/graphql';
+        break;
+    }
 
     const link = createHttpLink({
-      uri: apolloPlatformApiUri,
+      uri,
     });
 
     const authLink = setContext(async (_, {headers}) => {
       const em = DI.orm.em.fork();
       return RequestContext.create(em, async () => {
-        const apiKeyEntity = await em
-          .getRepository(ApolloApiKey)
-          .findOne({id: 1});
-        this.apiKey = apiKeyEntity ? apiKeyEntity.key : '';
+        let _headers;
+        switch (process.env.NODE_ENV) {
+          case 'e2e-play':
+          case 'e2e-test': {
+            _headers = {
+              ...headers,
+              'seed-group': 'default',
+            };
+            break;
+          }
+          case 'e2e-record':
+          case 'development':
+          case 'production': {
+            const apiKeyEntity = await em
+              .getRepository(ApolloApiKey)
+              .findOne({id: 1});
+            this.apiKey = apiKeyEntity ? apiKeyEntity.key : '';
+            _headers = {
+              ...headers,
+              'apollographql-client-name': 'explorer',
+              'apollographql-client-version': '1.0.0',
+              'X-API-KEY': this.apiKey,
+            };
+            break;
+          }
+          default: {
+            throw new Error(`Unhandled NODE_ENV: ${process.env.NODE_ENV}`);
+          }
+        }
         return {
-          headers: {
-            ...headers,
-            'apollographql-client-name': 'explorer',
-            'apollographql-client-version': '1.0.0',
-            'X-API-KEY': this.apiKey,
-            //TODO only for mocked Apollo API
-            'seed-group': 'default',
-          },
+          headers: _headers,
         };
       });
     });
@@ -73,51 +100,58 @@ export default class Client {
       query: {fetchPolicy: 'no-cache'},
     };
 
-    const instantMockLink = new ApolloLink((operation, forward) => {
-      return forward(operation).map((response) => {
-        const graphId = 'Apollo-Platform-API-lkwnx';
-        const variantName = 'current';
-        const operationName = operation.operationName;
-        const operationMatchArguments = operation.variables;
-        const seedResponse = response;
+    let instantMockLink: ApolloLink | null = null;
+    if (process.env.NODE_ENV === 'e2e-record') {
+      instantMockLink = new ApolloLink((operation, forward) => {
+        return forward(operation).map((response) => {
+          const graphId = 'Apollo-Platform-API-lkwnx';
+          const variantName = 'current';
+          const operationName = operation.operationName;
+          const operationMatchArguments = operation.variables;
+          const seedResponse = response;
 
-        const apiUrl = `http://localhost:3007/api/seeds`;
+          const apiUrl = `http://localhost:${process.env.RECORD_PORT}/api/seeds`;
 
-        if (operationName === 'IntrospectionQuery') {
-          return response;
-        }
+          if (operationName === 'IntrospectionQuery') {
+            return response;
+          }
 
-        fetch(apiUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            graphId,
-            variantName,
-            seedResponse: seedResponse,
-            seedGroupId: 1,
-            operationName: operationName,
-            operationMatchArguments: operationMatchArguments,
-          }),
-        })
-          .then((res) => res.json())
-          .then((json) => {
-            console.log(
-              'Seed registered successfully using InstantMockLink:',
-              json
-            );
+          fetch(apiUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              graphId,
+              variantName,
+              seedResponse: seedResponse,
+              seedGroupId: 1,
+              operationName: operationName,
+              operationMatchArguments: operationMatchArguments,
+            }),
           })
-          .catch((err) => {
-            console.error('Error creating seed using InstantMockLink:', err);
-          });
+            .then((res) => res.json())
+            .then((json) => {
+              console.log(
+                'Seed registered successfully using InstantMockLink:',
+                json
+              );
+            })
+            .catch((err) => {
+              console.error('Error creating seed using InstantMockLink:', err);
+            });
 
-        return response;
+          return response;
+        });
       });
-    });
+    }
+
+    const linkArray = instantMockLink
+      ? [authLink, instantMockLink, link]
+      : [authLink, link];
 
     this.apolloClient = new ApolloClient({
-      link: ApolloLink.from([authLink, link]),
+      link: ApolloLink.from(linkArray),
       cache: new InMemoryCache(),
       defaultOptions: defaultOptions,
     });

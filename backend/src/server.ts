@@ -55,7 +55,7 @@ export const DI = {} as {
 };
 
 const app = express();
-const port = process.env.PORT || 3007;
+const port = process.env.PORT || 3033;
 
 (async () => {
   // Migrations run here
@@ -68,6 +68,20 @@ const port = process.env.PORT || 3007;
   DI.seeds = DI.orm.em.getRepository(Seed);
   DI.seedGroups = DI.orm.em.getRepository(SeedGroup);
   DI.apolloApiKeys = DI.orm.em.getRepository(ApolloApiKey);
+
+  if (process.env.APOLLO_API_KEY) {
+    const em = DI.orm.em.fork();
+    try {
+      const newApiKey = em.getRepository(ApolloApiKey).create({
+        key: process.env.APOLLO_API_KEY,
+      });
+      await em.persistAndFlush(newApiKey);
+      console.log('Apollo API key saved successfully.');
+    } catch (error) {
+      console.error('Failed to save Apollo API key:', error);
+    }
+  }
+
   DI.apolloClient = new Client();
   await DI.apolloClient.initializeClient();
   console.log('after client...');

@@ -1,0 +1,36 @@
+version: '3.9'
+services:
+  instant-mock-e2e-record:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: instant-mock-e2e-record
+    environment:
+      PORT: ${PORT_RECORD:-3035}
+      NODE_ENV: "e2e-record"
+    ports:
+      - "${PORT_RECORD:-3035}:${PORT_RECORD:-3035}"
+    volumes:
+      - "./test/e2e/fixtures/apollo-platform-api/20241107/instant-mock.db":"/app/data/instant-mock.db"
+  instant-mock-e2e-play:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: instant-mock-e2e-play
+    environment:
+      PORT: ${PORT_PLAY:-3034}
+      NODE_ENV: "e2e-play"
+    ports:
+      - "${PORT_PLAY:-3034}:${PORT_PLAY:-3034}"
+    volumes:
+      - ./test/e2e/fixtures/apollo-platform-api/00_todo_timestamp_00/instant-mock.db:/app/data/instant-mock.db
+  instant-mock-under-test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: instant-mock-e2e-play
+    environment:
+      PORT: ${PORT_TEST:-3034}
+      NODE_ENV: "e2e-test"
+    ports:
+      - "${PORT_TEST:-3034}:${PORT_TEST:-3034}"
