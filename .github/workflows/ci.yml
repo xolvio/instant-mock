@@ -11,24 +11,37 @@ jobs:
       PLAY_PORT: 3034
       RECORD_PORT: 3035
       NODE_ENV: test
+
     steps:
       - uses: actions/checkout@v4
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
+
       - name: Install dependencies
         run: npm ci
+
       - name: Create env file
         run: |
           echo "PLAY_PORT=${{ env.PLAY_PORT }}" >> .env
           echo "RECORD_PORT=${{ env.RECORD_PORT }}" >> .env
           echo "NODE_ENV=${{ env.NODE_ENV }}" >> .env
-      - name: Setup Docker
-        uses: docker/setup-buildx-action@v3
+
+      # Install Docker
+      - name: Install Docker
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y docker.io docker-compose
+          sudo systemctl start docker
+          sudo systemctl enable docker
+        shell: bash
+
       - name: Run e2e tests
         run: npm run e2e:test
+
       - name: Upload test artifacts
         if: always()
         uses: actions/upload-artifact@v4
