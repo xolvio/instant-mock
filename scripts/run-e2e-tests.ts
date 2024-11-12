@@ -79,7 +79,7 @@ async function runE2ETests() {
   try {
     console.log("Starting play server...");
     execSync(
-      `docker-compose -f docker-compose.e2e.yml up -d instant-mock-e2e-play --build`,
+      `docker compose -f docker-compose.e2e.yml up -d instant-mock-e2e-play --build`,
       { stdio: "inherit", env: { ...process.env, ...envVars } },
     );
 
@@ -91,7 +91,7 @@ async function runE2ETests() {
     if (mode === "record") {
       console.log("Starting record server...");
       execSync(
-        `docker-compose -f docker-compose.e2e.yml up -d instant-mock-e2e-record --build`,
+        `docker compose -f docker-compose.e2e.yml up -d instant-mock-e2e-record --build`,
         { stdio: "inherit", env: { ...process.env, ...envVars } },
       );
 
