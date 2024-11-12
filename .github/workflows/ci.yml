@@ -1,11 +1,9 @@
 name: CI
-
 on:
   push:
-    branches: [ env ]
+    branches-ignore: [main]
   pull_request:
-    branches: [ env ]
-
+    branches-ignore: [main]
 jobs:
   e2e-tests:
     runs-on: ubuntu-latest
@@ -13,36 +11,28 @@ jobs:
       PLAY_PORT: 3034
       RECORD_PORT: 3035
       NODE_ENV: test
-
     steps:
       - uses: actions/checkout@v4
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
-
       - name: Install dependencies
         run: npm ci
-
       - name: Copy fixture for test mode
         run: |
           mkdir -p test/e2e/fixtures/20241107
           cp -r test/e2e/fixtures/apollo-platform-api/20241107/* test/e2e/fixtures/20241107/
-
       - name: Create env file
         run: |
           echo "PLAY_PORT=${{ env.PLAY_PORT }}" >> .env
           echo "RECORD_PORT=${{ env.RECORD_PORT }}" >> .env
           echo "NODE_ENV=${{ env.NODE_ENV }}" >> .env
-
       - name: Setup Docker
         uses: docker/setup-buildx-action@v3
-
       - name: Run e2e tests
         run: npm run e2e:test
-
       - name: Upload test artifacts
         if: always()
         uses: actions/upload-artifact@v4
