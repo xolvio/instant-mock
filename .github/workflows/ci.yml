@@ -26,11 +26,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Copy fixture for test mode
-        run: |
-          mkdir -p test/e2e/fixtures/20241107
-          cp -r test/e2e/fixtures/apollo-platform-api/20241107/* test/e2e/fixtures/20241107/
-
       - name: Create env file
         run: |
           echo "PLAY_PORT=${{ env.PLAY_PORT }}" >> .env
