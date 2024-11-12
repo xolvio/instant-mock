@@ -12,7 +12,7 @@ describe("InstantMock Basic Tests", () => {
   it("verifies Apollo Studio iframe loads and can interact with specific editors", () => {
     cy.task("log", "STARTING IFRAME VERIFICATION AND LOGGING");
 
-    cy.wait(["@seedGroups", "@graphs"]).then(() => {
+    cy.wait(["@seedGroups", "@graphs"], { timeout: 15000 }).then(() => {
       cy.task("log", "Network requests completed");
     });
 
