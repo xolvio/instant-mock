@@ -33,7 +33,7 @@ describe("InstantMock Basic Tests", () => {
         cy.task("log", `Iframe found with src: ${iframe.prop("src")}`);
       });
 
-    cy.wait(6000);
+    cy.wait(4000);
 
     cy.iframe()
       .find("textarea", { timeout: 3000 })
@@ -44,8 +44,7 @@ describe("InstantMock Basic Tests", () => {
           "Expected 4 textareas to be found in the iframe.",
         );
 
-        // TODO: make this not so flaky lol -- we are relying on monaco in
-        // an iframe's curly brace autocomplete strategy
+        // Log each textarea and attempt typing
         textareas.each((index, textarea) => {
           if (index === 1)
             cy.wrap(textarea)
@@ -57,7 +56,7 @@ describe("InstantMock Basic Tests", () => {
 product(id: $productId) {
   name
   package
-}`, // TODO: add a curly here when we arent relying on typing in monaco
+}`,
                 { force: true },
               )
               .then(() => cy.task("log", `Typed operation into textarea`));
@@ -73,8 +72,6 @@ product(id: $productId) {
         });
       });
 
-    cy.wait(1000);
-
     cy.iframe()
       .find('[data-testid="run_operation_button"]')
       .should("be.visible") // Ensure the button is visible
@@ -88,7 +85,7 @@ product(id: $productId) {
       .click()
       .then(() => cy.task("log", `Clicked Create Seed From Response button`));
 
-    cy.get('[name="seedResponse"]').clear().type(`{
+    const seedResponse = `{
   "data": {
     "product": {
       "name": "Goodbye World",
@@ -97,7 +94,8 @@ product(id: $productId) {
     },
     "__typename": "Query"
   }
-}`);
+}`;
+    cy.get('[name="seedResponse"]').clear().type(seedResponse);
 
     cy.get("#save-seed-button")
       .should("be.visible")
@@ -108,5 +106,42 @@ product(id: $productId) {
       .contains("SANDBOX")
       .click()
       .then(() => cy.task("log", "clicked sandbox tab button"));
+
+    cy.wait(6000);
+
+    cy.iframe()
+      .find('[data-testid="run_operation_button"]')
+      .should("be.visible") // Ensure the button is visible
+      .click({ force: true })
+      .then(() => cy.task("log", `Clicked Run Operation button again`));
+
+    cy.wait(1000);
+
+    // Assuming iframe is loaded and accessible
+
+    // Access the iframe content
+    cy.get("iframe").then(($iframe) => {
+      const doc = $iframe.contents();
+
+      // Select all .view-line elements within the iframe
+      cy.wrap(doc)
+        .find('div[data-testid="result_pane"] .view-lines .view-line')
+        .then(($lines) => {
+          const actualResponseText = Array.from($lines)
+            .map((line) => line.innerText)
+            .join("")
+            .replace(/\u00A0/g, " ")
+            .replace(/\s+/g, " ");
+
+          const actualResponseJson = JSON.parse(actualResponseText);
+          const expectedResponseJson = JSON.parse(seedResponse);
+
+          cy.task(
+            "log",
+            `Actual response JSON is: ${JSON.stringify(actualResponseJson)}`,
+          );
+          expect(actualResponseJson).to.deep.equal(expectedResponseJson);
+        });
+    });
   });
 });
