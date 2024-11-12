@@ -113,7 +113,7 @@ async function runE2ETests() {
     process.exit(1);
   } finally {
     console.log("Shutting down Docker containers...");
-    execSync("docker-compose -f docker-compose.e2e.yml down", {
+    execSync("docker compose -f docker-compose.e2e.yml down", {
       stdio: "inherit",
     });
     console.log("Docker containers shut down.");
