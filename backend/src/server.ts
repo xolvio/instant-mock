@@ -110,6 +110,17 @@ const port = process.env.PORT || 3033;
   app.use('/api', seedGroupsRoutes);
   app.use('/api', apolloApiKeysRoutes);
 
+  const isConnected = await DI.orm.isConnected();
+  app.get('/health', (_, res) => {
+    const healthcheck = {
+      status: 'ok',
+      timestamp: new Date(),
+      uptime: process.uptime(),
+      database: isConnected ? 'connected' : 'disconnected',
+    };
+    res.json(healthcheck);
+  });
+
   const options = {
     definition: {
       openapi: '3.0.0',

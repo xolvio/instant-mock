@@ -40,14 +40,11 @@ export default class Client {
 
   public async initializeClient() {
     let uri;
+
     switch (process.env.NODE_ENV) {
-      case 'e2e-play': //has db created in fixtures folder by record mode
-      case 'e2e-test': //has its own ephemeral test db to assert behaviour each instance recreates its db
+      case 'e2e-test':
         uri = `http://localhost:${process.env.PORT_PLAY}/api/Apollo-Platform-API-lkwnx/current/graphql`;
         break;
-      case 'e2e-record':
-      case 'development':
-      case 'production':
       default:
         uri = 'https://api.apollographql.com/api/graphql';
         break;
@@ -62,7 +59,6 @@ export default class Client {
       return RequestContext.create(em, async () => {
         let _headers;
         switch (process.env.NODE_ENV) {
-          case 'e2e-play':
           case 'e2e-test': {
             _headers = {
               ...headers,
@@ -70,9 +66,7 @@ export default class Client {
             };
             break;
           }
-          case 'e2e-record':
-          case 'development':
-          case 'production': {
+          default: {
             const apiKeyEntity = await em
               .getRepository(ApolloApiKey)
               .findOne({id: 1});
@@ -84,9 +78,6 @@ export default class Client {
               'X-API-KEY': this.apiKey,
             };
             break;
-          }
-          default: {
-            throw new Error(`Unhandled NODE_ENV: ${process.env.NODE_ENV}`);
           }
         }
         return {
@@ -104,13 +95,17 @@ export default class Client {
     if (process.env.NODE_ENV === 'e2e-record') {
       instantMockLink = new ApolloLink((operation, forward) => {
         return forward(operation).map((response) => {
+          console.log(
+            'instant mock link storing...\noperation name:',
+            operation.operationName
+          );
           const graphId = 'Apollo-Platform-API-lkwnx';
           const variantName = 'current';
           const operationName = operation.operationName;
           const operationMatchArguments = operation.variables;
           const seedResponse = response;
 
-          const apiUrl = `http://localhost:${process.env.RECORD_PORT}/api/seeds`;
+          const apiUrl = `http://instant-mock-e2e-play:${process.env.PLAY_PORT}/api/seeds`;
 
           if (operationName === 'IntrospectionQuery') {
             return response;
@@ -156,6 +151,7 @@ export default class Client {
       defaultOptions: defaultOptions,
     });
 
+    console.log('Getting Organization ID...');
     this.organizationId = await this.getOrganizationId();
     console.log('SET ORG ID TO: ', this.organizationId);
   }

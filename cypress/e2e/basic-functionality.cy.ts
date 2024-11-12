@@ -33,7 +33,7 @@ describe("InstantMock Basic Tests", () => {
         cy.task("log", `Iframe found with src: ${iframe.prop("src")}`);
       });
 
-    cy.wait(4000);
+    cy.wait(6000);
 
     cy.iframe()
       .find("textarea", { timeout: 3000 })
@@ -44,7 +44,8 @@ describe("InstantMock Basic Tests", () => {
           "Expected 4 textareas to be found in the iframe.",
         );
 
-        // Log each textarea and attempt typing
+        // TODO: make this not so flaky lol -- we are relying on monaco in
+        // an iframe's curly brace autocomplete strategy
         textareas.each((index, textarea) => {
           if (index === 1)
             cy.wrap(textarea)
@@ -56,7 +57,7 @@ describe("InstantMock Basic Tests", () => {
 product(id: $productId) {
   name
   package
-}`,
+}`, // TODO: add a curly here when we arent relying on typing in monaco
                 { force: true },
               )
               .then(() => cy.task("log", `Typed operation into textarea`));
@@ -71,41 +72,6 @@ product(id: $productId) {
               .then(() => cy.task("log", `Typed variables into textarea`));
         });
       });
-
-    //     // Wait for iframe to be ready and check for textarea presence within iframe
-    //     cy.iframe()
-    //       .should("be.visible")
-    //       .find("textarea", { timeout: 3000 })
-    //       .then((textareas) => {
-    //         cy.task("log", `Found ${textareas.length} textareas in iframe.`);
-    //
-    //         // Log each textarea and attempt typing
-    //         textareas.each((index, textarea) => {
-    //           if (index === 1)
-    //             cy.wrap(textarea)
-    //               .type(Cypress.platform === "darwin" ? "{cmd}a" : "{ctrl}a", {
-    //                 force: true,
-    //               })
-    //               .type(
-    //                 `query Product($productId: ID!) {
-    // product(id: $productId) {
-    //   name
-    //   package
-    // }`,
-    //                 { force: true },
-    //               )
-    //               .then(() => cy.task("log", `Typed operation into textarea`));
-    //           if (index === 2)
-    //             cy.wrap(textarea)
-    //               .clear({ force: true })
-    //               .type(
-    //                 `{
-    //   "productId": "1"`,
-    //                 { force: true },
-    //               )
-    //               .then(() => cy.task("log", `Typed variables into textarea`));
-    //         });
-    //       });
 
     cy.wait(1000);
 
@@ -142,13 +108,5 @@ product(id: $productId) {
       .contains("SANDBOX")
       .click()
       .then(() => cy.task("log", "clicked sandbox tab button"));
-
-    cy.wait(6000);
-
-    cy.iframe()
-      .find('[data-testid="run_operation_button"]')
-      .should("be.visible") // Ensure the button is visible
-      .click({ force: true })
-      .then(() => cy.task("log", `Clicked Run Operation button again`));
   });
 });

@@ -6,33 +6,32 @@ services:
       dockerfile: Dockerfile
     container_name: instant-mock-e2e-record
     environment:
-      PORT: 3035
+      PORT: "${RECORD_PORT}"
+      PLAY_PORT: "${PLAY_PORT}"
+      RECORD_PORT: "${RECORD_PORT}"
       NODE_ENV: "e2e-record"
+      HOST: "0.0.0.0"
       APOLLO_API_KEY: "${APOLLO_API_KEY}"
     ports:
-      - "3035:3035"
+      - "${RECORD_PORT}:${RECORD_PORT}"
     volumes:
-      - "./test/e2e/fixtures/apollo-platform-api/${FIXTURE_TIMESTAMP}/instant-mock.db:/app/data/instant-mock-record.db"
+      - "./test/e2e/fixtures/${FIXTURE_TIMESTAMP}:/app/backend/data/"
+    networks:
+      - instant-mock-network
   instant-mock-e2e-play:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: instant-mock-e2e-play
     environment:
-      PORT: 3034
+      PORT: "${PLAY_PORT}"
       NODE_ENV: "e2e-play"
     ports:
-      - "3034:3034"
+      - "${PLAY_PORT}:${PLAY_PORT}"
     volumes:
-      - "./test/e2e/fixtures/apollo-platform-api/${FIXTURE_TIMESTAMP}/instant-mock.db:/app/data/instant-mock-record.db"
-  instant-mock-e2e-test:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: instant-mock-e2e-test
-    environment:
-      PORT: 3036
-      PORT_PLAY: 3034
-      NODE_ENV: "e2e-test"
-    ports:
-      - "3036:3036"
+      - "./test/e2e/fixtures/${FIXTURE_TIMESTAMP}:/app/backend/data/"
+    networks:
+      - instant-mock-network
+networks:
+  instant-mock-network:
+    driver: bridge
