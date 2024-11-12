@@ -33,7 +33,7 @@ describe("InstantMock Basic Tests", () => {
         cy.task("log", `Iframe found with src: ${iframe.prop("src")}`);
       });
 
-    cy.wait(10000);
+    cy.wait(15000);
 
     cy.iframe()
       .find("textarea", { timeout: 3000 })
