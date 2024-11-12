@@ -30,13 +30,12 @@ jobs:
           echo "RECORD_PORT=${{ env.RECORD_PORT }}" >> .env
           echo "NODE_ENV=${{ env.NODE_ENV }}" >> .env
 
-      # Install Docker
+      # Install Docker using a separate script to avoid dependency conflicts
       - name: Install Docker
         run: |
-          sudo apt-get update
-          sudo apt-get install -y docker.io docker-compose
-          sudo systemctl start docker
-          sudo systemctl enable docker
+          curl -fsSL https://get.docker.com -o get-docker.sh
+          sh get-docker.sh
+          sudo usermod -aG docker $USER
         shell: bash
 
       - name: Run e2e tests
