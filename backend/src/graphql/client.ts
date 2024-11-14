@@ -34,7 +34,6 @@ import {GET_VARIANT} from './queries/getVariant';
 import {PROPOSAL_LAUNCHES} from './queries/proposalLaunches';
 import {logger} from '../utilities/logger';
 import {SchemaLoader} from '../utilities/schemaLoader';
-import {printSchema} from 'graphql';
 
 export default class Client {
   private apolloClient!: ApolloClient<unknown>;
@@ -129,7 +128,7 @@ export default class Client {
           const operationMatchArguments = operation.variables;
           const seedResponse = response;
 
-          const apiUrl = `http://instant-mock-e2e-play:${process.env.PLAY_PORT}/api/seeds`;
+          const apiUrl = `http://localhost:${process.env.PLAY_PORT}/api/seeds`;
 
           if (operationName === 'IntrospectionQuery') {
             return response;
@@ -316,7 +315,7 @@ export default class Client {
         latestPublication: {
           publishedAt: new Date().toISOString(),
           schema: {
-            document: printSchema(schema.schema),
+            document: schema.schema,
           },
         },
       };
@@ -348,7 +347,7 @@ export default class Client {
             latestPublication: {
               publishedAt: new Date().toISOString(),
               schema: {
-                document: printSchema(schema.schema),
+                document: schema.schema,
               },
             },
           },

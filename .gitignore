@@ -2,6 +2,7 @@ frontend/build
 deployToGCP.sh
 certs
 backend/data
+backend/dist
 backend/instant-mock.db
 backend/src/migrations/**/*.snapshot*
 minikube*

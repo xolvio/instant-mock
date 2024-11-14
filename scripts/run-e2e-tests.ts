@@ -8,24 +8,44 @@ dotenv.config();
 
 const FIXTURE_BASE_PATH = path.join("test", "e2e", "fixtures");
 
-async function waitForServerReady(containerName: string): Promise<boolean> {
+const colors = {
+  play: "\x1b[34m", // Blue for play server logs
+  record: "\x1b[35m", // Magenta for record server logs
+  test: "\x1b[36m", // Cyan for test server logs
+  cypress: "\x1b[32m", // Green for Cypress output
+  reset: "\x1b[0m", // Reset color
+};
+
+function addPrefixAndColor(prefix: string, color: string, message: string) {
+  const timestamp = format(new Date(), "yyyy-MM-dd HH:mm:ss");
+  return `${color}[${prefix} - ${timestamp}] ${message}${colors.reset}`;
+}
+
+async function waitForServerReady(
+  containerName: string,
+  color: string,
+): Promise<boolean> {
   return new Promise((resolve) => {
     const logs = spawn("docker", ["logs", "-f", containerName]);
+    let serverReady = false;
 
     logs.stdout.on("data", (data) => {
       const output = data.toString();
-      console.log(output);
-      if (output.includes("Server running")) {
-        logs.kill();
+      console.log(addPrefixAndColor(containerName, color, output));
+      if (output.includes("Server running") && !serverReady) {
+        serverReady = true;
         resolve(true);
       }
     });
 
-    logs.stderr.on("data", (data) => console.error(data.toString()));
+    logs.stderr.on("data", (data) => {
+      console.error(addPrefixAndColor(containerName, color, data.toString()));
+    });
 
     setTimeout(() => {
-      logs.kill();
-      resolve(false);
+      if (!serverReady) {
+        resolve(false);
+      }
     }, 30000);
   });
 }
@@ -80,41 +100,60 @@ function startDockerService(service: string, envVars: NodeJS.ProcessEnv) {
 async function runTests(mode: string, timestamp: string) {
   const baseEnvVars = { FIXTURE_TIMESTAMP: timestamp };
 
-  // Start the play server in both modes, with additional APOLLO_API_KEY in record mode
   const playEnvVars =
     mode === "record" && process.env.APOLLO_API_KEY
       ? { ...baseEnvVars, APOLLO_API_KEY: process.env.APOLLO_API_KEY }
       : baseEnvVars;
 
   startDockerService("instant-mock-e2e-play", playEnvVars);
-  const playHealthy = await waitForServerReady("instant-mock-e2e-play");
+  const playHealthy = await waitForServerReady(
+    "instant-mock-e2e-play",
+    colors.play,
+  );
   if (!playHealthy) {
     throw new Error("Play server failed to start properly");
   }
 
-  // Additional setup for 'record' and 'test' modes
   if (mode === "record") {
     startDockerService("instant-mock-e2e-record", baseEnvVars);
-    const recordHealthy = await waitForServerReady("instant-mock-e2e-record");
+    const recordHealthy = await waitForServerReady(
+      "instant-mock-e2e-record",
+      colors.record,
+    );
     if (!recordHealthy) {
       throw new Error("Record server failed to start properly");
     }
   } else if (mode === "test") {
     startDockerService("instant-mock-e2e-test", baseEnvVars);
-    const testHealthy = await waitForServerReady("instant-mock-e2e-test");
+    const testHealthy = await waitForServerReady(
+      "instant-mock-e2e-test",
+      colors.test,
+    );
     if (!testHealthy) {
       throw new Error("Test server failed to start properly");
     }
   }
 
-  // Determine Cypress base URL based on mode
   const baseUrl =
     mode === "record" ? process.env.RECORD_PORT : process.env.TEST_PORT;
   console.log(`Running Cypress tests against port ${baseUrl}...`);
-  execSync(
+
+  const cypressOutput = spawn(
     `CYPRESS_BASE_URL=http://localhost:${baseUrl} npx cypress run --spec 'cypress/e2e/basic-functionality.cy.ts'`,
-    { stdio: "inherit", env: { ...process.env, ...baseEnvVars } },
+    { shell: true, env: { ...process.env, ...baseEnvVars } },
   );
+
+  cypressOutput.stdout.on("data", (data) => {
+    console.log(addPrefixAndColor("Cypress", colors.cypress, data.toString()));
+  });
+
+  cypressOutput.stderr.on("data", (data) => {
+    console.error(
+      addPrefixAndColor("Cypress", colors.cypress, data.toString()),
+    );
+  });
+
+  await new Promise((resolve) => cypressOutput.on("close", resolve));
 }
 
 function shutdownDocker() {

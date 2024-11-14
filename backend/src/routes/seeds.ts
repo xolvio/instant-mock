@@ -149,6 +149,10 @@ router.post('/seeds', async (req: Request, res: Response) => {
   logger.debug('Attempting to add a new seed', {graphId, variantName});
 
   const mockServer = await getOrStartNewMockServer(graphId, variantName);
+  if (!mockServer) {
+    console.error('Could not start mock server', {graphId, variantName});
+    return res.status(422).json({message: 'Could not start mock server'});
+  }
   const seedGroup = DI.em.getReference(SeedGroup, seedGroupId);
 
   const seed = DI.seeds.create({

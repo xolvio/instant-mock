@@ -13,7 +13,7 @@ const mutex = new Mutex();
 export const getOrStartNewMockServer = async (
   graphId: string,
   variantName: string
-): Promise<MockServer> => {
+): Promise<MockServer | undefined> => {
   const release = await mutex.acquire();
   try {
     let mockInstance = mockInstances[graphId]?.[variantName];
@@ -25,6 +25,8 @@ export const getOrStartNewMockServer = async (
       mockInstance = await startNewMockServer(graphId, variantName);
     }
     return mockInstance;
+  } catch (error) {
+    logger.error('Error getting or starting new mock server', {error});
   } finally {
     release();
   }
@@ -37,6 +39,7 @@ const startNewMockServer = async (
   logger.debug('Starting new mock server', {graphId, variantName});
   const schema = await DI.apolloClient.getSchema(graphId, variantName);
 
+  if (!schema) throw new Error('Schema not found');
   const mockServer = new MockServer(schema, {
     subgraph: false,
     fakerConfig: {},
@@ -103,6 +106,11 @@ const handleGraphQLRequest = async (
   }
 
   const mockServer = await getOrStartNewMockServer(graphId, variantName);
+  if (!mockServer) {
+    console.error('Could not start mock server', {graphId, variantName});
+    return res.status(422).json({message: 'Could not start mock server'});
+  }
+
   const queryWithoutFragments = mockServer.expandFragments(query);
   const typenamedQuery = mockServer.addTypenameFieldsToQuery(
     queryWithoutFragments
