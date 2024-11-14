@@ -15,9 +15,10 @@ import {
 } from 'graphql';
 import {DocumentNode} from 'graphql/language/ast';
 import buildPrivateTypeQuery from './utilities/buildPrivateTypeQuery';
-import {addMocksToSchema, createMockStore} from '@graphql-tools/mock';
+import {addMocksToSchema, createMockStore, IMocks} from '@graphql-tools/mock';
 import {faker} from '@faker-js/faker';
 import SeedManager from './seed/SeedManager';
+import {logger} from './utilities/logger';
 
 const GQMOCK_QUERY_PREFIX = 'gqmock';
 
@@ -46,6 +47,10 @@ export default class MockServer {
   }
 
   constructor(schemaSource: string, options: SchemaRegistrationOptions) {
+    logger.debug('Attempting to parse schmea in MockServer constructor', {
+      schemaSource,
+    });
+
     const schema = parse(schemaSource);
 
     this.fakerConfig = this.getCustomScalarsConfig(schema);
@@ -69,17 +74,20 @@ export default class MockServer {
       }),
     });
 
-    //@ts-ignore
-    this.apolloServerInstance.e;
-
     this.seedManager = new SeedManager();
   }
 
-  private createCustomMocks(fakerConfig: Record<string, any>) {
-    const mocks = {};
+  private createCustomMocks(fakerConfig: Record<string, unknown>): IMocks {
+    const mocks: IMocks = {};
 
     Object.entries(fakerConfig).forEach(([key, value]) => {
-      this.createCustomMock({mocks, key, value});
+      if (typeof value === 'object' && value !== null) {
+        this.createCustomMock({
+          mocks,
+          key,
+          value: value as Record<string, unknown>,
+        });
+      }
     });
 
     return mocks;
@@ -90,28 +98,23 @@ export default class MockServer {
     key,
     value,
   }: {
-    mocks: Record<string, any>;
+    mocks: IMocks;
     key: string;
-    value: Record<string, any>;
+    value: Record<string, unknown>;
   }) {
-    if (
-      // detect a faker method definition:
-      //   if there is a `method` key, AND
-      //   if `method` is a string
-      value['method'] &&
-      typeof value['method'] === 'string'
-    ) {
+    if (value['method'] && typeof value['method'] === 'string') {
       const fakerKeys = value.method.split('.');
       const fakerMethod = this.getFakerMethod(fakerKeys);
 
       if (!fakerMethod) {
+        logger.warn(`Invalid faker method requested`, {method: value.method});
         return;
       }
 
       mocks[key] = () => {
         if (Array.isArray(value.args)) {
           return fakerMethod(...value.args);
-        } else if (!!value.args) {
+        } else if (value.args) {
           return fakerMethod(value.args);
         } else {
           return fakerMethod();
@@ -124,9 +127,9 @@ export default class MockServer {
     mocks[key] = {};
     Object.entries(value).forEach(([innerKey, innerValue]) => {
       this.createCustomMock({
-        mocks: mocks[key],
+        mocks: mocks[key] as IMocks,
         key: innerKey,
-        value: innerValue,
+        value: innerValue as Record<string, unknown>,
       });
     });
   }
@@ -225,6 +228,7 @@ export default class MockServer {
   }
 
   addTypenameFieldsToQuery(query: string): string {
+    // logger.debug('Adding __typename fields to query', {originalQuery: query});
     const newQuery = visit(parse(query), {
       SelectionSet: (node) => {
         if (
@@ -250,11 +254,14 @@ export default class MockServer {
         return node;
       },
     });
-
+    // logger.debug('Query with added __typename fields', {
+    //   modifiedQuery: print(newQuery),
+    // });
     return print(newQuery);
   }
 
   expandFragments(query: string): string {
+    // logger.debug('Expanding fragments in query', {originalQuery: query});
     const queryAst = parse(query);
     const definitions = queryAst.definitions;
     let newQuery = visit(queryAst, {
@@ -297,6 +304,9 @@ export default class MockServer {
       ],
     };
 
+    // logger.debug('Query with expanded fragments', {
+    //   modifiedQuery: print(newQuery),
+    // });
     return print(newQuery);
   }
 

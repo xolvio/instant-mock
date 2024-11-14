@@ -1,36 +1,27 @@
 /* eslint-disable */
-import {TypedDocumentNode as DocumentNode} from '@graphql-typed-document-node/core';
-
+import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/core';
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
-export type Exact<T extends {[key: string]: unknown}> = {[K in keyof T]: T[K]};
-export type MakeOptional<T, K extends keyof T> = Omit<T, K> & {
-  [SubKey in K]?: Maybe<T[SubKey]>;
-};
-export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & {
-  [SubKey in K]: Maybe<T[SubKey]>;
-};
-export type MakeEmpty<T extends {[key: string]: unknown}, K extends keyof T> = {
-  [_ in K]?: never;
-};
-export type Incremental<T> =
-  | T
-  | {[P in keyof T]?: P extends ' $fragmentName' | '__typename' ? T[P] : never};
+export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
+export type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]?: Maybe<T[SubKey]> };
+export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]: Maybe<T[SubKey]> };
+export type MakeEmpty<T extends { [key: string]: unknown }, K extends keyof T> = { [_ in K]?: never };
+export type Incremental<T> = T | { [P in keyof T]?: P extends ' $fragmentName' | '__typename' ? T[P] : never };
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
-  ID: {input: string; output: string};
-  String: {input: string; output: string};
-  Boolean: {input: boolean; output: boolean};
-  Int: {input: number; output: number};
-  Float: {input: number; output: number};
+  ID: { input: string; output: string; }
+  String: { input: string; output: string; }
+  Boolean: { input: boolean; output: boolean; }
+  Int: { input: number; output: number; }
+  Float: { input: number; output: number; }
   /**
    * Implement the DateTime<Utc> scalar
    *
    * The input/output is a string in RFC3339 format.
    */
-  DateTime: {input: any; output: any};
+  DateTime: { input: any; output: any; }
   /** A GraphQL document, such as the definition of an operation or schema. */
-  GraphQLDocument: {input: any; output: any};
+  GraphQLDocument: { input: any; output: any; }
   /**
    * ISO 8601 combined date and time without timezone.
    *
@@ -38,13 +29,13 @@ export type Scalars = {
    *
    * * `2015-07-01T08:59:60.123`,
    */
-  NaiveDateTime: {input: any; output: any};
+  NaiveDateTime: { input: any; output: any; }
   /** A SHA-256 hash, represented as a lowercase hexadecimal string. */
-  SHA256: {input: any; output: any};
+  SHA256: { input: any; output: any; }
   /** ISO 8601, extended format with nanoseconds, Zulu (or "[+-]seconds" as a string or number relative to now) */
-  Timestamp: {input: any; output: any};
+  Timestamp: { input: any; output: any; }
   /** Always null */
-  Void: {input: any; output: any};
+  Void: { input: any; output: any; }
 };
 
 /** Represents an actor that performs actions in Apollo Studio. Most actors are either a `USER` or a `GRAPH` (based on a request's provided API key), and they have the corresponding `ActorType`. */
@@ -68,23 +59,17 @@ export enum ActorType {
   InternalIdentity = 'INTERNAL_IDENTITY',
   Synchronization = 'SYNCHRONIZATION',
   System = 'SYSTEM',
-  User = 'USER',
+  User = 'USER'
 }
 
-export type AddOperationCollectionEntriesResult =
-  | AddOperationCollectionEntriesSuccess
-  | PermissionError
-  | ValidationError;
+export type AddOperationCollectionEntriesResult = AddOperationCollectionEntriesSuccess | PermissionError | ValidationError;
 
 export type AddOperationCollectionEntriesSuccess = {
   __typename?: 'AddOperationCollectionEntriesSuccess';
   operationCollectionEntries: Array<OperationCollectionEntry>;
 };
 
-export type AddOperationCollectionEntryResult =
-  | OperationCollectionEntry
-  | PermissionError
-  | ValidationError;
+export type AddOperationCollectionEntryResult = OperationCollectionEntry | PermissionError | ValidationError;
 
 export type AddOperationInput = {
   /** The operation's fields. */
@@ -165,7 +150,7 @@ export enum AuditStatus {
   Expired = 'EXPIRED',
   Failed = 'FAILED',
   InProgress = 'IN_PROGRESS',
-  Queued = 'QUEUED',
+  Queued = 'QUEUED'
 }
 
 /** The building of a Studio variant (including supergraph composition and any contract filtering) as part of a launch. */
@@ -242,7 +227,7 @@ export enum ChangeCategory {
   Addition = 'ADDITION',
   Deprecation = 'DEPRECATION',
   Edit = 'EDIT',
-  Removal = 'REMOVAL',
+  Removal = 'REMOVAL'
 }
 
 /**
@@ -336,7 +321,7 @@ export enum ChangeCode {
   /** A new value was added to the enum. */
   ValueAddedToEnum = 'VALUE_ADDED_TO_ENUM',
   /** Value was removed from the enum. */
-  ValueRemovedFromEnum = 'VALUE_REMOVED_FROM_ENUM',
+  ValueRemovedFromEnum = 'VALUE_REMOVED_FROM_ENUM'
 }
 
 /**
@@ -361,7 +346,7 @@ export type ChangeOnOperation = {
 
 export enum ChangeSeverity {
   Failure = 'FAILURE',
-  Notice = 'NOTICE',
+  Notice = 'NOTICE'
 }
 
 /**
@@ -390,7 +375,7 @@ export type ChangeSummary = {
 
 export enum ChangeType {
   Failure = 'FAILURE',
-  Notice = 'NOTICE',
+  Notice = 'NOTICE'
 }
 
 /** An addition made to a Studio variant's changelog after a launch. */
@@ -420,7 +405,7 @@ export type CheckFilterInput = {
 export enum CheckFilterInputStatusOption {
   Failed = 'FAILED',
   Passed = 'PASSED',
-  Pending = 'PENDING',
+  Pending = 'PENDING'
 }
 
 /** The result of performing a subgraph check, including all steps. */
@@ -435,12 +420,7 @@ export type CheckPartialSchemaResult = {
 };
 
 /** The possible results of a request to initiate schema checks (either a success object or one of multiple `Error` objects). */
-export type CheckRequestResult =
-  | CheckRequestSuccess
-  | InvalidInputError
-  | PermissionError
-  | PlanError
-  | RateLimitExceededError;
+export type CheckRequestResult = CheckRequestSuccess | InvalidInputError | PermissionError | PlanError | RateLimitExceededError;
 
 /** Represents a successfully initiated execution of schema checks. This does not indicate the _result_ of the checks, only that they were initiated. */
 export type CheckRequestSuccess = {
@@ -477,7 +457,7 @@ export type CheckSchemaResult = {
 
 export enum CheckStepStatus {
   Failure = 'FAILURE',
-  Success = 'SUCCESS',
+  Success = 'SUCCESS'
 }
 
 /** An individual diagnostic violation of a custom check task. */
@@ -544,6 +524,7 @@ export type CheckWorkflow = {
   tasks: Array<CheckWorkflowTask>;
 };
 
+
 export type CheckWorkflowRerunsArgs = {
   limit?: Scalars['Int']['input'];
 };
@@ -551,7 +532,7 @@ export type CheckWorkflowRerunsArgs = {
 export enum CheckWorkflowStatus {
   Failed = 'FAILED',
   Passed = 'PASSED',
-  Pending = 'PENDING',
+  Pending = 'PENDING'
 }
 
 export type CheckWorkflowTask = {
@@ -575,7 +556,7 @@ export enum CheckWorkflowTaskStatus {
   Blocked = 'BLOCKED',
   Failed = 'FAILED',
   Passed = 'PASSED',
-  Pending = 'PENDING',
+  Pending = 'PENDING'
 }
 
 /** Filter options to exclude by client reference ID, client name, and client version. */
@@ -604,14 +585,11 @@ export enum CloudTier {
   /** Enterprise Cloud tier */
   Enterprise = 'ENTERPRISE',
   /** Serverless tier */
-  Serverless = 'SERVERLESS',
+  Serverless = 'SERVERLESS'
 }
 
 /** Validation result */
-export type CloudValidationResult =
-  | CloudValidationSuccess
-  | InternalServerError
-  | InvalidInputErrors;
+export type CloudValidationResult = CloudValidationSuccess | InternalServerError | InvalidInputErrors;
 
 /** Config validation success */
 export type CloudValidationSuccess = {
@@ -622,7 +600,7 @@ export type CloudValidationSuccess = {
 export enum CommentStatus {
   Deleted = 'DELETED',
   Open = 'OPEN',
-  Resolved = 'RESOLVED',
+  Resolved = 'RESOLVED'
 }
 
 export type CompositionBuildInput = {
@@ -697,9 +675,7 @@ export type ContractVariantUpsertErrors = {
   errorMessages: Array<Scalars['String']['output']>;
 };
 
-export type ContractVariantUpsertResult =
-  | ContractVariantUpsertErrors
-  | ContractVariantUpsertSuccess;
+export type ContractVariantUpsertResult = ContractVariantUpsertErrors | ContractVariantUpsertSuccess;
 
 export type ContractVariantUpsertSuccess = {
   __typename?: 'ContractVariantUpsertSuccess';
@@ -729,10 +705,7 @@ export type CoreSchema = {
   coreHash: Scalars['String']['output'];
 };
 
-export type CreateOperationCollectionResult =
-  | OperationCollection
-  | PermissionError
-  | ValidationError;
+export type CreateOperationCollectionResult = OperationCollection | PermissionError | ValidationError;
 
 /** An error that occurs when creating a proposal fails. */
 export type CreateProposalError = Error & {
@@ -747,11 +720,7 @@ export type CreateProposalInput = {
   sourceVariantName: Scalars['String']['input'];
 };
 
-export type CreateProposalResult =
-  | CreateProposalError
-  | GraphVariant
-  | PermissionError
-  | ValidationError;
+export type CreateProposalResult = CreateProposalError | GraphVariant | PermissionError | ValidationError;
 
 export type CustomCheckCallbackInput = {
   /** Sets the status of your check task. Setting this status to FAILURE will cause the entire check workflow to fail. */
@@ -765,11 +734,7 @@ export type CustomCheckCallbackInput = {
 };
 
 /** Result of a custom check task callback mutation. */
-export type CustomCheckCallbackResult =
-  | CustomCheckResult
-  | PermissionError
-  | TaskError
-  | ValidationError;
+export type CustomCheckCallbackResult = CustomCheckResult | PermissionError | TaskError | ValidationError;
 
 export type CustomCheckResult = {
   __typename?: 'CustomCheckResult';
@@ -843,7 +808,7 @@ export enum DownstreamLaunchInitiation {
    * Note that this does not require launches to complete, but it does ensure that the downstream launch IDs are
    * available to be queried from a `CompositionAndUpsertResult`.
    */
-  Sync = 'SYNC',
+  Sync = 'SYNC'
 }
 
 /** GraphQL Error */
@@ -940,178 +905,147 @@ export type FlatDiff = {
   summary: FlatDiffSummary;
 };
 
-export type FlatDiffAddArgument = FlatDiffItem &
-  FlatDiffItemCoordinate &
-  FlatDiffItemValue & {
-    __typename?: 'FlatDiffAddArgument';
-    coordinate: Scalars['String']['output'];
-    type: FlatDiffType;
-    value: Scalars['String']['output'];
-  };
+export type FlatDiffAddArgument = FlatDiffItem & FlatDiffItemCoordinate & FlatDiffItemValue & {
+  __typename?: 'FlatDiffAddArgument';
+  coordinate: Scalars['String']['output'];
+  type: FlatDiffType;
+  value: Scalars['String']['output'];
+};
 
-export type FlatDiffAddDirective = FlatDiffItem &
-  FlatDiffItemCoordinate & {
-    __typename?: 'FlatDiffAddDirective';
-    coordinate: Scalars['String']['output'];
-    type: FlatDiffType;
-  };
+export type FlatDiffAddDirective = FlatDiffItem & FlatDiffItemCoordinate & {
+  __typename?: 'FlatDiffAddDirective';
+  coordinate: Scalars['String']['output'];
+  type: FlatDiffType;
+};
 
-export type FlatDiffAddDirectiveUsage = FlatDiffItem &
-  FlatDiffItemCoordinate &
-  FlatDiffItemValue & {
-    __typename?: 'FlatDiffAddDirectiveUsage';
-    coordinate: Scalars['String']['output'];
-    type: FlatDiffType;
-    value: Scalars['String']['output'];
-  };
+export type FlatDiffAddDirectiveUsage = FlatDiffItem & FlatDiffItemCoordinate & FlatDiffItemValue & {
+  __typename?: 'FlatDiffAddDirectiveUsage';
+  coordinate: Scalars['String']['output'];
+  type: FlatDiffType;
+  value: Scalars['String']['output'];
+};
 
-export type FlatDiffAddEnum = FlatDiffItem &
-  FlatDiffItemCoordinate & {
-    __typename?: 'FlatDiffAddEnum';
-    coordinate: Scalars['String']['output'];
-    type: FlatDiffType;
-  };
+export type FlatDiffAddEnum = FlatDiffItem & FlatDiffItemCoordinate & {
+  __typename?: 'FlatDiffAddEnum';
+  coordinate: Scalars['String']['output'];
+  type: FlatDiffType;
+};
 
-export type FlatDiffAddEnumValue = FlatDiffItem &
-  FlatDiffItemCoordinate & {
-    __typename?: 'FlatDiffAddEnumValue';
-    coordinate: Scalars['String']['output'];
-    type: FlatDiffType;
-  };
+export type FlatDiffAddEnumValue = FlatDiffItem & FlatDiffItemCoordinate & {
+  __typename?: 'FlatDiffAddEnumValue';
+  coordinate: Scalars['String']['output'];
+  type: FlatDiffType;
+};
 
-export type FlatDiffAddField = FlatDiffItem &
-  FlatDiffItemCoordinate &
-  FlatDiffItemValue & {
-    __typename?: 'FlatDiffAddField';
-    coordinate: Scalars['String']['output'];
-    type: FlatDiffType;
-    value: Scalars['String']['output'];
-  };
+export type FlatDiffAddField = FlatDiffItem & FlatDiffItemCoordinate & FlatDiffItemValue & {
+  __typename?: 'FlatDiffAddField';
+  coordinate: Scalars['String']['output'];
+  type: FlatDiffType;
+  value: Scalars['String']['output'];
+};
 
-export type FlatDiffAddImplementation = FlatDiffItem &
-  FlatDiffItemCoordinate &
-  FlatDiffItemValue & {
-    __typename?: 'FlatDiffAddImplementation';
-    coordinate: Scalars['String']['output'];
-    type: FlatDiffType;
-    value: Scalars['String']['output'];
-  };
+export type FlatDiffAddImplementation = FlatDiffItem & FlatDiffItemCoordinate & FlatDiffItemValue & {
+  __typename?: 'FlatDiffAddImplementation';
+  coordinate: Scalars['String']['output'];
+  type: FlatDiffType;
+  value: Scalars['String']['output'];
+};
 
-export type FlatDiffAddInput = FlatDiffItem &
-  FlatDiffItemCoordinate & {
-    __typename?: 'FlatDiffAddInput';
-    coordinate: Scalars['String']['output'];
-    type: FlatDiffType;
-  };
+export type FlatDiffAddInput = FlatDiffItem & FlatDiffItemCoordinate & {
+  __typename?: 'FlatDiffAddInput';
+  coordinate: Scalars['String']['output'];
+  type: FlatDiffType;
+};
 
-export type FlatDiffAddInterface = FlatDiffItem &
-  FlatDiffItemCoordinate & {
-    __typename?: 'FlatDiffAddInterface';
-    coordinate: Scalars['String']['output'];
-    type: FlatDiffType;
-  };
+export type FlatDiffAddInterface = FlatDiffItem & FlatDiffItemCoordinate & {
+  __typename?: 'FlatDiffAddInterface';
+  coordinate: Scalars['String']['output'];
+  type: FlatDiffType;
+};
 
-export type FlatDiffAddObject = FlatDiffItem &
-  FlatDiffItemCoordinate & {
-    __typename?: 'FlatDiffAddObject';
-    coordinate: Scalars['String']['output'];
-    type: FlatDiffType;
-  };
+export type FlatDiffAddObject = FlatDiffItem & FlatDiffItemCoordinate & {
+  __typename?: 'FlatDiffAddObject';
+  coordinate: Scalars['String']['output'];
+  type: FlatDiffType;
+};
 
-export type FlatDiffAddScalar = FlatDiffItem &
-  FlatDiffItemCoordinate & {
-    __typename?: 'FlatDiffAddScalar';
-    coordinate: Scalars['String']['output'];
-    type: FlatDiffType;
-  };
+export type FlatDiffAddScalar = FlatDiffItem & FlatDiffItemCoordinate & {
+  __typename?: 'FlatDiffAddScalar';
+  coordinate: Scalars['String']['output'];
+  type: FlatDiffType;
+};
 
 export type FlatDiffAddSchemaDefinition = FlatDiffItem & {
   __typename?: 'FlatDiffAddSchemaDefinition';
   type: FlatDiffType;
 };
 
-export type FlatDiffAddSchemaDirectiveUsage = FlatDiffItem &
-  FlatDiffItemValue & {
-    __typename?: 'FlatDiffAddSchemaDirectiveUsage';
-    type: FlatDiffType;
-    value: Scalars['String']['output'];
-  };
+export type FlatDiffAddSchemaDirectiveUsage = FlatDiffItem & FlatDiffItemValue & {
+  __typename?: 'FlatDiffAddSchemaDirectiveUsage';
+  type: FlatDiffType;
+  value: Scalars['String']['output'];
+};
 
-export type FlatDiffAddSchemaRootOperation = FlatDiffItem &
-  FlatDiffItemRootType &
-  FlatDiffItemValue & {
-    __typename?: 'FlatDiffAddSchemaRootOperation';
-    rootType: Scalars['String']['output'];
-    type: FlatDiffType;
-    value: Scalars['String']['output'];
-  };
+export type FlatDiffAddSchemaRootOperation = FlatDiffItem & FlatDiffItemRootType & FlatDiffItemValue & {
+  __typename?: 'FlatDiffAddSchemaRootOperation';
+  rootType: Scalars['String']['output'];
+  type: FlatDiffType;
+  value: Scalars['String']['output'];
+};
 
-export type FlatDiffAddUnion = FlatDiffItem &
-  FlatDiffItemCoordinate & {
-    __typename?: 'FlatDiffAddUnion';
-    coordinate: Scalars['String']['output'];
-    type: FlatDiffType;
-  };
+export type FlatDiffAddUnion = FlatDiffItem & FlatDiffItemCoordinate & {
+  __typename?: 'FlatDiffAddUnion';
+  coordinate: Scalars['String']['output'];
+  type: FlatDiffType;
+};
 
-export type FlatDiffAddUnionMember = FlatDiffItem &
-  FlatDiffItemCoordinate &
-  FlatDiffItemValue & {
-    __typename?: 'FlatDiffAddUnionMember';
-    coordinate: Scalars['String']['output'];
-    type: FlatDiffType;
-    value: Scalars['String']['output'];
-  };
+export type FlatDiffAddUnionMember = FlatDiffItem & FlatDiffItemCoordinate & FlatDiffItemValue & {
+  __typename?: 'FlatDiffAddUnionMember';
+  coordinate: Scalars['String']['output'];
+  type: FlatDiffType;
+  value: Scalars['String']['output'];
+};
 
-export type FlatDiffAddValidLocation = FlatDiffItem &
-  FlatDiffItemCoordinate &
-  FlatDiffItemValue & {
-    __typename?: 'FlatDiffAddValidLocation';
-    coordinate: Scalars['String']['output'];
-    type: FlatDiffType;
-    value: Scalars['String']['output'];
-  };
+export type FlatDiffAddValidLocation = FlatDiffItem & FlatDiffItemCoordinate & FlatDiffItemValue & {
+  __typename?: 'FlatDiffAddValidLocation';
+  coordinate: Scalars['String']['output'];
+  type: FlatDiffType;
+  value: Scalars['String']['output'];
+};
 
-export type FlatDiffChangeArgumentDefault = FlatDiffItem &
-  FlatDiffItemCoordinate &
-  FlatDiffItemNullableValue & {
-    __typename?: 'FlatDiffChangeArgumentDefault';
-    coordinate: Scalars['String']['output'];
-    type: FlatDiffType;
-    value?: Maybe<Scalars['String']['output']>;
-  };
+export type FlatDiffChangeArgumentDefault = FlatDiffItem & FlatDiffItemCoordinate & FlatDiffItemNullableValue & {
+  __typename?: 'FlatDiffChangeArgumentDefault';
+  coordinate: Scalars['String']['output'];
+  type: FlatDiffType;
+  value?: Maybe<Scalars['String']['output']>;
+};
 
-export type FlatDiffChangeDescription = FlatDiffItem &
-  FlatDiffItemCoordinate &
-  FlatDiffItemNullableValue & {
-    __typename?: 'FlatDiffChangeDescription';
-    coordinate: Scalars['String']['output'];
-    type: FlatDiffType;
-    value?: Maybe<Scalars['String']['output']>;
-  };
+export type FlatDiffChangeDescription = FlatDiffItem & FlatDiffItemCoordinate & FlatDiffItemNullableValue & {
+  __typename?: 'FlatDiffChangeDescription';
+  coordinate: Scalars['String']['output'];
+  type: FlatDiffType;
+  value?: Maybe<Scalars['String']['output']>;
+};
 
-export type FlatDiffChangeDirectiveRepeatable = FlatDiffItem &
-  FlatDiffItemCoordinate & {
-    __typename?: 'FlatDiffChangeDirectiveRepeatable';
-    coordinate: Scalars['String']['output'];
-    type: FlatDiffType;
-    value: Scalars['Boolean']['output'];
-  };
+export type FlatDiffChangeDirectiveRepeatable = FlatDiffItem & FlatDiffItemCoordinate & {
+  __typename?: 'FlatDiffChangeDirectiveRepeatable';
+  coordinate: Scalars['String']['output'];
+  type: FlatDiffType;
+  value: Scalars['Boolean']['output'];
+};
 
-export type FlatDiffChangeInputFieldDefault = FlatDiffItem &
-  FlatDiffItemCoordinate &
-  FlatDiffItemNullableValue & {
-    __typename?: 'FlatDiffChangeInputFieldDefault';
-    coordinate: Scalars['String']['output'];
-    type: FlatDiffType;
-    value?: Maybe<Scalars['String']['output']>;
-  };
+export type FlatDiffChangeInputFieldDefault = FlatDiffItem & FlatDiffItemCoordinate & FlatDiffItemNullableValue & {
+  __typename?: 'FlatDiffChangeInputFieldDefault';
+  coordinate: Scalars['String']['output'];
+  type: FlatDiffType;
+  value?: Maybe<Scalars['String']['output']>;
+};
 
-export type FlatDiffChangeSchemaDescription = FlatDiffItem &
-  FlatDiffItemNullableValue & {
-    __typename?: 'FlatDiffChangeSchemaDescription';
-    type: FlatDiffType;
-    value?: Maybe<Scalars['String']['output']>;
-  };
+export type FlatDiffChangeSchemaDescription = FlatDiffItem & FlatDiffItemNullableValue & {
+  __typename?: 'FlatDiffChangeSchemaDescription';
+  type: FlatDiffType;
+  value?: Maybe<Scalars['String']['output']>;
+};
 
 export type FlatDiffItem = {
   type: FlatDiffType;
@@ -1137,134 +1071,112 @@ export type FlatDiffItemValue = {
   value: Scalars['String']['output'];
 };
 
-export type FlatDiffRemoveArgument = FlatDiffItem &
-  FlatDiffItemCoordinate &
-  FlatDiffItemValue & {
-    __typename?: 'FlatDiffRemoveArgument';
-    coordinate: Scalars['String']['output'];
-    type: FlatDiffType;
-    value: Scalars['String']['output'];
-  };
+export type FlatDiffRemoveArgument = FlatDiffItem & FlatDiffItemCoordinate & FlatDiffItemValue & {
+  __typename?: 'FlatDiffRemoveArgument';
+  coordinate: Scalars['String']['output'];
+  type: FlatDiffType;
+  value: Scalars['String']['output'];
+};
 
-export type FlatDiffRemoveDirective = FlatDiffItem &
-  FlatDiffItemCoordinate & {
-    __typename?: 'FlatDiffRemoveDirective';
-    coordinate: Scalars['String']['output'];
-    type: FlatDiffType;
-  };
+export type FlatDiffRemoveDirective = FlatDiffItem & FlatDiffItemCoordinate & {
+  __typename?: 'FlatDiffRemoveDirective';
+  coordinate: Scalars['String']['output'];
+  type: FlatDiffType;
+};
 
-export type FlatDiffRemoveDirectiveUsage = FlatDiffItem &
-  FlatDiffItemCoordinate &
-  FlatDiffItemValue & {
-    __typename?: 'FlatDiffRemoveDirectiveUsage';
-    coordinate: Scalars['String']['output'];
-    type: FlatDiffType;
-    value: Scalars['String']['output'];
-  };
+export type FlatDiffRemoveDirectiveUsage = FlatDiffItem & FlatDiffItemCoordinate & FlatDiffItemValue & {
+  __typename?: 'FlatDiffRemoveDirectiveUsage';
+  coordinate: Scalars['String']['output'];
+  type: FlatDiffType;
+  value: Scalars['String']['output'];
+};
 
-export type FlatDiffRemoveEnum = FlatDiffItem &
-  FlatDiffItemCoordinate & {
-    __typename?: 'FlatDiffRemoveEnum';
-    coordinate: Scalars['String']['output'];
-    type: FlatDiffType;
-  };
+export type FlatDiffRemoveEnum = FlatDiffItem & FlatDiffItemCoordinate & {
+  __typename?: 'FlatDiffRemoveEnum';
+  coordinate: Scalars['String']['output'];
+  type: FlatDiffType;
+};
 
-export type FlatDiffRemoveEnumValue = FlatDiffItem &
-  FlatDiffItemCoordinate & {
-    __typename?: 'FlatDiffRemoveEnumValue';
-    coordinate: Scalars['String']['output'];
-    type: FlatDiffType;
-  };
+export type FlatDiffRemoveEnumValue = FlatDiffItem & FlatDiffItemCoordinate & {
+  __typename?: 'FlatDiffRemoveEnumValue';
+  coordinate: Scalars['String']['output'];
+  type: FlatDiffType;
+};
 
-export type FlatDiffRemoveField = FlatDiffItem &
-  FlatDiffItemCoordinate &
-  FlatDiffItemValue & {
-    __typename?: 'FlatDiffRemoveField';
-    coordinate: Scalars['String']['output'];
-    type: FlatDiffType;
-    value: Scalars['String']['output'];
-  };
+export type FlatDiffRemoveField = FlatDiffItem & FlatDiffItemCoordinate & FlatDiffItemValue & {
+  __typename?: 'FlatDiffRemoveField';
+  coordinate: Scalars['String']['output'];
+  type: FlatDiffType;
+  value: Scalars['String']['output'];
+};
 
-export type FlatDiffRemoveImplementation = FlatDiffItem &
-  FlatDiffItemCoordinate &
-  FlatDiffItemValue & {
-    __typename?: 'FlatDiffRemoveImplementation';
-    coordinate: Scalars['String']['output'];
-    type: FlatDiffType;
-    value: Scalars['String']['output'];
-  };
+export type FlatDiffRemoveImplementation = FlatDiffItem & FlatDiffItemCoordinate & FlatDiffItemValue & {
+  __typename?: 'FlatDiffRemoveImplementation';
+  coordinate: Scalars['String']['output'];
+  type: FlatDiffType;
+  value: Scalars['String']['output'];
+};
 
-export type FlatDiffRemoveInput = FlatDiffItem &
-  FlatDiffItemCoordinate & {
-    __typename?: 'FlatDiffRemoveInput';
-    coordinate: Scalars['String']['output'];
-    type: FlatDiffType;
-  };
+export type FlatDiffRemoveInput = FlatDiffItem & FlatDiffItemCoordinate & {
+  __typename?: 'FlatDiffRemoveInput';
+  coordinate: Scalars['String']['output'];
+  type: FlatDiffType;
+};
 
-export type FlatDiffRemoveInterface = FlatDiffItem &
-  FlatDiffItemCoordinate & {
-    __typename?: 'FlatDiffRemoveInterface';
-    coordinate: Scalars['String']['output'];
-    type: FlatDiffType;
-  };
+export type FlatDiffRemoveInterface = FlatDiffItem & FlatDiffItemCoordinate & {
+  __typename?: 'FlatDiffRemoveInterface';
+  coordinate: Scalars['String']['output'];
+  type: FlatDiffType;
+};
 
-export type FlatDiffRemoveObject = FlatDiffItem &
-  FlatDiffItemCoordinate & {
-    __typename?: 'FlatDiffRemoveObject';
-    coordinate: Scalars['String']['output'];
-    type: FlatDiffType;
-  };
+export type FlatDiffRemoveObject = FlatDiffItem & FlatDiffItemCoordinate & {
+  __typename?: 'FlatDiffRemoveObject';
+  coordinate: Scalars['String']['output'];
+  type: FlatDiffType;
+};
 
-export type FlatDiffRemoveScalar = FlatDiffItem &
-  FlatDiffItemCoordinate & {
-    __typename?: 'FlatDiffRemoveScalar';
-    coordinate: Scalars['String']['output'];
-    type: FlatDiffType;
-  };
+export type FlatDiffRemoveScalar = FlatDiffItem & FlatDiffItemCoordinate & {
+  __typename?: 'FlatDiffRemoveScalar';
+  coordinate: Scalars['String']['output'];
+  type: FlatDiffType;
+};
 
 export type FlatDiffRemoveSchemaDefinition = FlatDiffItem & {
   __typename?: 'FlatDiffRemoveSchemaDefinition';
   type: FlatDiffType;
 };
 
-export type FlatDiffRemoveSchemaDirectiveUsage = FlatDiffItem &
-  FlatDiffItemValue & {
-    __typename?: 'FlatDiffRemoveSchemaDirectiveUsage';
-    type: FlatDiffType;
-    value: Scalars['String']['output'];
-  };
+export type FlatDiffRemoveSchemaDirectiveUsage = FlatDiffItem & FlatDiffItemValue & {
+  __typename?: 'FlatDiffRemoveSchemaDirectiveUsage';
+  type: FlatDiffType;
+  value: Scalars['String']['output'];
+};
 
-export type FlatDiffRemoveSchemaRootOperation = FlatDiffItem &
-  FlatDiffItemRootType & {
-    __typename?: 'FlatDiffRemoveSchemaRootOperation';
-    rootType: Scalars['String']['output'];
-    type: FlatDiffType;
-  };
+export type FlatDiffRemoveSchemaRootOperation = FlatDiffItem & FlatDiffItemRootType & {
+  __typename?: 'FlatDiffRemoveSchemaRootOperation';
+  rootType: Scalars['String']['output'];
+  type: FlatDiffType;
+};
 
-export type FlatDiffRemoveUnion = FlatDiffItem &
-  FlatDiffItemCoordinate & {
-    __typename?: 'FlatDiffRemoveUnion';
-    coordinate: Scalars['String']['output'];
-    type: FlatDiffType;
-  };
+export type FlatDiffRemoveUnion = FlatDiffItem & FlatDiffItemCoordinate & {
+  __typename?: 'FlatDiffRemoveUnion';
+  coordinate: Scalars['String']['output'];
+  type: FlatDiffType;
+};
 
-export type FlatDiffRemoveUnionMember = FlatDiffItem &
-  FlatDiffItemCoordinate &
-  FlatDiffItemValue & {
-    __typename?: 'FlatDiffRemoveUnionMember';
-    coordinate: Scalars['String']['output'];
-    type: FlatDiffType;
-    value: Scalars['String']['output'];
-  };
+export type FlatDiffRemoveUnionMember = FlatDiffItem & FlatDiffItemCoordinate & FlatDiffItemValue & {
+  __typename?: 'FlatDiffRemoveUnionMember';
+  coordinate: Scalars['String']['output'];
+  type: FlatDiffType;
+  value: Scalars['String']['output'];
+};
 
-export type FlatDiffRemoveValidLocation = FlatDiffItem &
-  FlatDiffItemCoordinate &
-  FlatDiffItemValue & {
-    __typename?: 'FlatDiffRemoveValidLocation';
-    coordinate: Scalars['String']['output'];
-    type: FlatDiffType;
-    value: Scalars['String']['output'];
-  };
+export type FlatDiffRemoveValidLocation = FlatDiffItem & FlatDiffItemCoordinate & FlatDiffItemValue & {
+  __typename?: 'FlatDiffRemoveValidLocation';
+  coordinate: Scalars['String']['output'];
+  type: FlatDiffType;
+  value: Scalars['String']['output'];
+};
 
 export type FlatDiffResult = FlatDiff | NotFoundError;
 
@@ -1320,7 +1232,7 @@ export enum FlatDiffType {
   RemoveSchemaRootOperation = 'REMOVE_SCHEMA_ROOT_OPERATION',
   RemoveUnion = 'REMOVE_UNION',
   RemoveUnionMember = 'REMOVE_UNION_MEMBER',
-  RemoveValidLocation = 'REMOVE_VALID_LOCATION',
+  RemoveValidLocation = 'REMOVE_VALID_LOCATION'
 }
 
 export type FlatDiffTypeSummary = {
@@ -1404,7 +1316,7 @@ export type Graph = Identity & {
   proposalVariants: ProposalVariantsResult;
   /**
    * A list of the proposals for this graph sorted by created at date.
-   * limit defaults to Int.MAX_VALUE, offset defaults to 0
+   * limit defaults to 25, offset defaults to 0
    */
   proposals: ProposalsResult;
   /** Describes the permissions that the active user has for this graph. */
@@ -1424,6 +1336,7 @@ export type Graph = Identity & {
   variants: Array<GraphVariant>;
 };
 
+
 /**
  * A graph in Apollo Studio represents a graph in your organization.
  * Each graph has one or more variants, which correspond to the different environments where that graph runs (such as staging and production).
@@ -1432,6 +1345,7 @@ export type Graph = Identity & {
 export type GraphCheckWorkflowArgs = {
   id: Scalars['ID']['input'];
 };
+
 
 /**
  * A graph in Apollo Studio represents a graph in your organization.
@@ -1444,6 +1358,7 @@ export type GraphCheckWorkflowsArgs = {
   offset?: Scalars['Int']['input'];
 };
 
+
 /**
  * A graph in Apollo Studio represents a graph in your organization.
  * Each graph has one or more variants, which correspond to the different environments where that graph runs (such as staging and production).
@@ -1452,6 +1367,7 @@ export type GraphCheckWorkflowsArgs = {
 export type GraphDocArgs = {
   hash?: InputMaybe<Scalars['SHA256']['input']>;
 };
+
 
 /**
  * A graph in Apollo Studio represents a graph in your organization.
@@ -1462,6 +1378,7 @@ export type GraphDocsArgs = {
   hashes: Array<Scalars['SHA256']['input']>;
 };
 
+
 /**
  * A graph in Apollo Studio represents a graph in your organization.
  * Each graph has one or more variants, which correspond to the different environments where that graph runs (such as staging and production).
@@ -1470,6 +1387,7 @@ export type GraphDocsArgs = {
 export type GraphDocumentArgs = {
   hash?: InputMaybe<Scalars['SHA256']['input']>;
 };
+
 
 /**
  * A graph in Apollo Studio represents a graph in your organization.
@@ -1481,6 +1399,7 @@ export type GraphFlatDiffArgs = {
   oldSdlHash?: InputMaybe<Scalars['SHA256']['input']>;
 };
 
+
 /**
  * A graph in Apollo Studio represents a graph in your organization.
  * Each graph has one or more variants, which correspond to the different environments where that graph runs (such as staging and production).
@@ -1489,6 +1408,7 @@ export type GraphFlatDiffArgs = {
 export type GraphPersistedQueryListArgs = {
   id: Scalars['ID']['input'];
 };
+
 
 /**
  * A graph in Apollo Studio represents a graph in your organization.
@@ -1501,6 +1421,7 @@ export type GraphProposalVariantsArgs = {
   offset?: InputMaybe<Scalars['Int']['input']>;
 };
 
+
 /**
  * A graph in Apollo Studio represents a graph in your organization.
  * Each graph has one or more variants, which correspond to the different environments where that graph runs (such as staging and production).
@@ -1512,6 +1433,7 @@ export type GraphProposalsArgs = {
   offset?: InputMaybe<Scalars['Int']['input']>;
 };
 
+
 /**
  * A graph in Apollo Studio represents a graph in your organization.
  * Each graph has one or more variants, which correspond to the different environments where that graph runs (such as staging and production).
@@ -1520,6 +1442,7 @@ export type GraphProposalsArgs = {
 export type GraphTotalCheckWorkflowCountArgs = {
   filter?: InputMaybe<CheckFilterInput>;
 };
+
 
 /**
  * A graph in Apollo Studio represents a graph in your organization.
@@ -1600,6 +1523,7 @@ export type GraphMutation = {
   variant?: Maybe<GraphVariantMutation>;
 };
 
+
 /** Provides access to mutation fields for managing Studio graphs and subgraphs. */
 export type GraphMutationCheckPartialSchemaArgs = {
   frontend?: InputMaybe<Scalars['String']['input']>;
@@ -1613,6 +1537,7 @@ export type GraphMutationCheckPartialSchemaArgs = {
   partialSchema: PartialSchemaInput;
   useMaximumRetention?: InputMaybe<Scalars['Boolean']['input']>;
 };
+
 
 /** Provides access to mutation fields for managing Studio graphs and subgraphs. */
 export type GraphMutationCheckSchemaArgs = {
@@ -1629,10 +1554,12 @@ export type GraphMutationCheckSchemaArgs = {
   useMaximumRetention?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
+
 /** Provides access to mutation fields for managing Studio graphs and subgraphs. */
 export type GraphMutationCreateProposalArgs = {
   input: CreateProposalInput;
 };
+
 
 /** Provides access to mutation fields for managing Studio graphs and subgraphs. */
 export type GraphMutationLintSchemaArgs = {
@@ -1640,16 +1567,19 @@ export type GraphMutationLintSchemaArgs = {
   sdl: Scalars['String']['input'];
 };
 
+
 /** Provides access to mutation fields for managing Studio graphs and subgraphs. */
 export type GraphMutationNewKeyArgs = {
   keyName?: InputMaybe<Scalars['String']['input']>;
   role?: UserPermission;
 };
 
+
 /** Provides access to mutation fields for managing Studio graphs and subgraphs. */
 export type GraphMutationPersistedQueryListArgs = {
   id: Scalars['ID']['input'];
 };
+
 
 /** Provides access to mutation fields for managing Studio graphs and subgraphs. */
 export type GraphMutationPublishSubgraphArgs = {
@@ -1662,6 +1592,7 @@ export type GraphMutationPublishSubgraphArgs = {
   url?: InputMaybe<Scalars['String']['input']>;
 };
 
+
 /** Provides access to mutation fields for managing Studio graphs and subgraphs. */
 export type GraphMutationPublishSubgraphsArgs = {
   downstreamLaunchInitiation?: InputMaybe<DownstreamLaunchInitiation>;
@@ -1671,6 +1602,7 @@ export type GraphMutationPublishSubgraphsArgs = {
   subgraphInputs: Array<PublishSubgraphsSubgraphInput>;
 };
 
+
 /** Provides access to mutation fields for managing Studio graphs and subgraphs. */
 export type GraphMutationRemoveImplementingServiceAndTriggerCompositionArgs = {
   dryRun?: Scalars['Boolean']['input'];
@@ -1678,16 +1610,19 @@ export type GraphMutationRemoveImplementingServiceAndTriggerCompositionArgs = {
   name: Scalars['String']['input'];
 };
 
+
 /** Provides access to mutation fields for managing Studio graphs and subgraphs. */
 export type GraphMutationRemoveKeyArgs = {
   id: Scalars['ID']['input'];
 };
+
 
 /** Provides access to mutation fields for managing Studio graphs and subgraphs. */
 export type GraphMutationRenameKeyArgs = {
   id: Scalars['ID']['input'];
   newKeyName?: InputMaybe<Scalars['String']['input']>;
 };
+
 
 /** Provides access to mutation fields for managing Studio graphs and subgraphs. */
 export type GraphMutationUploadSchemaArgs = {
@@ -1700,6 +1635,7 @@ export type GraphMutationUploadSchemaArgs = {
   tag: Scalars['String']['input'];
 };
 
+
 /** Provides access to mutation fields for managing Studio graphs and subgraphs. */
 export type GraphMutationUpsertContractVariantArgs = {
   contractVariantName: Scalars['String']['input'];
@@ -1707,6 +1643,7 @@ export type GraphMutationUpsertContractVariantArgs = {
   initiateLaunch?: Scalars['Boolean']['input'];
   sourceVariant?: InputMaybe<Scalars['String']['input']>;
 };
+
 
 /** Provides access to mutation fields for managing Studio graphs and subgraphs. */
 export type GraphMutationVariantArgs = {
@@ -1788,8 +1725,8 @@ export type GraphVariant = {
   latestPublication?: Maybe<SchemaPublication>;
   /** Retrieve a launch for this variant by ID. */
   launch?: Maybe<Launch>;
-  /** A list of launches ordered by date, asc or desc depending on orderBy. The maximum limit is 100. */
-  launchHistory?: Maybe<Array<Launch>>;
+  /** A list of launches metadata ordered by date, asc or desc depending on orderBy. The maximum limit is 100. */
+  launchSummaries?: Maybe<Array<LaunchSummary>>;
   /** The variant's name (e.g., `staging`). */
   name: Scalars['String']['output'];
   /** A list of the saved [operation collections](https://www.apollographql.com/docs/studio/explorer/operation-collections/) associated with this variant. */
@@ -1822,27 +1759,32 @@ export type GraphVariant = {
   validateRouter: CloudValidationResult;
 };
 
+
 /** A graph variant */
 export type GraphVariantLaunchArgs = {
   id: Scalars['ID']['input'];
 };
 
+
 /** A graph variant */
-export type GraphVariantLaunchHistoryArgs = {
+export type GraphVariantLaunchSummariesArgs = {
   limit?: Scalars['Int']['input'];
   offset?: Scalars['Int']['input'];
   orderBy?: LaunchHistoryOrder;
 };
+
 
 /** A graph variant */
 export type GraphVariantSubgraphArgs = {
   name: Scalars['ID']['input'];
 };
 
+
 /** A graph variant */
 export type GraphVariantSubgraphsArgs = {
   includeDeleted?: Scalars['Boolean']['input'];
 };
+
 
 /** A graph variant */
 export type GraphVariantValidateRouterArgs = {
@@ -1908,35 +1850,42 @@ export type GraphVariantMutation = {
   upsertRouterConfig?: Maybe<UpsertRouterResult>;
 };
 
+
 /** Modifies a variant of a graph, also called a schema tag in parts of our product. */
 export type GraphVariantMutationCustomCheckCallbackArgs = {
   input: CustomCheckCallbackInput;
 };
+
 
 /** Modifies a variant of a graph, also called a schema tag in parts of our product. */
 export type GraphVariantMutationSubmitCheckSchemaAsyncArgs = {
   input: CheckSchemaAsyncInput;
 };
 
+
 /** Modifies a variant of a graph, also called a schema tag in parts of our product. */
 export type GraphVariantMutationSubmitMultiSubgraphCheckAsyncArgs = {
   input: MultiSubgraphCheckAsyncInput;
 };
+
 
 /** Modifies a variant of a graph, also called a schema tag in parts of our product. */
 export type GraphVariantMutationSubmitSubgraphCheckAsyncArgs = {
   input: SubgraphCheckAsyncInput;
 };
 
+
 /** Modifies a variant of a graph, also called a schema tag in parts of our product. */
 export type GraphVariantMutationUpdateUrlArgs = {
   url?: InputMaybe<Scalars['String']['input']>;
 };
 
+
 /** Modifies a variant of a graph, also called a schema tag in parts of our product. */
 export type GraphVariantMutationUpdateVariantReadmeArgs = {
   readme: Scalars['String']['input'];
 };
+
 
 /** Modifies a variant of a graph, also called a schema tag in parts of our product. */
 export type GraphVariantMutationUpsertRouterConfigArgs = {
@@ -2123,7 +2072,7 @@ export enum IntrospectionDirectiveLocation {
   /** Location adjacent to a union definition. */
   Union = 'UNION',
   /** Location adjacent to a variable definition. */
-  VariableDefinition = 'VARIABLE_DEFINITION',
+  VariableDefinition = 'VARIABLE_DEFINITION'
 }
 
 /** __EnumValue introspection type */
@@ -2197,7 +2146,7 @@ export enum IntrospectionTypeKind {
   /** Indicates this type is a scalar. */
   Scalar = 'SCALAR',
   /** Indicates this type is a union. 'possibleTypes' is a valid field. */
-  Union = 'UNION',
+  Union = 'UNION'
 }
 
 /** Shallow __Type introspection type */
@@ -2281,6 +2230,7 @@ export type Launch = {
   upstreamLaunch?: Maybe<Launch>;
 };
 
+
 /** Represents the complete process of making a set of updates to a deployed graph variant. */
 export type LaunchPreviousLaunchArgs = {
   successOnly?: InputMaybe<Scalars['Boolean']['input']>;
@@ -2288,7 +2238,7 @@ export type LaunchPreviousLaunchArgs = {
 
 export enum LaunchHistoryOrder {
   CreatedAsc = 'CREATED_ASC',
-  CreatedDesc = 'CREATED_DESC',
+  CreatedDesc = 'CREATED_DESC'
 }
 
 /** Types of results that can be associated with a `Launch` */
@@ -2327,12 +2277,7 @@ export type LaunchSequencePublishStep = {
 };
 
 /** Represents the various steps that occur in sequence during a single launch. */
-export type LaunchSequenceStep =
-  | LaunchSequenceBuildStep
-  | LaunchSequenceCompletedStep
-  | LaunchSequenceInitiatedStep
-  | LaunchSequencePublishStep
-  | LaunchSequenceSupersededStep;
+export type LaunchSequenceStep = LaunchSequenceBuildStep | LaunchSequenceCompletedStep | LaunchSequenceInitiatedStep | LaunchSequencePublishStep | LaunchSequenceSupersededStep;
 
 /** The timing details for the superseded step of a launch. This step occurs only if the launch is superseded by another launch. */
 export type LaunchSequenceSupersededStep = {
@@ -2344,8 +2289,33 @@ export type LaunchSequenceSupersededStep = {
 export enum LaunchStatus {
   LaunchCompleted = 'LAUNCH_COMPLETED',
   LaunchFailed = 'LAUNCH_FAILED',
-  LaunchInitiated = 'LAUNCH_INITIATED',
+  LaunchInitiated = 'LAUNCH_INITIATED'
 }
+
+/** Key information representing the complete process of making a set of updates to a deployed graph variant. */
+export type LaunchSummary = {
+  __typename?: 'LaunchSummary';
+  /** The timestamp when the launch was approved. */
+  approvedAt?: Maybe<Scalars['Timestamp']['output']>;
+  /** Identifier of the associated build for this launch. This value is null until the build is initiated. */
+  buildID?: Maybe<Scalars['ID']['output']>;
+  /** The inputs provided to this launch's associated build, including subgraph schemas and contract filters. */
+  buildInput: BuildInput;
+  /** The timestamp when the launch completed. This value is null until the launch completes. */
+  completedAt?: Maybe<Scalars['Timestamp']['output']>;
+  /** The timestamp when the launch was initiated. */
+  createdAt: Scalars['Timestamp']['output'];
+  /** The ID of the launch's associated graph. */
+  graphId: Scalars['String']['output'];
+  /** The name of the launch's associated variant. */
+  graphVariant: Scalars['String']['output'];
+  /** The unique identifier for this launch. */
+  id: Scalars['ID']['output'];
+  /** A list of results from the completed launch. The items included in this list vary depending on whether the launch succeeded, failed, or was superseded. */
+  results: Array<LaunchResult>;
+  /** The launch's status. If a launch is superseded, its status remains `LAUNCH_INITIATED`. To check for a superseded launch, use `supersededAt`. */
+  status: LaunchStatus;
+};
 
 export type LintCheckTask = CheckWorkflowTask & {
   __typename?: 'LintCheckTask';
@@ -2378,7 +2348,7 @@ export type LintDiagnostic = {
 export enum LintDiagnosticLevel {
   Error = 'ERROR',
   Ignored = 'IGNORED',
-  Warning = 'WARNING',
+  Warning = 'WARNING'
 }
 
 /** The result of linting a schema. */
@@ -2430,17 +2400,19 @@ export enum LintRule {
   InterfaceSuffix = 'INTERFACE_SUFFIX',
   MergedNonRepeatableDirectiveArguments = 'MERGED_NON_REPEATABLE_DIRECTIVE_ARGUMENTS',
   NoExecutableDirectiveIntersection = 'NO_EXECUTABLE_DIRECTIVE_INTERSECTION',
+  NullablePathVariable = 'NULLABLE_PATH_VARIABLE',
   ObjectPrefix = 'OBJECT_PREFIX',
   ObjectSuffix = 'OBJECT_SUFFIX',
   OverriddenFieldCanBeRemoved = 'OVERRIDDEN_FIELD_CAN_BE_REMOVED',
   OverrideDirectiveCanBeRemoved = 'OVERRIDE_DIRECTIVE_CAN_BE_REMOVED',
+  OverrideMigrationInProgress = 'OVERRIDE_MIGRATION_IN_PROGRESS',
   QueryDocumentDeclaration = 'QUERY_DOCUMENT_DECLARATION',
   RestyFieldNames = 'RESTY_FIELD_NAMES',
   TagDirectiveUsesUnknownName = 'TAG_DIRECTIVE_USES_UNKNOWN_NAME',
   TypeNamesShouldBePascalCase = 'TYPE_NAMES_SHOULD_BE_PASCAL_CASE',
   TypePrefix = 'TYPE_PREFIX',
   TypeSuffix = 'TYPE_SUFFIX',
-  UnusedEnumType = 'UNUSED_ENUM_TYPE',
+  UnusedEnumType = 'UNUSED_ENUM_TYPE'
 }
 
 /** Stats generated from linting a schema against the graph's linter configuration. */
@@ -2472,7 +2444,7 @@ export enum LogLevel {
   /** Informational log entry */
   Info = 'INFO',
   /** Warning log entry */
-  Warn = 'WARN',
+  Warn = 'WARN'
 }
 
 /** Order log message */
@@ -2525,6 +2497,7 @@ export type Mutation = {
   user?: Maybe<UserMutation>;
 };
 
+
 /** GraphQL mutations */
 export type MutationCreateOperationCollectionArgs = {
   description?: InputMaybe<Scalars['String']['input']>;
@@ -2535,20 +2508,24 @@ export type MutationCreateOperationCollectionArgs = {
   variantRefs?: InputMaybe<Array<Scalars['ID']['input']>>;
 };
 
+
 /** GraphQL mutations */
 export type MutationGraphArgs = {
   id: Scalars['ID']['input'];
 };
+
 
 /** GraphQL mutations */
 export type MutationOperationCollectionArgs = {
   id: Scalars['ID']['input'];
 };
 
+
 /** GraphQL mutations */
 export type MutationProposalArgs = {
   id: Scalars['ID']['input'];
 };
+
 
 /** GraphQL mutations */
 export type MutationUserArgs = {
@@ -2629,6 +2606,7 @@ export type OperationCollection = {
   permissions: OperationCollectionPermissions;
 };
 
+
 /** A list of saved GraphQL operations. */
 export type OperationCollectionOperationArgs = {
   id: Scalars['ID']['input'];
@@ -2663,25 +2641,22 @@ export type OperationCollectionEntryMutation = {
   updateValues?: Maybe<UpdateOperationCollectionEntryResult>;
 };
 
+
 /** Provides fields for modifying an operation in a collection. */
 export type OperationCollectionEntryMutationUpdateNameArgs = {
   name: Scalars['String']['input'];
 };
+
 
 /** Provides fields for modifying an operation in a collection. */
 export type OperationCollectionEntryMutationUpdateValuesArgs = {
   operationInput: OperationCollectionEntryStateInput;
 };
 
-export type OperationCollectionEntryMutationResult =
-  | NotFoundError
-  | OperationCollectionEntryMutation
-  | PermissionError;
+export type OperationCollectionEntryMutationResult = NotFoundError | OperationCollectionEntryMutation | PermissionError;
 
 /** Possible return values when querying for an entry in an operation collection (either the entry object or an `Error` object). */
-export type OperationCollectionEntryResult =
-  | NotFoundError
-  | OperationCollectionEntry;
+export type OperationCollectionEntryResult = NotFoundError | OperationCollectionEntry;
 
 /** The most recent body, variable and header values of a saved operation entry. */
 export type OperationCollectionEntryState = {
@@ -2728,46 +2703,55 @@ export type OperationCollectionMutation = {
   updateName?: Maybe<UpdateOperationCollectionResult>;
 };
 
+
 /** Provides fields for modifying an [operation collection](https://www.apollographql.com/docs/studio/explorer/operation-collections/). */
 export type OperationCollectionMutationAddOperationArgs = {
   name: Scalars['String']['input'];
   operationInput: OperationCollectionEntryStateInput;
 };
 
+
 /** Provides fields for modifying an [operation collection](https://www.apollographql.com/docs/studio/explorer/operation-collections/). */
 export type OperationCollectionMutationAddOperationsArgs = {
   operations: Array<AddOperationInput>;
 };
+
 
 /** Provides fields for modifying an [operation collection](https://www.apollographql.com/docs/studio/explorer/operation-collections/). */
 export type OperationCollectionMutationDeleteOperationArgs = {
   id: Scalars['ID']['input'];
 };
 
+
 /** Provides fields for modifying an [operation collection](https://www.apollographql.com/docs/studio/explorer/operation-collections/). */
 export type OperationCollectionMutationOperationArgs = {
   id: Scalars['ID']['input'];
 };
+
 
 /** Provides fields for modifying an [operation collection](https://www.apollographql.com/docs/studio/explorer/operation-collections/). */
 export type OperationCollectionMutationSetMinEditRoleArgs = {
   editRole?: InputMaybe<UserPermission>;
 };
 
+
 /** Provides fields for modifying an [operation collection](https://www.apollographql.com/docs/studio/explorer/operation-collections/). */
 export type OperationCollectionMutationUpdateDescriptionArgs = {
   description?: InputMaybe<Scalars['String']['input']>;
 };
+
 
 /** Provides fields for modifying an [operation collection](https://www.apollographql.com/docs/studio/explorer/operation-collections/). */
 export type OperationCollectionMutationUpdateIsFavoriteArgs = {
   isFavorite: Scalars['Boolean']['input'];
 };
 
+
 /** Provides fields for modifying an [operation collection](https://www.apollographql.com/docs/studio/explorer/operation-collections/). */
 export type OperationCollectionMutationUpdateIsSharedArgs = {
   isShared: Scalars['Boolean']['input'];
 };
+
 
 /** Provides fields for modifying an [operation collection](https://www.apollographql.com/docs/studio/explorer/operation-collections/). */
 export type OperationCollectionMutationUpdateNameArgs = {
@@ -2785,11 +2769,7 @@ export type OperationCollectionPermissions = {
   canReadOperations: Scalars['Boolean']['output'];
 };
 
-export type OperationCollectionResult =
-  | NotFoundError
-  | OperationCollection
-  | PermissionError
-  | ValidationError;
+export type OperationCollectionResult = NotFoundError | OperationCollection | PermissionError | ValidationError;
 
 /** Saved headers on a saved operation. */
 export type OperationHeader = {
@@ -2817,7 +2797,7 @@ export type OperationNameFilterInput = {
 export enum OperationType {
   Mutation = 'MUTATION',
   Query = 'QUERY',
-  Subscription = 'SUBSCRIPTION',
+  Subscription = 'SUBSCRIPTION'
 }
 
 export type OperationsCheckResult = {
@@ -2903,7 +2883,7 @@ export enum OrderStatus {
    * This can happen if two update orders arrive in close succession and we already
    * started to process the newer order first.
    */
-  Superseded = 'SUPERSEDED',
+  Superseded = 'SUPERSEDED'
 }
 
 /** Represents the different types of order */
@@ -2913,7 +2893,7 @@ export enum OrderType {
   /** Destroy an existing Cloud Router */
   DestroyRouter = 'DESTROY_ROUTER',
   /** Update an existing Cloud Router */
-  UpdateRouter = 'UPDATE_ROUTER',
+  UpdateRouter = 'UPDATE_ROUTER'
 }
 
 /** An organization in Apollo Studio. Can have multiple members and graphs. */
@@ -2938,10 +2918,12 @@ export type Organization = {
   services: Array<Graph>;
 };
 
+
 /** An organization in Apollo Studio. Can have multiple members and graphs. */
 export type OrganizationGraphsArgs = {
   includeDeleted?: InputMaybe<Scalars['Boolean']['input']>;
 };
+
 
 /** An organization in Apollo Studio. Can have multiple members and graphs. */
 export type OrganizationServicesArgs = {
@@ -2953,6 +2935,7 @@ export type OrganizationMutation = {
   /** Trigger a request for an audit export */
   requestAuditExport?: Maybe<Organization>;
 };
+
 
 export type OrganizationMutationRequestAuditExportArgs = {
   actors?: InputMaybe<Array<ActorInput>>;
@@ -2993,20 +2976,19 @@ export type ParentChangeProposalComment = ProposalComment & {
   updatedAt?: Maybe<Scalars['Timestamp']['output']>;
 };
 
-export type ParentGeneralProposalComment = GeneralProposalComment &
-  ProposalComment & {
-    __typename?: 'ParentGeneralProposalComment';
-    createdAt: Scalars['Timestamp']['output'];
-    /** null if the user is deleted */
-    createdBy?: Maybe<Identity>;
-    id: Scalars['ID']['output'];
-    message: Scalars['String']['output'];
-    replies: Array<ReplyGeneralProposalComment>;
-    replyCount: Scalars['Int']['output'];
-    status: CommentStatus;
-    /** null if never updated */
-    updatedAt?: Maybe<Scalars['Timestamp']['output']>;
-  };
+export type ParentGeneralProposalComment = GeneralProposalComment & ProposalComment & {
+  __typename?: 'ParentGeneralProposalComment';
+  createdAt: Scalars['Timestamp']['output'];
+  /** null if the user is deleted */
+  createdBy?: Maybe<Identity>;
+  id: Scalars['ID']['output'];
+  message: Scalars['String']['output'];
+  replies: Array<ReplyGeneralProposalComment>;
+  replyCount: Scalars['Int']['output'];
+  status: CommentStatus;
+  /** null if never updated */
+  updatedAt?: Maybe<Scalars['Timestamp']['output']>;
+};
 
 /**
  * Input for registering a partial schema to an implementing service.
@@ -3071,9 +3053,11 @@ export type PersistedQueryInput = {
   type: OperationType;
 };
 
-/** TODO */
+/** A Persisted Query List for a graph. */
 export type PersistedQueryList = {
   __typename?: 'PersistedQueryList';
+  /** The current build of this PQL. */
+  currentBuild: PersistedQueryListBuild;
   /** The immutable ID for this Persisted Query List. */
   id: Scalars['ID']['output'];
   /** All variants linked to this Persisted Query List, if any. */
@@ -3087,6 +3071,8 @@ export type PersistedQueryListBuild = {
   __typename?: 'PersistedQueryListBuild';
   /** The persisted query list that this build built. */
   list: PersistedQueryList;
+  /** The chunks that made up this build. We do not commit to keeping the full contents of older revisions indefinitely, so this may be null for suitably old revisions. */
+  manifestChunks?: Maybe<Array<PersistedQueryListManifestChunk>>;
   /** Information about the publish operation that created this build. */
   publish: PersistedQueriesPublish;
   /** The revision of this Persisted Query List. Revision 0 is the initial empty list; each publish increments the revision by 1. */
@@ -3095,11 +3081,20 @@ export type PersistedQueryListBuild = {
   totalOperationsInList: Scalars['Int']['output'];
 };
 
+export type PersistedQueryListManifestChunk = {
+  __typename?: 'PersistedQueryListManifestChunk';
+  /** An immutable identifier for this particular chunk of a PQL. The contents referenced by this ID will never change. */
+  id: Scalars['ID']['output'];
+  /** The chunk can be downloaded from any of these URLs, which might be transient. */
+  urls: Array<Scalars['String']['output']>;
+};
+
 export type PersistedQueryListMutation = {
   __typename?: 'PersistedQueryListMutation';
   /** Updates this Persisted Query List by publishing a set of operations and removing other operations. Operations not mentioned remain in the list unchanged. */
   publishOperations: PublishOperationsResultOrError;
 };
+
 
 export type PersistedQueryListMutationPublishOperationsArgs = {
   allowOverwrittenOperations?: InputMaybe<Scalars['Boolean']['input']>;
@@ -3136,12 +3131,15 @@ export type Proposal = {
   implementedChanges: Array<ProposalImplementedChange>;
   /** True if only some of the changes in this proposal are currently published to the implementation variant */
   isPartiallyImplemented: Scalars['Boolean']['output'];
+  latestRevision: ProposalRevision;
+  reviews: Array<ProposalReview>;
   /** The variant this Proposal was cloned/sourced from. */
   sourceVariant: GraphVariant;
   status: ProposalStatus;
   updatedAt: Scalars['Timestamp']['output'];
   updatedBy?: Maybe<Identity>;
 };
+
 
 export type ProposalActivitiesArgs = {
   after?: InputMaybe<Scalars['String']['input']>;
@@ -3187,7 +3185,7 @@ export enum ProposalActivityAction {
   /** When a Proposal is moved to DRAFT from another status not on creation. */
   ReturnToDraftProposal = 'RETURN_TO_DRAFT_PROPOSAL',
   /** When a Review is added to a Proposal. */
-  ReviewAdded = 'REVIEW_ADDED',
+  ReviewAdded = 'REVIEW_ADDED'
 }
 
 export type ProposalActivityConnection = {
@@ -3205,21 +3203,12 @@ export type ProposalActivityEdge = {
   node?: Maybe<ProposalActivity>;
 };
 
-export type ProposalActivityTarget =
-  | ParentChangeProposalComment
-  | ParentGeneralProposalComment
-  | Proposal
-  | ProposalFullImplementationProposalOrigin
-  | ProposalFullImplementationVariantOrigin
-  | ProposalPartialImplementationProposalOrigin
-  | ProposalPartialImplementationVariantOrigin
-  | ProposalReview
-  | ProposalRevision;
+export type ProposalActivityTarget = ParentChangeProposalComment | ParentGeneralProposalComment | Proposal | ProposalFullImplementationProposalOrigin | ProposalFullImplementationVariantOrigin | ProposalPartialImplementationProposalOrigin | ProposalPartialImplementationVariantOrigin | ProposalReview | ProposalRevision;
 
 export enum ProposalChangeMismatchSeverity {
   Error = 'ERROR',
   Off = 'OFF',
-  Warn = 'WARN',
+  Warn = 'WARN'
 }
 
 export type ProposalComment = {
@@ -3238,7 +3227,7 @@ export enum ProposalCoverage {
   None = 'NONE',
   Overridden = 'OVERRIDDEN',
   Partial = 'PARTIAL',
-  Pending = 'PENDING',
+  Pending = 'PENDING'
 }
 
 export type ProposalFullImplementationProposalOrigin = {
@@ -3290,36 +3279,37 @@ export type ProposalMutation = {
   updateStatus: UpdateProposalResult;
 };
 
+
 /** Mutations for editing GraphOS Schema Proposals. See documentation at https://www.apollographql.com/docs/graphos/delivery/schema-proposals */
 export type ProposalMutationPublishSubgraphsArgs = {
   input: PublishProposalSubgraphsInput;
 };
+
 
 /** Mutations for editing GraphOS Schema Proposals. See documentation at https://www.apollographql.com/docs/graphos/delivery/schema-proposals */
 export type ProposalMutationUpdateDescriptionArgs = {
   input: UpdateDescriptionInput;
 };
 
+
 /** Mutations for editing GraphOS Schema Proposals. See documentation at https://www.apollographql.com/docs/graphos/delivery/schema-proposals */
 export type ProposalMutationUpdateDisplayNameArgs = {
   displayName: Scalars['String']['input'];
 };
+
 
 /** Mutations for editing GraphOS Schema Proposals. See documentation at https://www.apollographql.com/docs/graphos/delivery/schema-proposals */
 export type ProposalMutationUpdateRequestedReviewersArgs = {
   input: UpdateRequestedReviewersInput;
 };
 
+
 /** Mutations for editing GraphOS Schema Proposals. See documentation at https://www.apollographql.com/docs/graphos/delivery/schema-proposals */
 export type ProposalMutationUpdateStatusArgs = {
   status: ProposalStatus;
 };
 
-export type ProposalMutationResult =
-  | NotFoundError
-  | PermissionError
-  | ProposalMutation
-  | ValidationError;
+export type ProposalMutationResult = NotFoundError | PermissionError | ProposalMutation | ValidationError;
 
 export type ProposalPartialImplementationProposalOrigin = {
   __typename?: 'ProposalPartialImplementationProposalOrigin';
@@ -3367,7 +3357,7 @@ export type ProposalRevision = {
   id: Scalars['ID']['output'];
   isMerge: Scalars['Boolean']['output'];
   launch?: Maybe<Launch>;
-  /** Latest composition ID of the proposal at the time this revision was created. */
+  /** Latest composition ID of the proposal's source variant at the time this revision was created. */
   mergeBaseCompositionId?: Maybe<Scalars['ID']['output']>;
   /** null if this is the first revision */
   previousRevision?: Maybe<ProposalRevision>;
@@ -3379,7 +3369,7 @@ export enum ProposalStatus {
   Closed = 'CLOSED',
   Draft = 'DRAFT',
   Implemented = 'IMPLEMENTED',
-  Open = 'OPEN',
+  Open = 'OPEN'
 }
 
 /** Filtering options for graph connections. */
@@ -3463,16 +3453,9 @@ export type PublishOperationsResult = {
 };
 
 /** The interface returned by PersistedQueryListMutation.publishOperations. */
-export type PublishOperationsResultOrError =
-  | CannotModifyOperationBodyError
-  | PermissionError
-  | PublishOperationsResult;
+export type PublishOperationsResultOrError = CannotModifyOperationBodyError | PermissionError | PublishOperationsResult;
 
-export type PublishProposalSubgraphResult =
-  | NotFoundError
-  | PermissionError
-  | Proposal
-  | ValidationError;
+export type PublishProposalSubgraphResult = NotFoundError | PermissionError | Proposal | ValidationError;
 
 export type PublishProposalSubgraphsInput = {
   gitContext?: InputMaybe<GitContextInput>;
@@ -3508,30 +3491,36 @@ export type Query = {
   variant?: Maybe<GraphVariantLookup>;
 };
 
+
 /** Queries defined by this subgraph */
 export type QueryGraphArgs = {
   id: Scalars['ID']['input'];
 };
+
 
 /** Queries defined by this subgraph */
 export type QueryOperationCollectionArgs = {
   id: Scalars['ID']['input'];
 };
 
+
 /** Queries defined by this subgraph */
 export type QueryOrganizationArgs = {
   id: Scalars['ID']['input'];
 };
+
 
 /** Queries defined by this subgraph */
 export type QueryProposalArgs = {
   id: Scalars['ID']['input'];
 };
 
+
 /** Queries defined by this subgraph */
 export type QueryUserArgs = {
   id: Scalars['ID']['input'];
 };
+
 
 /** Queries defined by this subgraph */
 export type QueryVariantArgs = {
@@ -3569,9 +3558,7 @@ export type RelatedProposalResult = {
   statusAtCheck: ProposalStatus;
 };
 
-export type RemoveOperationCollectionEntryResult =
-  | OperationCollection
-  | PermissionError;
+export type RemoveOperationCollectionEntryResult = OperationCollection | PermissionError;
 
 export type ReplyChangeProposalComment = ProposalComment & {
   __typename?: 'ReplyChangeProposalComment';
@@ -3590,18 +3577,17 @@ export type ReplyChangeProposalComment = ProposalComment & {
   updatedAt?: Maybe<Scalars['Timestamp']['output']>;
 };
 
-export type ReplyGeneralProposalComment = GeneralProposalComment &
-  ProposalComment & {
-    __typename?: 'ReplyGeneralProposalComment';
-    createdAt: Scalars['Timestamp']['output'];
-    /** null if the user is deleted */
-    createdBy?: Maybe<Identity>;
-    id: Scalars['ID']['output'];
-    message: Scalars['String']['output'];
-    status: CommentStatus;
-    /** null if never updated */
-    updatedAt?: Maybe<Scalars['Timestamp']['output']>;
-  };
+export type ReplyGeneralProposalComment = GeneralProposalComment & ProposalComment & {
+  __typename?: 'ReplyGeneralProposalComment';
+  createdAt: Scalars['Timestamp']['output'];
+  /** null if the user is deleted */
+  createdBy?: Maybe<Identity>;
+  id: Scalars['ID']['output'];
+  message: Scalars['String']['output'];
+  status: CommentStatus;
+  /** null if never updated */
+  updatedAt?: Maybe<Scalars['Timestamp']['output']>;
+};
 
 export type RerunAsyncInput = {
   sourceVariant?: InputMaybe<Scalars['String']['input']>;
@@ -3609,7 +3595,7 @@ export type RerunAsyncInput = {
 
 export enum ReviewDecision {
   Approved = 'APPROVED',
-  NotApproved = 'NOT_APPROVED',
+  NotApproved = 'NOT_APPROVED'
 }
 
 export type ReviewProposalComment = ProposalComment & {
@@ -3683,9 +3669,11 @@ export type Router = {
   updatedAt?: Maybe<Scalars['NaiveDateTime']['output']>;
 };
 
+
 export type RouterOrderArgs = {
   orderId: Scalars['ID']['input'];
 };
+
 
 export type RouterOrdersArgs = {
   first?: InputMaybe<Scalars['Int']['input']>;
@@ -3758,10 +3746,7 @@ export type RouterEndpoints = {
 };
 
 /** Represents the possible outcomes of an endpoint mutation */
-export type RouterEndpointsResult =
-  | InternalServerError
-  | InvalidInputErrors
-  | RouterEndpointsSuccess;
+export type RouterEndpointsResult = InternalServerError | InvalidInputErrors | RouterEndpointsSuccess;
 
 /** Successe branch of  an addEndpoint or removeEndpoint mutation */
 export type RouterEndpointsSuccess = {
@@ -3770,10 +3755,7 @@ export type RouterEndpointsSuccess = {
 };
 
 /** Represents the possible outcomes of a setGcus mutation */
-export type RouterGcusResult =
-  | InternalServerError
-  | InvalidInputErrors
-  | RouterGcusSuccess;
+export type RouterGcusResult = InternalServerError | InvalidInputErrors | RouterGcusSuccess;
 
 /** Success branch of a setGcus mutation */
 export type RouterGcusSuccess = {
@@ -3799,17 +3781,21 @@ export type RouterMutation = {
   setSecrets: RouterSecretsResult;
 };
 
+
 export type RouterMutationAddCustomDomainArgs = {
   customDomain: Scalars['String']['input'];
 };
+
 
 export type RouterMutationRemoveCustomDomainArgs = {
   customDomain: Scalars['String']['input'];
 };
 
+
 export type RouterMutationSetGcusArgs = {
   gcus: Scalars['Int']['input'];
 };
+
 
 export type RouterMutationSetSecretsArgs = {
   input: RouterSecretsInput;
@@ -3824,10 +3810,7 @@ export type RouterSecretsInput = {
 };
 
 /** Represents the possible outcomes of a RouterSecrets mutation */
-export type RouterSecretsResult =
-  | InternalServerError
-  | InvalidInputErrors
-  | RouterSecretsSuccess;
+export type RouterSecretsResult = InternalServerError | InvalidInputErrors | RouterSecretsSuccess;
 
 /** Success branch of a RouterSecrets mutation. */
 export type RouterSecretsSuccess = {
@@ -3864,7 +3847,7 @@ export enum RouterStatus {
   /** Router has been put to sleep. This state should only be possible for Serverless routers */
   Sleeping = 'SLEEPING',
   /** Cloud Router is running, but currently being updated */
-  Updating = 'UPDATING',
+  Updating = 'UPDATING'
 }
 
 export type RouterUpsertFailure = {
@@ -4020,7 +4003,7 @@ export enum Status {
    */
   Next = 'NEXT',
   /** Cloud Router Version is ready to be used by end users */
-  Stable = 'STABLE',
+  Stable = 'STABLE'
 }
 
 /** A subgraph in a federated Studio supergraph. */
@@ -4054,7 +4037,7 @@ export type SubgraphChange = {
 export enum SubgraphChangeType {
   Addition = 'ADDITION',
   Deletion = 'DELETION',
-  Modification = 'MODIFICATION',
+  Modification = 'MODIFICATION'
 }
 
 /** Input type to provide when running schema checks asynchronously for a federated supergraph. */
@@ -4172,15 +4155,9 @@ export type UpdateDescriptionInput = {
   description: Scalars['String']['input'];
 };
 
-export type UpdateOperationCollectionEntryResult =
-  | OperationCollectionEntry
-  | PermissionError
-  | ValidationError;
+export type UpdateOperationCollectionEntryResult = OperationCollectionEntry | PermissionError | ValidationError;
 
-export type UpdateOperationCollectionResult =
-  | OperationCollection
-  | PermissionError
-  | ValidationError;
+export type UpdateOperationCollectionResult = OperationCollection | PermissionError | ValidationError;
 
 export type UpdateProposalResult = PermissionError | Proposal | ValidationError;
 
@@ -4189,10 +4166,7 @@ export type UpdateRequestedReviewersInput = {
   reviewerUserIdsToRemove?: InputMaybe<Array<Scalars['ID']['input']>>;
 };
 
-export type UpdateRequestedReviewersResult =
-  | PermissionError
-  | Proposal
-  | ValidationError;
+export type UpdateRequestedReviewersResult = PermissionError | Proposal | ValidationError;
 
 export type UpsertRouterResult = GraphVariant | RouterUpsertFailure;
 
@@ -4210,6 +4184,7 @@ export type User = Identity & {
   /** The user's first and last name. */
   name: Scalars['String']['output'];
 };
+
 
 /** A registered Apollo Studio user. */
 export type UserApiKeysArgs = {
@@ -4258,17 +4233,21 @@ export type UserMutation = {
   renameKey?: Maybe<UserApiKey>;
 };
 
+
 export type UserMutationNewKeyArgs = {
   keyName: Scalars['String']['input'];
 };
+
 
 export type UserMutationProvisionKeyArgs = {
   keyName?: Scalars['String']['input'];
 };
 
+
 export type UserMutationRemoveKeyArgs = {
   id: Scalars['ID']['input'];
 };
+
 
 export type UserMutationRenameKeyArgs = {
   id: Scalars['ID']['input'];
@@ -4284,7 +4263,7 @@ export enum UserPermission {
   LegacyGraphKey = 'LEGACY_GRAPH_KEY',
   Observer = 'OBSERVER',
   OrgAdmin = 'ORG_ADMIN',
-  PersistedQueryPublisher = 'PERSISTED_QUERY_PUBLISHER',
+  PersistedQueryPublisher = 'PERSISTED_QUERY_PUBLISHER'
 }
 
 /** An error that occurs when an operation contains invalid user input. */
@@ -4297,7 +4276,7 @@ export type ValidationError = Error & {
 export enum ViolationLevel {
   Error = 'ERROR',
   Info = 'INFO',
-  Warning = 'WARNING',
+  Warning = 'WARNING'
 }
 
 export type CreateProposalMutationVariables = Exact<{
@@ -4305,1854 +4284,84 @@ export type CreateProposalMutationVariables = Exact<{
   input: CreateProposalInput;
 }>;
 
-export type CreateProposalMutation = {
-  __typename?: 'Mutation';
-  graph?: {
-    __typename?: 'GraphMutation';
-    createProposal:
-      | {__typename?: 'CreateProposalError'; message: string}
-      | {
-          __typename?: 'GraphVariant';
-          name: string;
-          subgraphs?: Array<{
-            __typename?: 'GraphVariantSubgraph';
-            revision: string;
-          }> | null;
-          proposal?: {__typename?: 'Proposal'; id: string} | null;
-          latestLaunch?: {__typename?: 'Launch'; id: string} | null;
-        }
-      | {__typename?: 'PermissionError'; message: string}
-      | {__typename?: 'ValidationError'; message: string};
-  } | null;
-};
+
+export type CreateProposalMutation = { __typename?: 'Mutation', graph?: { __typename?: 'GraphMutation', createProposal: { __typename?: 'CreateProposalError', message: string } | { __typename?: 'GraphVariant', name: string, subgraphs?: Array<{ __typename?: 'GraphVariantSubgraph', revision: string }> | null, proposal?: { __typename?: 'Proposal', id: string } | null, latestLaunch?: { __typename?: 'Launch', id: string } | null } | { __typename?: 'PermissionError', message: string } | { __typename?: 'ValidationError', message: string } } | null };
 
 export type PublishProposalRevisionMutationVariables = Exact<{
   proposalId: Scalars['ID']['input'];
   input: PublishProposalSubgraphsInput;
 }>;
 
-export type PublishProposalRevisionMutation = {
-  __typename?: 'Mutation';
-  proposal:
-    | {__typename?: 'NotFoundError'; message: string}
-    | {__typename?: 'PermissionError'; message: string}
-    | {
-        __typename?: 'ProposalMutation';
-        publishSubgraphs:
-          | {__typename?: 'NotFoundError'; message: string}
-          | {__typename?: 'PermissionError'; message: string}
-          | {
-              __typename?: 'Proposal';
-              id: string;
-              displayName: string;
-              backingVariant: {
-                __typename?: 'GraphVariant';
-                id: string;
-                name: string;
-                subgraphs?: Array<{
-                  __typename?: 'GraphVariantSubgraph';
-                  revision: string;
-                }> | null;
-                proposal?: {__typename?: 'Proposal'; id: string} | null;
-                latestLaunch?: {__typename?: 'Launch'; id: string} | null;
-              };
-            }
-          | {__typename?: 'ValidationError'; message: string};
-      }
-    | {__typename?: 'ValidationError'; message: string};
-};
+
+export type PublishProposalRevisionMutation = { __typename?: 'Mutation', proposal: { __typename?: 'NotFoundError', message: string } | { __typename?: 'PermissionError', message: string } | { __typename?: 'ProposalMutation', publishSubgraphs: { __typename?: 'NotFoundError', message: string } | { __typename?: 'PermissionError', message: string } | { __typename?: 'Proposal', id: string, displayName: string, backingVariant: { __typename?: 'GraphVariant', id: string, name: string, subgraphs?: Array<{ __typename?: 'GraphVariantSubgraph', revision: string }> | null, proposal?: { __typename?: 'Proposal', id: string } | null, latestLaunch?: { __typename?: 'Launch', id: string } | null } } | { __typename?: 'ValidationError', message: string } } | { __typename?: 'ValidationError', message: string } };
 
 export type UpdateProposalStatusMutationVariables = Exact<{
   proposalId: Scalars['ID']['input'];
   status: ProposalStatus;
 }>;
 
-export type UpdateProposalStatusMutation = {
-  __typename?: 'Mutation';
-  proposal:
-    | {__typename?: 'NotFoundError'}
-    | {__typename?: 'PermissionError'}
-    | {
-        __typename?: 'ProposalMutation';
-        updateStatus:
-          | {__typename?: 'PermissionError'; message: string}
-          | {__typename?: 'Proposal'; id: string; status: ProposalStatus}
-          | {__typename?: 'ValidationError'; message: string};
-      }
-    | {__typename?: 'ValidationError'};
-};
+
+export type UpdateProposalStatusMutation = { __typename?: 'Mutation', proposal: { __typename?: 'NotFoundError' } | { __typename?: 'PermissionError' } | { __typename?: 'ProposalMutation', updateStatus: { __typename?: 'PermissionError', message: string } | { __typename?: 'Proposal', id: string, status: ProposalStatus } | { __typename?: 'ValidationError', message: string } } | { __typename?: 'ValidationError' } };
 
 export type GetGraphQueryVariables = Exact<{
   graphId: Scalars['ID']['input'];
   filterBy?: InputMaybe<ProposalsFilterInput>;
 }>;
 
-export type GetGraphQuery = {
-  __typename?: 'Query';
-  graph?: {
-    __typename?: 'Graph';
-    variants: Array<{
-      __typename?: 'GraphVariant';
-      name: string;
-      key: string;
-      displayName: string;
-      latestPublication?: {
-        __typename?: 'SchemaPublication';
-        publishedAt: any;
-        schema: {__typename?: 'Schema'; document: any};
-      } | null;
-    }>;
-    proposals: {
-      __typename?: 'ProposalsResult';
-      proposals: Array<{
-        __typename?: 'Proposal';
-        displayName: string;
-        key: {__typename?: 'GraphVariant'; key: string};
-        latestPublication: {
-          __typename?: 'GraphVariant';
-          latestPublication?: {
-            __typename?: 'SchemaPublication';
-            schema: {__typename?: 'Schema'; document: any};
-          } | null;
-        };
-      }>;
-    };
-  } | null;
-};
+
+export type GetGraphQuery = { __typename?: 'Query', graph?: { __typename?: 'Graph', variants: Array<{ __typename?: 'GraphVariant', name: string, key: string, displayName: string, latestPublication?: { __typename?: 'SchemaPublication', publishedAt: any, schema: { __typename?: 'Schema', document: any } } | null }>, proposals: { __typename?: 'ProposalsResult', proposals: Array<{ __typename?: 'Proposal', displayName: string, key: { __typename?: 'GraphVariant', key: string }, latestPublication: { __typename?: 'GraphVariant', latestPublication?: { __typename?: 'SchemaPublication', schema: { __typename?: 'Schema', document: any } } | null } }> } } | null };
 
 export type GetGraphWithSubgraphsQueryVariables = Exact<{
   graphId: Scalars['ID']['input'];
   filterBy?: InputMaybe<ProposalsFilterInput>;
 }>;
 
-export type GetGraphWithSubgraphsQuery = {
-  __typename?: 'Query';
-  graph?: {
-    __typename?: 'Graph';
-    variants: Array<{
-      __typename?: 'GraphVariant';
-      name: string;
-      key: string;
-      displayName: string;
-      latestPublication?: {
-        __typename?: 'SchemaPublication';
-        publishedAt: any;
-        schema: {__typename?: 'Schema'; document: any};
-      } | null;
-      subgraphs?: Array<{
-        __typename?: 'GraphVariantSubgraph';
-        name: string;
-        activePartialSchema: {__typename?: 'SubgraphSchema'; sdl: string};
-      }> | null;
-    }>;
-    proposals: {
-      __typename?: 'ProposalsResult';
-      proposals: Array<{
-        __typename?: 'Proposal';
-        displayName: string;
-        key: {__typename?: 'GraphVariant'; key: string};
-        latestPublication: {
-          __typename?: 'GraphVariant';
-          latestPublication?: {
-            __typename?: 'SchemaPublication';
-            schema: {__typename?: 'Schema'; document: any};
-          } | null;
-        };
-      }>;
-    };
-  } | null;
-};
+
+export type GetGraphWithSubgraphsQuery = { __typename?: 'Query', graph?: { __typename?: 'Graph', variants: Array<{ __typename?: 'GraphVariant', name: string, key: string, displayName: string, latestPublication?: { __typename?: 'SchemaPublication', publishedAt: any, schema: { __typename?: 'Schema', document: any } } | null, subgraphs?: Array<{ __typename?: 'GraphVariantSubgraph', name: string, activePartialSchema: { __typename?: 'SubgraphSchema', sdl: string } }> | null }>, proposals: { __typename?: 'ProposalsResult', proposals: Array<{ __typename?: 'Proposal', displayName: string, key: { __typename?: 'GraphVariant', key: string }, latestPublication: { __typename?: 'GraphVariant', latestPublication?: { __typename?: 'SchemaPublication', schema: { __typename?: 'Schema', document: any } } | null } }> } } | null };
 
 export type GetGraphsQueryVariables = Exact<{
   organizationId: Scalars['ID']['input'];
 }>;
 
-export type GetGraphsQuery = {
-  __typename?: 'Query';
-  organization?: {
-    __typename?: 'Organization';
-    graphs: Array<{
-      __typename?: 'Graph';
-      id: string;
-      name: string;
-      variants: Array<{
-        __typename?: 'GraphVariant';
-        id: string;
-        name: string;
-        latestPublication?: {
-          __typename?: 'SchemaPublication';
-          publishedAt: any;
-        } | null;
-      }>;
-      proposals: {__typename?: 'ProposalsResult'; totalCount: number};
-    }>;
-  } | null;
-};
 
-export type GetOrganizationIdQueryVariables = Exact<{[key: string]: never}>;
+export type GetGraphsQuery = { __typename?: 'Query', organization?: { __typename?: 'Organization', graphs: Array<{ __typename?: 'Graph', id: string, name: string, variants: Array<{ __typename?: 'GraphVariant', id: string, name: string, latestPublication?: { __typename?: 'SchemaPublication', publishedAt: any } | null }>, proposals: { __typename?: 'ProposalsResult', totalCount: number } }> } | null };
 
-export type GetOrganizationIdQuery = {
-  __typename?: 'Query';
-  me?:
-    | {__typename?: 'Graph'}
-    | {__typename?: 'InternalIdentity'}
-    | {
-        __typename?: 'User';
-        memberships: Array<{
-          __typename?: 'UserMembership';
-          account: {__typename?: 'Organization'; id: string};
-        }>;
-      }
-    | null;
-};
+export type GetOrganizationIdQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetOrganizationIdQuery = { __typename?: 'Query', me?: { __typename?: 'Graph' } | { __typename?: 'InternalIdentity' } | { __typename?: 'User', memberships: Array<{ __typename?: 'UserMembership', account: { __typename?: 'Organization', id: string } }> } | null };
 
 export type GetSchemaQueryVariables = Exact<{
   graphId: Scalars['ID']['input'];
   name: Scalars['String']['input'];
 }>;
 
-export type GetSchemaQuery = {
-  __typename?: 'Query';
-  graph?: {
-    __typename?: 'Graph';
-    variant?: {
-      __typename?: 'GraphVariant';
-      id: string;
-      url?: string | null;
-      latestPublication?: {
-        __typename?: 'SchemaPublication';
-        schema: {__typename?: 'Schema'; document: any};
-      } | null;
-    } | null;
-  } | null;
-};
+
+export type GetSchemaQuery = { __typename?: 'Query', graph?: { __typename?: 'Graph', variant?: { __typename?: 'GraphVariant', id: string, url?: string | null, latestPublication?: { __typename?: 'SchemaPublication', schema: { __typename?: 'Schema', document: any } } | null } | null } | null };
 
 export type GetVariantQueryVariables = Exact<{
   graphId: Scalars['ID']['input'];
   name: Scalars['String']['input'];
 }>;
 
-export type GetVariantQuery = {
-  __typename?: 'Query';
-  graph?: {
-    __typename?: 'Graph';
-    variant?: {
-      __typename?: 'GraphVariant';
-      id: string;
-      url?: string | null;
-      isProposal?: boolean | null;
-      name: string;
-      proposal?: {__typename?: 'Proposal'; id: string} | null;
-      subgraphs?: Array<{
-        __typename?: 'GraphVariantSubgraph';
-        name: string;
-        activePartialSchema: {__typename?: 'SubgraphSchema'; sdl: string};
-      }> | null;
-      latestLaunch?: {__typename?: 'Launch'; id: string} | null;
-      latestPublication?: {
-        __typename?: 'SchemaPublication';
-        publishedAt: any;
-        schema: {__typename?: 'Schema'; document: any};
-      } | null;
-    } | null;
-  } | null;
-};
+
+export type GetVariantQuery = { __typename?: 'Query', graph?: { __typename?: 'Graph', variant?: { __typename?: 'GraphVariant', id: string, url?: string | null, isProposal?: boolean | null, name: string, proposal?: { __typename?: 'Proposal', id: string } | null, subgraphs?: Array<{ __typename?: 'GraphVariantSubgraph', name: string, activePartialSchema: { __typename?: 'SubgraphSchema', sdl: string } }> | null, latestLaunch?: { __typename?: 'Launch', id: string } | null, latestPublication?: { __typename?: 'SchemaPublication', publishedAt: any, schema: { __typename?: 'Schema', document: any } } | null } | null } | null };
 
 export type ProposalLaunchesQueryVariables = Exact<{
   proposalId: Scalars['ID']['input'];
 }>;
 
-export type ProposalLaunchesQuery = {
-  __typename?: 'Query';
-  proposal?: {
-    __typename?: 'Proposal';
-    backingVariant: {__typename?: 'GraphVariant'; id: string; name: string};
-    activities: {
-      __typename?: 'ProposalActivityConnection';
-      edges?: Array<{
-        __typename?: 'ProposalActivityEdge';
-        node?: {
-          __typename?: 'ProposalActivity';
-          target?:
-            | {__typename?: 'ParentChangeProposalComment'}
-            | {__typename?: 'ParentGeneralProposalComment'}
-            | {__typename?: 'Proposal'}
-            | {__typename?: 'ProposalFullImplementationProposalOrigin'}
-            | {__typename?: 'ProposalFullImplementationVariantOrigin'}
-            | {__typename?: 'ProposalPartialImplementationProposalOrigin'}
-            | {__typename?: 'ProposalPartialImplementationVariantOrigin'}
-            | {__typename?: 'ProposalReview'}
-            | {
-                __typename?: 'ProposalRevision';
-                launch?: {
-                  __typename?: 'Launch';
-                  status: LaunchStatus;
-                  id: string;
-                } | null;
-              }
-            | null;
-        } | null;
-      }> | null;
-    };
-  } | null;
-};
 
-export const CreateProposalDocument = {
-  kind: 'Document',
-  definitions: [
-    {
-      kind: 'OperationDefinition',
-      operation: 'mutation',
-      name: {kind: 'Name', value: 'createProposal'},
-      variableDefinitions: [
-        {
-          kind: 'VariableDefinition',
-          variable: {kind: 'Variable', name: {kind: 'Name', value: 'graphId'}},
-          type: {
-            kind: 'NonNullType',
-            type: {kind: 'NamedType', name: {kind: 'Name', value: 'ID'}},
-          },
-        },
-        {
-          kind: 'VariableDefinition',
-          variable: {kind: 'Variable', name: {kind: 'Name', value: 'input'}},
-          type: {
-            kind: 'NonNullType',
-            type: {
-              kind: 'NamedType',
-              name: {kind: 'Name', value: 'CreateProposalInput'},
-            },
-          },
-        },
-      ],
-      selectionSet: {
-        kind: 'SelectionSet',
-        selections: [
-          {
-            kind: 'Field',
-            name: {kind: 'Name', value: 'graph'},
-            arguments: [
-              {
-                kind: 'Argument',
-                name: {kind: 'Name', value: 'id'},
-                value: {
-                  kind: 'Variable',
-                  name: {kind: 'Name', value: 'graphId'},
-                },
-              },
-            ],
-            selectionSet: {
-              kind: 'SelectionSet',
-              selections: [
-                {
-                  kind: 'Field',
-                  name: {kind: 'Name', value: 'createProposal'},
-                  arguments: [
-                    {
-                      kind: 'Argument',
-                      name: {kind: 'Name', value: 'input'},
-                      value: {
-                        kind: 'Variable',
-                        name: {kind: 'Name', value: 'input'},
-                      },
-                    },
-                  ],
-                  selectionSet: {
-                    kind: 'SelectionSet',
-                    selections: [
-                      {
-                        kind: 'InlineFragment',
-                        typeCondition: {
-                          kind: 'NamedType',
-                          name: {kind: 'Name', value: 'GraphVariant'},
-                        },
-                        selectionSet: {
-                          kind: 'SelectionSet',
-                          selections: [
-                            {
-                              kind: 'Field',
-                              name: {kind: 'Name', value: 'name'},
-                            },
-                            {
-                              kind: 'Field',
-                              name: {kind: 'Name', value: 'subgraphs'},
-                              selectionSet: {
-                                kind: 'SelectionSet',
-                                selections: [
-                                  {
-                                    kind: 'Field',
-                                    name: {kind: 'Name', value: 'revision'},
-                                  },
-                                ],
-                              },
-                            },
-                            {
-                              kind: 'Field',
-                              name: {kind: 'Name', value: 'proposal'},
-                              selectionSet: {
-                                kind: 'SelectionSet',
-                                selections: [
-                                  {
-                                    kind: 'Field',
-                                    name: {kind: 'Name', value: 'id'},
-                                  },
-                                ],
-                              },
-                            },
-                            {
-                              kind: 'Field',
-                              name: {kind: 'Name', value: 'latestLaunch'},
-                              selectionSet: {
-                                kind: 'SelectionSet',
-                                selections: [
-                                  {
-                                    kind: 'Field',
-                                    name: {kind: 'Name', value: 'id'},
-                                  },
-                                ],
-                              },
-                            },
-                          ],
-                        },
-                      },
-                      {
-                        kind: 'InlineFragment',
-                        typeCondition: {
-                          kind: 'NamedType',
-                          name: {kind: 'Name', value: 'CreateProposalError'},
-                        },
-                        selectionSet: {
-                          kind: 'SelectionSet',
-                          selections: [
-                            {
-                              kind: 'Field',
-                              name: {kind: 'Name', value: 'message'},
-                            },
-                          ],
-                        },
-                      },
-                      {
-                        kind: 'InlineFragment',
-                        typeCondition: {
-                          kind: 'NamedType',
-                          name: {kind: 'Name', value: 'PermissionError'},
-                        },
-                        selectionSet: {
-                          kind: 'SelectionSet',
-                          selections: [
-                            {
-                              kind: 'Field',
-                              name: {kind: 'Name', value: 'message'},
-                            },
-                          ],
-                        },
-                      },
-                      {
-                        kind: 'InlineFragment',
-                        typeCondition: {
-                          kind: 'NamedType',
-                          name: {kind: 'Name', value: 'ValidationError'},
-                        },
-                        selectionSet: {
-                          kind: 'SelectionSet',
-                          selections: [
-                            {
-                              kind: 'Field',
-                              name: {kind: 'Name', value: 'message'},
-                            },
-                          ],
-                        },
-                      },
-                    ],
-                  },
-                },
-              ],
-            },
-          },
-        ],
-      },
-    },
-  ],
-} as unknown as DocumentNode<
-  CreateProposalMutation,
-  CreateProposalMutationVariables
->;
-export const PublishProposalRevisionDocument = {
-  kind: 'Document',
-  definitions: [
-    {
-      kind: 'OperationDefinition',
-      operation: 'mutation',
-      name: {kind: 'Name', value: 'PublishProposalRevision'},
-      variableDefinitions: [
-        {
-          kind: 'VariableDefinition',
-          variable: {
-            kind: 'Variable',
-            name: {kind: 'Name', value: 'proposalId'},
-          },
-          type: {
-            kind: 'NonNullType',
-            type: {kind: 'NamedType', name: {kind: 'Name', value: 'ID'}},
-          },
-        },
-        {
-          kind: 'VariableDefinition',
-          variable: {kind: 'Variable', name: {kind: 'Name', value: 'input'}},
-          type: {
-            kind: 'NonNullType',
-            type: {
-              kind: 'NamedType',
-              name: {kind: 'Name', value: 'PublishProposalSubgraphsInput'},
-            },
-          },
-        },
-      ],
-      selectionSet: {
-        kind: 'SelectionSet',
-        selections: [
-          {
-            kind: 'Field',
-            name: {kind: 'Name', value: 'proposal'},
-            arguments: [
-              {
-                kind: 'Argument',
-                name: {kind: 'Name', value: 'id'},
-                value: {
-                  kind: 'Variable',
-                  name: {kind: 'Name', value: 'proposalId'},
-                },
-              },
-            ],
-            selectionSet: {
-              kind: 'SelectionSet',
-              selections: [
-                {
-                  kind: 'InlineFragment',
-                  typeCondition: {
-                    kind: 'NamedType',
-                    name: {kind: 'Name', value: 'ProposalMutation'},
-                  },
-                  selectionSet: {
-                    kind: 'SelectionSet',
-                    selections: [
-                      {
-                        kind: 'Field',
-                        name: {kind: 'Name', value: 'publishSubgraphs'},
-                        arguments: [
-                          {
-                            kind: 'Argument',
-                            name: {kind: 'Name', value: 'input'},
-                            value: {
-                              kind: 'Variable',
-                              name: {kind: 'Name', value: 'input'},
-                            },
-                          },
-                        ],
-                        selectionSet: {
-                          kind: 'SelectionSet',
-                          selections: [
-                            {
-                              kind: 'InlineFragment',
-                              typeCondition: {
-                                kind: 'NamedType',
-                                name: {kind: 'Name', value: 'PermissionError'},
-                              },
-                              selectionSet: {
-                                kind: 'SelectionSet',
-                                selections: [
-                                  {
-                                    kind: 'Field',
-                                    name: {kind: 'Name', value: 'message'},
-                                  },
-                                ],
-                              },
-                            },
-                            {
-                              kind: 'InlineFragment',
-                              typeCondition: {
-                                kind: 'NamedType',
-                                name: {kind: 'Name', value: 'ValidationError'},
-                              },
-                              selectionSet: {
-                                kind: 'SelectionSet',
-                                selections: [
-                                  {
-                                    kind: 'Field',
-                                    name: {kind: 'Name', value: 'message'},
-                                  },
-                                ],
-                              },
-                            },
-                            {
-                              kind: 'InlineFragment',
-                              typeCondition: {
-                                kind: 'NamedType',
-                                name: {kind: 'Name', value: 'NotFoundError'},
-                              },
-                              selectionSet: {
-                                kind: 'SelectionSet',
-                                selections: [
-                                  {
-                                    kind: 'Field',
-                                    name: {kind: 'Name', value: 'message'},
-                                  },
-                                ],
-                              },
-                            },
-                            {
-                              kind: 'InlineFragment',
-                              typeCondition: {
-                                kind: 'NamedType',
-                                name: {kind: 'Name', value: 'Error'},
-                              },
-                              selectionSet: {
-                                kind: 'SelectionSet',
-                                selections: [
-                                  {
-                                    kind: 'Field',
-                                    name: {kind: 'Name', value: 'message'},
-                                  },
-                                ],
-                              },
-                            },
-                            {
-                              kind: 'InlineFragment',
-                              typeCondition: {
-                                kind: 'NamedType',
-                                name: {kind: 'Name', value: 'Proposal'},
-                              },
-                              selectionSet: {
-                                kind: 'SelectionSet',
-                                selections: [
-                                  {
-                                    kind: 'Field',
-                                    name: {kind: 'Name', value: 'id'},
-                                  },
-                                  {
-                                    kind: 'Field',
-                                    name: {kind: 'Name', value: 'displayName'},
-                                  },
-                                  {
-                                    kind: 'Field',
-                                    name: {
-                                      kind: 'Name',
-                                      value: 'backingVariant',
-                                    },
-                                    selectionSet: {
-                                      kind: 'SelectionSet',
-                                      selections: [
-                                        {
-                                          kind: 'Field',
-                                          name: {kind: 'Name', value: 'id'},
-                                        },
-                                        {
-                                          kind: 'Field',
-                                          name: {kind: 'Name', value: 'name'},
-                                        },
-                                        {
-                                          kind: 'Field',
-                                          name: {
-                                            kind: 'Name',
-                                            value: 'subgraphs',
-                                          },
-                                          selectionSet: {
-                                            kind: 'SelectionSet',
-                                            selections: [
-                                              {
-                                                kind: 'Field',
-                                                name: {
-                                                  kind: 'Name',
-                                                  value: 'revision',
-                                                },
-                                              },
-                                            ],
-                                          },
-                                        },
-                                        {
-                                          kind: 'Field',
-                                          name: {
-                                            kind: 'Name',
-                                            value: 'proposal',
-                                          },
-                                          selectionSet: {
-                                            kind: 'SelectionSet',
-                                            selections: [
-                                              {
-                                                kind: 'Field',
-                                                name: {
-                                                  kind: 'Name',
-                                                  value: 'id',
-                                                },
-                                              },
-                                            ],
-                                          },
-                                        },
-                                        {
-                                          kind: 'Field',
-                                          name: {
-                                            kind: 'Name',
-                                            value: 'latestLaunch',
-                                          },
-                                          selectionSet: {
-                                            kind: 'SelectionSet',
-                                            selections: [
-                                              {
-                                                kind: 'Field',
-                                                name: {
-                                                  kind: 'Name',
-                                                  value: 'id',
-                                                },
-                                              },
-                                            ],
-                                          },
-                                        },
-                                      ],
-                                    },
-                                  },
-                                ],
-                              },
-                            },
-                          ],
-                        },
-                      },
-                    ],
-                  },
-                },
-                {
-                  kind: 'InlineFragment',
-                  typeCondition: {
-                    kind: 'NamedType',
-                    name: {kind: 'Name', value: 'ValidationError'},
-                  },
-                  selectionSet: {
-                    kind: 'SelectionSet',
-                    selections: [
-                      {kind: 'Field', name: {kind: 'Name', value: 'message'}},
-                    ],
-                  },
-                },
-                {
-                  kind: 'InlineFragment',
-                  typeCondition: {
-                    kind: 'NamedType',
-                    name: {kind: 'Name', value: 'NotFoundError'},
-                  },
-                  selectionSet: {
-                    kind: 'SelectionSet',
-                    selections: [
-                      {kind: 'Field', name: {kind: 'Name', value: 'message'}},
-                    ],
-                  },
-                },
-                {
-                  kind: 'InlineFragment',
-                  typeCondition: {
-                    kind: 'NamedType',
-                    name: {kind: 'Name', value: 'PermissionError'},
-                  },
-                  selectionSet: {
-                    kind: 'SelectionSet',
-                    selections: [
-                      {kind: 'Field', name: {kind: 'Name', value: 'message'}},
-                    ],
-                  },
-                },
-              ],
-            },
-          },
-        ],
-      },
-    },
-  ],
-} as unknown as DocumentNode<
-  PublishProposalRevisionMutation,
-  PublishProposalRevisionMutationVariables
->;
-export const UpdateProposalStatusDocument = {
-  kind: 'Document',
-  definitions: [
-    {
-      kind: 'OperationDefinition',
-      operation: 'mutation',
-      name: {kind: 'Name', value: 'UpdateProposalStatus'},
-      variableDefinitions: [
-        {
-          kind: 'VariableDefinition',
-          variable: {
-            kind: 'Variable',
-            name: {kind: 'Name', value: 'proposalId'},
-          },
-          type: {
-            kind: 'NonNullType',
-            type: {kind: 'NamedType', name: {kind: 'Name', value: 'ID'}},
-          },
-        },
-        {
-          kind: 'VariableDefinition',
-          variable: {kind: 'Variable', name: {kind: 'Name', value: 'status'}},
-          type: {
-            kind: 'NonNullType',
-            type: {
-              kind: 'NamedType',
-              name: {kind: 'Name', value: 'ProposalStatus'},
-            },
-          },
-        },
-      ],
-      selectionSet: {
-        kind: 'SelectionSet',
-        selections: [
-          {
-            kind: 'Field',
-            name: {kind: 'Name', value: 'proposal'},
-            arguments: [
-              {
-                kind: 'Argument',
-                name: {kind: 'Name', value: 'id'},
-                value: {
-                  kind: 'Variable',
-                  name: {kind: 'Name', value: 'proposalId'},
-                },
-              },
-            ],
-            selectionSet: {
-              kind: 'SelectionSet',
-              selections: [
-                {
-                  kind: 'InlineFragment',
-                  typeCondition: {
-                    kind: 'NamedType',
-                    name: {kind: 'Name', value: 'ProposalMutation'},
-                  },
-                  selectionSet: {
-                    kind: 'SelectionSet',
-                    selections: [
-                      {
-                        kind: 'Field',
-                        name: {kind: 'Name', value: 'updateStatus'},
-                        arguments: [
-                          {
-                            kind: 'Argument',
-                            name: {kind: 'Name', value: 'status'},
-                            value: {
-                              kind: 'Variable',
-                              name: {kind: 'Name', value: 'status'},
-                            },
-                          },
-                        ],
-                        selectionSet: {
-                          kind: 'SelectionSet',
-                          selections: [
-                            {
-                              kind: 'InlineFragment',
-                              typeCondition: {
-                                kind: 'NamedType',
-                                name: {kind: 'Name', value: 'Proposal'},
-                              },
-                              selectionSet: {
-                                kind: 'SelectionSet',
-                                selections: [
-                                  {
-                                    kind: 'Field',
-                                    name: {kind: 'Name', value: 'id'},
-                                  },
-                                  {
-                                    kind: 'Field',
-                                    name: {kind: 'Name', value: 'status'},
-                                  },
-                                ],
-                              },
-                            },
-                            {
-                              kind: 'InlineFragment',
-                              typeCondition: {
-                                kind: 'NamedType',
-                                name: {kind: 'Name', value: 'PermissionError'},
-                              },
-                              selectionSet: {
-                                kind: 'SelectionSet',
-                                selections: [
-                                  {
-                                    kind: 'Field',
-                                    name: {kind: 'Name', value: 'message'},
-                                  },
-                                ],
-                              },
-                            },
-                            {
-                              kind: 'InlineFragment',
-                              typeCondition: {
-                                kind: 'NamedType',
-                                name: {kind: 'Name', value: 'ValidationError'},
-                              },
-                              selectionSet: {
-                                kind: 'SelectionSet',
-                                selections: [
-                                  {
-                                    kind: 'Field',
-                                    name: {kind: 'Name', value: 'message'},
-                                  },
-                                ],
-                              },
-                            },
-                          ],
-                        },
-                      },
-                    ],
-                  },
-                },
-              ],
-            },
-          },
-        ],
-      },
-    },
-  ],
-} as unknown as DocumentNode<
-  UpdateProposalStatusMutation,
-  UpdateProposalStatusMutationVariables
->;
-export const GetGraphDocument = {
-  kind: 'Document',
-  definitions: [
-    {
-      kind: 'OperationDefinition',
-      operation: 'query',
-      name: {kind: 'Name', value: 'GetGraph'},
-      variableDefinitions: [
-        {
-          kind: 'VariableDefinition',
-          variable: {kind: 'Variable', name: {kind: 'Name', value: 'graphId'}},
-          type: {
-            kind: 'NonNullType',
-            type: {kind: 'NamedType', name: {kind: 'Name', value: 'ID'}},
-          },
-        },
-        {
-          kind: 'VariableDefinition',
-          variable: {kind: 'Variable', name: {kind: 'Name', value: 'filterBy'}},
-          type: {
-            kind: 'NamedType',
-            name: {kind: 'Name', value: 'ProposalsFilterInput'},
-          },
-        },
-      ],
-      selectionSet: {
-        kind: 'SelectionSet',
-        selections: [
-          {
-            kind: 'Field',
-            name: {kind: 'Name', value: 'graph'},
-            arguments: [
-              {
-                kind: 'Argument',
-                name: {kind: 'Name', value: 'id'},
-                value: {
-                  kind: 'Variable',
-                  name: {kind: 'Name', value: 'graphId'},
-                },
-              },
-            ],
-            selectionSet: {
-              kind: 'SelectionSet',
-              selections: [
-                {
-                  kind: 'Field',
-                  name: {kind: 'Name', value: 'variants'},
-                  selectionSet: {
-                    kind: 'SelectionSet',
-                    selections: [
-                      {
-                        kind: 'Field',
-                        alias: {kind: 'Name', value: 'key'},
-                        name: {kind: 'Name', value: 'id'},
-                      },
-                      {
-                        kind: 'Field',
-                        alias: {kind: 'Name', value: 'displayName'},
-                        name: {kind: 'Name', value: 'name'},
-                      },
-                      {kind: 'Field', name: {kind: 'Name', value: 'name'}},
-                      {
-                        kind: 'Field',
-                        name: {kind: 'Name', value: 'latestPublication'},
-                        selectionSet: {
-                          kind: 'SelectionSet',
-                          selections: [
-                            {
-                              kind: 'Field',
-                              name: {kind: 'Name', value: 'publishedAt'},
-                            },
-                            {
-                              kind: 'Field',
-                              name: {kind: 'Name', value: 'schema'},
-                              selectionSet: {
-                                kind: 'SelectionSet',
-                                selections: [
-                                  {
-                                    kind: 'Field',
-                                    name: {kind: 'Name', value: 'document'},
-                                  },
-                                ],
-                              },
-                            },
-                          ],
-                        },
-                      },
-                    ],
-                  },
-                },
-                {
-                  kind: 'Field',
-                  name: {kind: 'Name', value: 'proposals'},
-                  arguments: [
-                    {
-                      kind: 'Argument',
-                      name: {kind: 'Name', value: 'filterBy'},
-                      value: {
-                        kind: 'Variable',
-                        name: {kind: 'Name', value: 'filterBy'},
-                      },
-                    },
-                  ],
-                  selectionSet: {
-                    kind: 'SelectionSet',
-                    selections: [
-                      {
-                        kind: 'Field',
-                        name: {kind: 'Name', value: 'proposals'},
-                        selectionSet: {
-                          kind: 'SelectionSet',
-                          selections: [
-                            {
-                              kind: 'Field',
-                              name: {kind: 'Name', value: 'displayName'},
-                            },
-                            {
-                              kind: 'Field',
-                              alias: {kind: 'Name', value: 'key'},
-                              name: {kind: 'Name', value: 'backingVariant'},
-                              selectionSet: {
-                                kind: 'SelectionSet',
-                                selections: [
-                                  {
-                                    kind: 'Field',
-                                    alias: {kind: 'Name', value: 'key'},
-                                    name: {kind: 'Name', value: 'id'},
-                                  },
-                                ],
-                              },
-                            },
-                            {
-                              kind: 'Field',
-                              alias: {kind: 'Name', value: 'latestPublication'},
-                              name: {kind: 'Name', value: 'backingVariant'},
-                              selectionSet: {
-                                kind: 'SelectionSet',
-                                selections: [
-                                  {
-                                    kind: 'Field',
-                                    name: {
-                                      kind: 'Name',
-                                      value: 'latestPublication',
-                                    },
-                                    selectionSet: {
-                                      kind: 'SelectionSet',
-                                      selections: [
-                                        {
-                                          kind: 'Field',
-                                          name: {kind: 'Name', value: 'schema'},
-                                          selectionSet: {
-                                            kind: 'SelectionSet',
-                                            selections: [
-                                              {
-                                                kind: 'Field',
-                                                name: {
-                                                  kind: 'Name',
-                                                  value: 'document',
-                                                },
-                                              },
-                                            ],
-                                          },
-                                        },
-                                      ],
-                                    },
-                                  },
-                                ],
-                              },
-                            },
-                          ],
-                        },
-                      },
-                    ],
-                  },
-                },
-              ],
-            },
-          },
-        ],
-      },
-    },
-  ],
-} as unknown as DocumentNode<GetGraphQuery, GetGraphQueryVariables>;
-export const GetGraphWithSubgraphsDocument = {
-  kind: 'Document',
-  definitions: [
-    {
-      kind: 'OperationDefinition',
-      operation: 'query',
-      name: {kind: 'Name', value: 'GetGraphWithSubgraphs'},
-      variableDefinitions: [
-        {
-          kind: 'VariableDefinition',
-          variable: {kind: 'Variable', name: {kind: 'Name', value: 'graphId'}},
-          type: {
-            kind: 'NonNullType',
-            type: {kind: 'NamedType', name: {kind: 'Name', value: 'ID'}},
-          },
-        },
-        {
-          kind: 'VariableDefinition',
-          variable: {kind: 'Variable', name: {kind: 'Name', value: 'filterBy'}},
-          type: {
-            kind: 'NamedType',
-            name: {kind: 'Name', value: 'ProposalsFilterInput'},
-          },
-        },
-      ],
-      selectionSet: {
-        kind: 'SelectionSet',
-        selections: [
-          {
-            kind: 'Field',
-            name: {kind: 'Name', value: 'graph'},
-            arguments: [
-              {
-                kind: 'Argument',
-                name: {kind: 'Name', value: 'id'},
-                value: {
-                  kind: 'Variable',
-                  name: {kind: 'Name', value: 'graphId'},
-                },
-              },
-            ],
-            selectionSet: {
-              kind: 'SelectionSet',
-              selections: [
-                {
-                  kind: 'Field',
-                  name: {kind: 'Name', value: 'variants'},
-                  selectionSet: {
-                    kind: 'SelectionSet',
-                    selections: [
-                      {
-                        kind: 'Field',
-                        alias: {kind: 'Name', value: 'key'},
-                        name: {kind: 'Name', value: 'id'},
-                      },
-                      {
-                        kind: 'Field',
-                        alias: {kind: 'Name', value: 'displayName'},
-                        name: {kind: 'Name', value: 'name'},
-                      },
-                      {kind: 'Field', name: {kind: 'Name', value: 'name'}},
-                      {
-                        kind: 'Field',
-                        name: {kind: 'Name', value: 'latestPublication'},
-                        selectionSet: {
-                          kind: 'SelectionSet',
-                          selections: [
-                            {
-                              kind: 'Field',
-                              name: {kind: 'Name', value: 'publishedAt'},
-                            },
-                            {
-                              kind: 'Field',
-                              name: {kind: 'Name', value: 'schema'},
-                              selectionSet: {
-                                kind: 'SelectionSet',
-                                selections: [
-                                  {
-                                    kind: 'Field',
-                                    name: {kind: 'Name', value: 'document'},
-                                  },
-                                ],
-                              },
-                            },
-                          ],
-                        },
-                      },
-                      {
-                        kind: 'Field',
-                        name: {kind: 'Name', value: 'subgraphs'},
-                        selectionSet: {
-                          kind: 'SelectionSet',
-                          selections: [
-                            {
-                              kind: 'Field',
-                              name: {kind: 'Name', value: 'name'},
-                            },
-                            {
-                              kind: 'Field',
-                              name: {
-                                kind: 'Name',
-                                value: 'activePartialSchema',
-                              },
-                              selectionSet: {
-                                kind: 'SelectionSet',
-                                selections: [
-                                  {
-                                    kind: 'Field',
-                                    name: {kind: 'Name', value: 'sdl'},
-                                  },
-                                ],
-                              },
-                            },
-                          ],
-                        },
-                      },
-                    ],
-                  },
-                },
-                {
-                  kind: 'Field',
-                  name: {kind: 'Name', value: 'proposals'},
-                  arguments: [
-                    {
-                      kind: 'Argument',
-                      name: {kind: 'Name', value: 'filterBy'},
-                      value: {
-                        kind: 'Variable',
-                        name: {kind: 'Name', value: 'filterBy'},
-                      },
-                    },
-                  ],
-                  selectionSet: {
-                    kind: 'SelectionSet',
-                    selections: [
-                      {
-                        kind: 'Field',
-                        name: {kind: 'Name', value: 'proposals'},
-                        selectionSet: {
-                          kind: 'SelectionSet',
-                          selections: [
-                            {
-                              kind: 'Field',
-                              name: {kind: 'Name', value: 'displayName'},
-                            },
-                            {
-                              kind: 'Field',
-                              alias: {kind: 'Name', value: 'key'},
-                              name: {kind: 'Name', value: 'backingVariant'},
-                              selectionSet: {
-                                kind: 'SelectionSet',
-                                selections: [
-                                  {
-                                    kind: 'Field',
-                                    alias: {kind: 'Name', value: 'key'},
-                                    name: {kind: 'Name', value: 'id'},
-                                  },
-                                ],
-                              },
-                            },
-                            {
-                              kind: 'Field',
-                              alias: {kind: 'Name', value: 'latestPublication'},
-                              name: {kind: 'Name', value: 'backingVariant'},
-                              selectionSet: {
-                                kind: 'SelectionSet',
-                                selections: [
-                                  {
-                                    kind: 'Field',
-                                    name: {
-                                      kind: 'Name',
-                                      value: 'latestPublication',
-                                    },
-                                    selectionSet: {
-                                      kind: 'SelectionSet',
-                                      selections: [
-                                        {
-                                          kind: 'Field',
-                                          name: {kind: 'Name', value: 'schema'},
-                                          selectionSet: {
-                                            kind: 'SelectionSet',
-                                            selections: [
-                                              {
-                                                kind: 'Field',
-                                                name: {
-                                                  kind: 'Name',
-                                                  value: 'document',
-                                                },
-                                              },
-                                            ],
-                                          },
-                                        },
-                                      ],
-                                    },
-                                  },
-                                ],
-                              },
-                            },
-                          ],
-                        },
-                      },
-                    ],
-                  },
-                },
-              ],
-            },
-          },
-        ],
-      },
-    },
-  ],
-} as unknown as DocumentNode<
-  GetGraphWithSubgraphsQuery,
-  GetGraphWithSubgraphsQueryVariables
->;
-export const GetGraphsDocument = {
-  kind: 'Document',
-  definitions: [
-    {
-      kind: 'OperationDefinition',
-      operation: 'query',
-      name: {kind: 'Name', value: 'GetGraphs'},
-      variableDefinitions: [
-        {
-          kind: 'VariableDefinition',
-          variable: {
-            kind: 'Variable',
-            name: {kind: 'Name', value: 'organizationId'},
-          },
-          type: {
-            kind: 'NonNullType',
-            type: {kind: 'NamedType', name: {kind: 'Name', value: 'ID'}},
-          },
-        },
-      ],
-      selectionSet: {
-        kind: 'SelectionSet',
-        selections: [
-          {
-            kind: 'Field',
-            name: {kind: 'Name', value: 'organization'},
-            arguments: [
-              {
-                kind: 'Argument',
-                name: {kind: 'Name', value: 'id'},
-                value: {
-                  kind: 'Variable',
-                  name: {kind: 'Name', value: 'organizationId'},
-                },
-              },
-            ],
-            selectionSet: {
-              kind: 'SelectionSet',
-              selections: [
-                {
-                  kind: 'Field',
-                  name: {kind: 'Name', value: 'graphs'},
-                  selectionSet: {
-                    kind: 'SelectionSet',
-                    selections: [
-                      {kind: 'Field', name: {kind: 'Name', value: 'id'}},
-                      {kind: 'Field', name: {kind: 'Name', value: 'name'}},
-                      {
-                        kind: 'Field',
-                        name: {kind: 'Name', value: 'variants'},
-                        selectionSet: {
-                          kind: 'SelectionSet',
-                          selections: [
-                            {kind: 'Field', name: {kind: 'Name', value: 'id'}},
-                            {
-                              kind: 'Field',
-                              name: {kind: 'Name', value: 'name'},
-                            },
-                            {
-                              kind: 'Field',
-                              name: {kind: 'Name', value: 'latestPublication'},
-                              selectionSet: {
-                                kind: 'SelectionSet',
-                                selections: [
-                                  {
-                                    kind: 'Field',
-                                    name: {kind: 'Name', value: 'publishedAt'},
-                                  },
-                                ],
-                              },
-                            },
-                          ],
-                        },
-                      },
-                      {
-                        kind: 'Field',
-                        name: {kind: 'Name', value: 'proposals'},
-                        selectionSet: {
-                          kind: 'SelectionSet',
-                          selections: [
-                            {
-                              kind: 'Field',
-                              name: {kind: 'Name', value: 'totalCount'},
-                            },
-                          ],
-                        },
-                      },
-                    ],
-                  },
-                },
-              ],
-            },
-          },
-        ],
-      },
-    },
-  ],
-} as unknown as DocumentNode<GetGraphsQuery, GetGraphsQueryVariables>;
-export const GetOrganizationIdDocument = {
-  kind: 'Document',
-  definitions: [
-    {
-      kind: 'OperationDefinition',
-      operation: 'query',
-      name: {kind: 'Name', value: 'GetOrganizationId'},
-      selectionSet: {
-        kind: 'SelectionSet',
-        selections: [
-          {
-            kind: 'Field',
-            name: {kind: 'Name', value: 'me'},
-            selectionSet: {
-              kind: 'SelectionSet',
-              selections: [
-                {
-                  kind: 'InlineFragment',
-                  typeCondition: {
-                    kind: 'NamedType',
-                    name: {kind: 'Name', value: 'User'},
-                  },
-                  selectionSet: {
-                    kind: 'SelectionSet',
-                    selections: [
-                      {
-                        kind: 'Field',
-                        name: {kind: 'Name', value: 'memberships'},
-                        selectionSet: {
-                          kind: 'SelectionSet',
-                          selections: [
-                            {
-                              kind: 'Field',
-                              name: {kind: 'Name', value: 'account'},
-                              selectionSet: {
-                                kind: 'SelectionSet',
-                                selections: [
-                                  {
-                                    kind: 'Field',
-                                    name: {kind: 'Name', value: 'id'},
-                                  },
-                                ],
-                              },
-                            },
-                          ],
-                        },
-                      },
-                    ],
-                  },
-                },
-              ],
-            },
-          },
-        ],
-      },
-    },
-  ],
-} as unknown as DocumentNode<
-  GetOrganizationIdQuery,
-  GetOrganizationIdQueryVariables
->;
-export const GetSchemaDocument = {
-  kind: 'Document',
-  definitions: [
-    {
-      kind: 'OperationDefinition',
-      operation: 'query',
-      name: {kind: 'Name', value: 'GetSchema'},
-      variableDefinitions: [
-        {
-          kind: 'VariableDefinition',
-          variable: {kind: 'Variable', name: {kind: 'Name', value: 'graphId'}},
-          type: {
-            kind: 'NonNullType',
-            type: {kind: 'NamedType', name: {kind: 'Name', value: 'ID'}},
-          },
-        },
-        {
-          kind: 'VariableDefinition',
-          variable: {kind: 'Variable', name: {kind: 'Name', value: 'name'}},
-          type: {
-            kind: 'NonNullType',
-            type: {kind: 'NamedType', name: {kind: 'Name', value: 'String'}},
-          },
-        },
-      ],
-      selectionSet: {
-        kind: 'SelectionSet',
-        selections: [
-          {
-            kind: 'Field',
-            name: {kind: 'Name', value: 'graph'},
-            arguments: [
-              {
-                kind: 'Argument',
-                name: {kind: 'Name', value: 'id'},
-                value: {
-                  kind: 'Variable',
-                  name: {kind: 'Name', value: 'graphId'},
-                },
-              },
-            ],
-            selectionSet: {
-              kind: 'SelectionSet',
-              selections: [
-                {
-                  kind: 'Field',
-                  name: {kind: 'Name', value: 'variant'},
-                  arguments: [
-                    {
-                      kind: 'Argument',
-                      name: {kind: 'Name', value: 'name'},
-                      value: {
-                        kind: 'Variable',
-                        name: {kind: 'Name', value: 'name'},
-                      },
-                    },
-                  ],
-                  selectionSet: {
-                    kind: 'SelectionSet',
-                    selections: [
-                      {kind: 'Field', name: {kind: 'Name', value: 'id'}},
-                      {kind: 'Field', name: {kind: 'Name', value: 'url'}},
-                      {
-                        kind: 'Field',
-                        name: {kind: 'Name', value: 'latestPublication'},
-                        selectionSet: {
-                          kind: 'SelectionSet',
-                          selections: [
-                            {
-                              kind: 'Field',
-                              name: {kind: 'Name', value: 'schema'},
-                              selectionSet: {
-                                kind: 'SelectionSet',
-                                selections: [
-                                  {
-                                    kind: 'Field',
-                                    name: {kind: 'Name', value: 'document'},
-                                  },
-                                ],
-                              },
-                            },
-                          ],
-                        },
-                      },
-                    ],
-                  },
-                },
-              ],
-            },
-          },
-        ],
-      },
-    },
-  ],
-} as unknown as DocumentNode<GetSchemaQuery, GetSchemaQueryVariables>;
-export const GetVariantDocument = {
-  kind: 'Document',
-  definitions: [
-    {
-      kind: 'OperationDefinition',
-      operation: 'query',
-      name: {kind: 'Name', value: 'GetVariant'},
-      variableDefinitions: [
-        {
-          kind: 'VariableDefinition',
-          variable: {kind: 'Variable', name: {kind: 'Name', value: 'graphId'}},
-          type: {
-            kind: 'NonNullType',
-            type: {kind: 'NamedType', name: {kind: 'Name', value: 'ID'}},
-          },
-        },
-        {
-          kind: 'VariableDefinition',
-          variable: {kind: 'Variable', name: {kind: 'Name', value: 'name'}},
-          type: {
-            kind: 'NonNullType',
-            type: {kind: 'NamedType', name: {kind: 'Name', value: 'String'}},
-          },
-        },
-      ],
-      selectionSet: {
-        kind: 'SelectionSet',
-        selections: [
-          {
-            kind: 'Field',
-            name: {kind: 'Name', value: 'graph'},
-            arguments: [
-              {
-                kind: 'Argument',
-                name: {kind: 'Name', value: 'id'},
-                value: {
-                  kind: 'Variable',
-                  name: {kind: 'Name', value: 'graphId'},
-                },
-              },
-            ],
-            selectionSet: {
-              kind: 'SelectionSet',
-              selections: [
-                {
-                  kind: 'Field',
-                  name: {kind: 'Name', value: 'variant'},
-                  arguments: [
-                    {
-                      kind: 'Argument',
-                      name: {kind: 'Name', value: 'name'},
-                      value: {
-                        kind: 'Variable',
-                        name: {kind: 'Name', value: 'name'},
-                      },
-                    },
-                  ],
-                  selectionSet: {
-                    kind: 'SelectionSet',
-                    selections: [
-                      {kind: 'Field', name: {kind: 'Name', value: 'id'}},
-                      {
-                        kind: 'Field',
-                        name: {kind: 'Name', value: 'proposal'},
-                        selectionSet: {
-                          kind: 'SelectionSet',
-                          selections: [
-                            {kind: 'Field', name: {kind: 'Name', value: 'id'}},
-                          ],
-                        },
-                      },
-                      {kind: 'Field', name: {kind: 'Name', value: 'url'}},
-                      {
-                        kind: 'Field',
-                        name: {kind: 'Name', value: 'subgraphs'},
-                        selectionSet: {
-                          kind: 'SelectionSet',
-                          selections: [
-                            {
-                              kind: 'Field',
-                              name: {kind: 'Name', value: 'name'},
-                            },
-                            {
-                              kind: 'Field',
-                              name: {
-                                kind: 'Name',
-                                value: 'activePartialSchema',
-                              },
-                              selectionSet: {
-                                kind: 'SelectionSet',
-                                selections: [
-                                  {
-                                    kind: 'Field',
-                                    name: {kind: 'Name', value: 'sdl'},
-                                  },
-                                ],
-                              },
-                            },
-                          ],
-                        },
-                      },
-                      {
-                        kind: 'Field',
-                        name: {kind: 'Name', value: 'latestLaunch'},
-                        selectionSet: {
-                          kind: 'SelectionSet',
-                          selections: [
-                            {kind: 'Field', name: {kind: 'Name', value: 'id'}},
-                          ],
-                        },
-                      },
-                      {
-                        kind: 'Field',
-                        name: {kind: 'Name', value: 'isProposal'},
-                      },
-                      {
-                        kind: 'Field',
-                        name: {kind: 'Name', value: 'latestPublication'},
-                        selectionSet: {
-                          kind: 'SelectionSet',
-                          selections: [
-                            {
-                              kind: 'Field',
-                              name: {kind: 'Name', value: 'publishedAt'},
-                            },
-                            {
-                              kind: 'Field',
-                              name: {kind: 'Name', value: 'schema'},
-                              selectionSet: {
-                                kind: 'SelectionSet',
-                                selections: [
-                                  {
-                                    kind: 'Field',
-                                    name: {kind: 'Name', value: 'document'},
-                                  },
-                                ],
-                              },
-                            },
-                          ],
-                        },
-                      },
-                      {kind: 'Field', name: {kind: 'Name', value: 'name'}},
-                    ],
-                  },
-                },
-              ],
-            },
-          },
-        ],
-      },
-    },
-  ],
-} as unknown as DocumentNode<GetVariantQuery, GetVariantQueryVariables>;
-export const ProposalLaunchesDocument = {
-  kind: 'Document',
-  definitions: [
-    {
-      kind: 'OperationDefinition',
-      operation: 'query',
-      name: {kind: 'Name', value: 'ProposalLaunches'},
-      variableDefinitions: [
-        {
-          kind: 'VariableDefinition',
-          variable: {
-            kind: 'Variable',
-            name: {kind: 'Name', value: 'proposalId'},
-          },
-          type: {
-            kind: 'NonNullType',
-            type: {kind: 'NamedType', name: {kind: 'Name', value: 'ID'}},
-          },
-        },
-      ],
-      selectionSet: {
-        kind: 'SelectionSet',
-        selections: [
-          {
-            kind: 'Field',
-            name: {kind: 'Name', value: 'proposal'},
-            arguments: [
-              {
-                kind: 'Argument',
-                name: {kind: 'Name', value: 'id'},
-                value: {
-                  kind: 'Variable',
-                  name: {kind: 'Name', value: 'proposalId'},
-                },
-              },
-            ],
-            selectionSet: {
-              kind: 'SelectionSet',
-              selections: [
-                {
-                  kind: 'Field',
-                  name: {kind: 'Name', value: 'backingVariant'},
-                  selectionSet: {
-                    kind: 'SelectionSet',
-                    selections: [
-                      {kind: 'Field', name: {kind: 'Name', value: 'id'}},
-                      {kind: 'Field', name: {kind: 'Name', value: 'name'}},
-                    ],
-                  },
-                },
-                {
-                  kind: 'Field',
-                  name: {kind: 'Name', value: 'activities'},
-                  selectionSet: {
-                    kind: 'SelectionSet',
-                    selections: [
-                      {
-                        kind: 'Field',
-                        name: {kind: 'Name', value: 'edges'},
-                        selectionSet: {
-                          kind: 'SelectionSet',
-                          selections: [
-                            {
-                              kind: 'Field',
-                              name: {kind: 'Name', value: 'node'},
-                              selectionSet: {
-                                kind: 'SelectionSet',
-                                selections: [
-                                  {
-                                    kind: 'Field',
-                                    name: {kind: 'Name', value: 'target'},
-                                    selectionSet: {
-                                      kind: 'SelectionSet',
-                                      selections: [
-                                        {
-                                          kind: 'InlineFragment',
-                                          typeCondition: {
-                                            kind: 'NamedType',
-                                            name: {
-                                              kind: 'Name',
-                                              value: 'ProposalRevision',
-                                            },
-                                          },
-                                          selectionSet: {
-                                            kind: 'SelectionSet',
-                                            selections: [
-                                              {
-                                                kind: 'Field',
-                                                name: {
-                                                  kind: 'Name',
-                                                  value: 'launch',
-                                                },
-                                                selectionSet: {
-                                                  kind: 'SelectionSet',
-                                                  selections: [
-                                                    {
-                                                      kind: 'Field',
-                                                      name: {
-                                                        kind: 'Name',
-                                                        value: 'status',
-                                                      },
-                                                    },
-                                                    {
-                                                      kind: 'Field',
-                                                      name: {
-                                                        kind: 'Name',
-                                                        value: 'id',
-                                                      },
-                                                    },
-                                                  ],
-                                                },
-                                              },
-                                            ],
-                                          },
-                                        },
-                                      ],
-                                    },
-                                  },
-                                ],
-                              },
-                            },
-                          ],
-                        },
-                      },
-                    ],
-                  },
-                },
-              ],
-            },
-          },
-        ],
-      },
-    },
-  ],
-} as unknown as DocumentNode<
-  ProposalLaunchesQuery,
-  ProposalLaunchesQueryVariables
->;
+export type ProposalLaunchesQuery = { __typename?: 'Query', proposal?: { __typename?: 'Proposal', backingVariant: { __typename?: 'GraphVariant', id: string, name: string }, activities: { __typename?: 'ProposalActivityConnection', edges?: Array<{ __typename?: 'ProposalActivityEdge', node?: { __typename?: 'ProposalActivity', target?: { __typename?: 'ParentChangeProposalComment' } | { __typename?: 'ParentGeneralProposalComment' } | { __typename?: 'Proposal' } | { __typename?: 'ProposalFullImplementationProposalOrigin' } | { __typename?: 'ProposalFullImplementationVariantOrigin' } | { __typename?: 'ProposalPartialImplementationProposalOrigin' } | { __typename?: 'ProposalPartialImplementationVariantOrigin' } | { __typename?: 'ProposalReview' } | { __typename?: 'ProposalRevision', launch?: { __typename?: 'Launch', status: LaunchStatus, id: string } | null } | null } | null }> | null } } | null };
+
+
+export const CreateProposalDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"createProposal"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"graphId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CreateProposalInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"graph"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"graphId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createProposal"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"GraphVariant"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"subgraphs"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"revision"}}]}},{"kind":"Field","name":{"kind":"Name","value":"proposal"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}},{"kind":"Field","name":{"kind":"Name","value":"latestLaunch"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}},{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"CreateProposalError"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"message"}}]}},{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PermissionError"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"message"}}]}},{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"ValidationError"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}}]}}]}}]} as unknown as DocumentNode<CreateProposalMutation, CreateProposalMutationVariables>;
+export const PublishProposalRevisionDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"PublishProposalRevision"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"proposalId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"PublishProposalSubgraphsInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"proposal"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"proposalId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"ProposalMutation"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"publishSubgraphs"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PermissionError"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"message"}}]}},{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"ValidationError"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"message"}}]}},{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"NotFoundError"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"message"}}]}},{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Error"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"message"}}]}},{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Proposal"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"displayName"}},{"kind":"Field","name":{"kind":"Name","value":"backingVariant"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"subgraphs"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"revision"}}]}},{"kind":"Field","name":{"kind":"Name","value":"proposal"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}},{"kind":"Field","name":{"kind":"Name","value":"latestLaunch"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]}}]}}]}},{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"ValidationError"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"message"}}]}},{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"NotFoundError"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"message"}}]}},{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PermissionError"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}}]}}]} as unknown as DocumentNode<PublishProposalRevisionMutation, PublishProposalRevisionMutationVariables>;
+export const UpdateProposalStatusDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"UpdateProposalStatus"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"proposalId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"status"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ProposalStatus"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"proposal"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"proposalId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"ProposalMutation"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"updateStatus"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"status"},"value":{"kind":"Variable","name":{"kind":"Name","value":"status"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Proposal"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"status"}}]}},{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"PermissionError"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"message"}}]}},{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"ValidationError"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}}]}}]}}]}}]} as unknown as DocumentNode<UpdateProposalStatusMutation, UpdateProposalStatusMutationVariables>;
+export const GetGraphDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetGraph"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"graphId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"filterBy"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"ProposalsFilterInput"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"graph"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"graphId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"variants"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","alias":{"kind":"Name","value":"key"},"name":{"kind":"Name","value":"id"}},{"kind":"Field","alias":{"kind":"Name","value":"displayName"},"name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"latestPublication"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"publishedAt"}},{"kind":"Field","name":{"kind":"Name","value":"schema"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"document"}}]}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"proposals"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"filterBy"},"value":{"kind":"Variable","name":{"kind":"Name","value":"filterBy"}}},{"kind":"Argument","name":{"kind":"Name","value":"limit"},"value":{"kind":"IntValue","value":"100"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"proposals"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"displayName"}},{"kind":"Field","alias":{"kind":"Name","value":"key"},"name":{"kind":"Name","value":"backingVariant"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","alias":{"kind":"Name","value":"key"},"name":{"kind":"Name","value":"id"}}]}},{"kind":"Field","alias":{"kind":"Name","value":"latestPublication"},"name":{"kind":"Name","value":"backingVariant"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"latestPublication"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"schema"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"document"}}]}}]}}]}}]}}]}}]}}]}}]} as unknown as DocumentNode<GetGraphQuery, GetGraphQueryVariables>;
+export const GetGraphWithSubgraphsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetGraphWithSubgraphs"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"graphId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"filterBy"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"ProposalsFilterInput"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"graph"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"graphId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"variants"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","alias":{"kind":"Name","value":"key"},"name":{"kind":"Name","value":"id"}},{"kind":"Field","alias":{"kind":"Name","value":"displayName"},"name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"latestPublication"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"publishedAt"}},{"kind":"Field","name":{"kind":"Name","value":"schema"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"document"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"subgraphs"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"activePartialSchema"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"sdl"}}]}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"proposals"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"filterBy"},"value":{"kind":"Variable","name":{"kind":"Name","value":"filterBy"}}},{"kind":"Argument","name":{"kind":"Name","value":"limit"},"value":{"kind":"IntValue","value":"100"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"proposals"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"displayName"}},{"kind":"Field","alias":{"kind":"Name","value":"key"},"name":{"kind":"Name","value":"backingVariant"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","alias":{"kind":"Name","value":"key"},"name":{"kind":"Name","value":"id"}}]}},{"kind":"Field","alias":{"kind":"Name","value":"latestPublication"},"name":{"kind":"Name","value":"backingVariant"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"latestPublication"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"schema"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"document"}}]}}]}}]}}]}}]}}]}}]}}]} as unknown as DocumentNode<GetGraphWithSubgraphsQuery, GetGraphWithSubgraphsQueryVariables>;
+export const GetGraphsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetGraphs"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"organizationId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"organization"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"organizationId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"graphs"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"variants"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"latestPublication"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"publishedAt"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"proposals"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"totalCount"}}]}}]}}]}}]}}]} as unknown as DocumentNode<GetGraphsQuery, GetGraphsQueryVariables>;
+export const GetOrganizationIdDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetOrganizationId"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"me"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"User"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"memberships"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"account"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]}}]}}]}}]} as unknown as DocumentNode<GetOrganizationIdQuery, GetOrganizationIdQueryVariables>;
+export const GetSchemaDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetSchema"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"graphId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"name"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"graph"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"graphId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"variant"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"name"},"value":{"kind":"Variable","name":{"kind":"Name","value":"name"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"url"}},{"kind":"Field","name":{"kind":"Name","value":"latestPublication"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"schema"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"document"}}]}}]}}]}}]}}]}}]} as unknown as DocumentNode<GetSchemaQuery, GetSchemaQueryVariables>;
+export const GetVariantDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetVariant"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"graphId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"name"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"graph"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"graphId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"variant"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"name"},"value":{"kind":"Variable","name":{"kind":"Name","value":"name"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"proposal"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}},{"kind":"Field","name":{"kind":"Name","value":"url"}},{"kind":"Field","name":{"kind":"Name","value":"subgraphs"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"activePartialSchema"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"sdl"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"latestLaunch"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}},{"kind":"Field","name":{"kind":"Name","value":"isProposal"}},{"kind":"Field","name":{"kind":"Name","value":"latestPublication"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"publishedAt"}},{"kind":"Field","name":{"kind":"Name","value":"schema"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"document"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"name"}}]}}]}}]}}]} as unknown as DocumentNode<GetVariantQuery, GetVariantQueryVariables>;
+export const ProposalLaunchesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"ProposalLaunches"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"proposalId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"proposal"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"proposalId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"backingVariant"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}}]}},{"kind":"Field","name":{"kind":"Name","value":"activities"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"edges"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"node"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"target"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"ProposalRevision"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"launch"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]}}]}}]}}]}}]}}]}}]} as unknown as DocumentNode<ProposalLaunchesQuery, ProposalLaunchesQueryVariables>;

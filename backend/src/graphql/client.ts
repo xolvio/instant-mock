@@ -6,6 +6,11 @@ import {
   InMemoryCache,
 } from '@apollo/client';
 import {setContext} from '@apollo/client/link/context';
+import {RequestContext} from '@mikro-orm/core';
+import {ApolloApiKey} from '../models/apolloApiKey';
+import {DI} from '../server';
+import {logger} from '../utilities/logger';
+import {SchemaLoader} from '../utilities/schemaLoader';
 import {
   CreateProposalMutation,
   GetGraphQuery,
@@ -29,35 +34,79 @@ import {GET_ORGANIZATION_ID} from './queries/getOrganizationId';
 import {GET_SCHEMA} from './queries/getSchema';
 import {GET_VARIANT} from './queries/getVariant';
 import {PROPOSAL_LAUNCHES} from './queries/proposalLaunches';
-import {DI} from '../server';
-import {RequestContext} from '@mikro-orm/core';
-import {ApolloApiKey} from '../models/apolloApiKey';
 
 export default class Client {
-  private apolloClient!: ApolloClient<any>;
-  private organizationId: string | undefined;
-  private apiKey: string | undefined;
+  private apolloClient!: ApolloClient<unknown>;
+  private organizationId: string | null | undefined;
+  private schemaLoader: SchemaLoader;
 
-  public async initializeClient() {
+  constructor() {
+    this.schemaLoader = new SchemaLoader();
+  }
+
+  private async getGraphsFromFiles(): Promise<
+    NonNullable<GetGraphsQuery['organization']>['graphs']
+  > {
+    const schemas = await this.schemaLoader.loadFromFiles();
+
+    return schemas.map(({name}) => ({
+      id: `local-${name}`,
+      name,
+      variants: [
+        {
+          id: `local-${name}@current`,
+          name: 'current',
+          latestPublication: {
+            publishedAt: new Date().toISOString(),
+          },
+        },
+      ],
+      proposals: {
+        totalCount: 0,
+      },
+    }));
+  }
+
+  public async initializeClient(): Promise<void> {
+    logger.startup('Initializing Apollo client', {
+      nodeEnv: process.env.NODE_ENV,
+    });
+
+    let uri;
+    switch (process.env.NODE_ENV) {
+      case 'e2e-test':
+        uri = `http://instant-mock-e2e-play:${process.env.PLAY_PORT}/api/local-apollo-platform-api/current/graphql`;
+        break;
+      default:
+        uri = 'https://api.apollographql.com/api/graphql';
+        break;
+    }
+
     const link = createHttpLink({
-      uri: 'https://api.apollographql.com/api/graphql',
+      uri,
     });
 
     const authLink = setContext(async (_, {headers}) => {
       const em = DI.orm.em.fork();
       return RequestContext.create(em, async () => {
-        const apiKeyEntity = await em
-          .getRepository(ApolloApiKey)
-          .findOne({id: 1});
-        this.apiKey = apiKeyEntity ? apiKeyEntity.key : '';
-        return {
-          headers: {
-            ...headers,
-            'apollographql-client-name': 'explorer',
-            'apollographql-client-version': '1.0.0',
-            'X-API-KEY': this.apiKey,
-          },
-        };
+        let _headers = {...headers};
+
+        if (process.env.NODE_ENV === 'e2e-test') {
+          _headers['seed-group'] = 'default';
+        } else {
+          const apiKeyEntity = await em
+            .getRepository(ApolloApiKey)
+            .findOne({id: 1});
+          if (apiKeyEntity) {
+            _headers = {
+              ..._headers,
+              'apollographql-client-name': 'explorer',
+              'apollographql-client-version': '1.0.0',
+              'X-API-KEY': apiKeyEntity.getDecryptedKey(),
+            };
+          }
+        }
+        return {headers: _headers};
       });
     });
 
@@ -66,26 +115,119 @@ export default class Client {
       query: {fetchPolicy: 'no-cache'},
     };
 
+    let instantMockLink: ApolloLink | null = null;
+    if (process.env.NODE_ENV === 'e2e-record') {
+      instantMockLink = new ApolloLink((operation, forward) => {
+        return forward(operation).map((response) => {
+          logger.debug('Recording with instant mock link', {
+            operationName: operation.operationName,
+          });
+          const graphId = 'local-apollo-platform-api';
+          const variantName = 'current';
+          const operationName = operation.operationName;
+          const operationMatchArguments = operation.variables;
+          const seedResponse = response;
+
+          const apiUrl = `http://instant-mock-e2e-play:${process.env.PLAY_PORT}/api/seeds`;
+
+          if (operationName === 'IntrospectionQuery') {
+            return response;
+          }
+
+          fetch(apiUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              graphId,
+              variantName,
+              seedResponse: seedResponse,
+              seedGroupId: 1,
+              operationName: operationName,
+              operationMatchArguments: operationMatchArguments,
+            }),
+          })
+            .then((res) => {
+              if (!res.ok) {
+                logger.api('Error registering seed', {
+                  operationName,
+                });
+                // Throw an error with the HTTP status text if the response is not OK
+                throw new Error(
+                  `HTTP error! Status: ${res.status} - ${res.statusText}`
+                );
+              }
+              return res.json();
+            })
+            .then((json) => {
+              logger.api('Seed registered via InstantMockLink', {
+                operationName,
+                seedId: json.id,
+              });
+            })
+            .catch((err) => {
+              // This will catch both network errors and HTTP errors
+              logger.error('Failed to create seed via InstantMockLink', {
+                operationName,
+                error: err.message,
+              });
+            });
+
+          return response;
+        });
+      });
+    }
+
+    const loggingLink = new ApolloLink((operation, forward) => {
+      logger.debug('Apollo Client Request', {
+        operationName: operation.operationName,
+        variables: operation.variables,
+        url: uri, // Log the endpoint URL
+        // headers: operation.getContext().headers, // Log the headers - CAREFUL can expose keys to logs
+      });
+
+      return forward(operation).map((response) => {
+        logger.debug('Apollo Client Response', {
+          operationName: operation.operationName,
+          response,
+        });
+        return response;
+      });
+    });
+
+    const linkArray = instantMockLink
+      ? [authLink, instantMockLink, link]
+      : [authLink, loggingLink, link];
+
     this.apolloClient = new ApolloClient({
-      link: ApolloLink.from([authLink, link]),
+      link: ApolloLink.from(linkArray),
       cache: new InMemoryCache(),
       defaultOptions: defaultOptions,
     });
 
+    logger.startup('Getting Apollo Organization ID');
     this.organizationId = await this.getOrganizationId();
-    console.log('SET ORG ID TO: ', this.organizationId);
+    logger.startup('Apollo client initialization complete', {
+      organizationId: this.organizationId,
+    });
   }
 
-  public async updateApiKey(newApiKey: string) {
-    console.log('updateApiKey called');
+  public async updateApiKey(newApiKey: string): Promise<void> {
+    logger.security('Updating Apollo API key');
     const em = DI.orm.em.fork();
     await RequestContext.create(em, async () => {
       let apiKeyEntity = await em.getRepository(ApolloApiKey).findOne({id: 1});
       if (apiKeyEntity) {
-        apiKeyEntity.key = newApiKey;
+        const newEntity = new ApolloApiKey(newApiKey);
+        apiKeyEntity.encryptedKey = newEntity.encryptedKey;
+        apiKeyEntity.iv = newEntity.iv;
+        apiKeyEntity.tag = newEntity.tag;
+        logger.security('Existing API key updated');
       } else {
         apiKeyEntity = new ApolloApiKey(newApiKey);
         em.persist(apiKeyEntity);
+        logger.security('New API key created');
       }
       await em.flush();
     });
@@ -95,26 +237,66 @@ export default class Client {
   async getGraphs(): Promise<
     NonNullable<GetGraphsQuery['organization']>['graphs']
   > {
-    console.log('getGraphs called with org id: ', this.organizationId);
+    if (process.env.USE_LOCAL_SCHEMA === 'true') {
+      logger.graph('Fetching graphs from local files');
+      return this.getGraphsFromFiles();
+    }
+
+    logger.graph('Fetching graphs from Apollo', {
+      organizationId: this.organizationId,
+    });
+
     const {data} = await this.apolloClient.query<GetGraphsQuery>({
       query: GET_GRAPHS,
       variables: {organizationId: this.organizationId},
     });
 
     if (data.organization?.__typename === 'Organization') {
+      logger.graph('Successfully retrieved graphs', {
+        count: data.organization.graphs.length,
+      });
       return data.organization.graphs;
     }
 
-    throw new Error(
-      'Unable to retrieve graphs for the specified organization. Please ensure the organization has the required permissions.'
-    );
+    logger.error('Failed to retrieve organization graphs', {
+      organizationId: this.organizationId,
+      typename: data.organization?.__typename,
+    });
+    throw new Error('Unable to retrieve graphs');
   }
 
   async getGraph(graphId: string): Promise<GetGraphQuery['graph']> {
+    if (process.env.USE_LOCAL_SCHEMA === 'true') {
+      const schemas = await this.schemaLoader.loadFromFiles();
+      const graphName = graphId.replace('local-', '');
+      const schema = schemas.find((s) => s.name === graphName);
+
+      if (!schema) return null;
+
+      return {
+        variants: [
+          {
+            key: `local-${graphName}@current`,
+            displayName: 'current',
+            name: 'current',
+            latestPublication: {
+              publishedAt: new Date().toISOString(),
+              schema: {
+                document: schema.schema,
+              },
+            },
+          },
+        ],
+        proposals: {
+          proposals: [],
+        },
+      };
+    }
+
     const res = await this.apolloClient.query<GetGraphQuery>({
       query: GET_GRAPH,
       variables: {
-        graphId: graphId,
+        graphId,
         filterBy: {
           status: ['APPROVED', 'DRAFT', 'IMPLEMENTED', 'OPEN'],
         },
@@ -127,9 +309,33 @@ export default class Client {
     graphId: string,
     variantName: string
   ): Promise<NonNullable<GetVariantQuery['graph']>['variant']> {
+    if (process.env.USE_LOCAL_SCHEMA === 'true') {
+      const schemas = await this.schemaLoader.loadFromFiles();
+      const localId = parseInt(graphId.replace('local-', ''));
+      const schema = schemas[localId];
+
+      if (!schema) return null;
+
+      return {
+        id: `local-${localId}@${variantName}`,
+        name: variantName,
+        url: null,
+        isProposal: false,
+        proposal: null,
+        latestLaunch: null,
+        subgraphs: [],
+        latestPublication: {
+          publishedAt: new Date().toISOString(),
+          schema: {
+            document: schema.schema,
+          },
+        },
+      };
+    }
+
     const {data} = await this.apolloClient.query<GetVariantQuery>({
       query: GET_VARIANT,
-      variables: {graphId: graphId, name: variantName},
+      variables: {graphId, name: variantName},
     });
     return data.graph?.variant;
   }
@@ -137,10 +343,37 @@ export default class Client {
   async getGraphWithSubgraphs(
     graphId: string
   ): Promise<GetGraphWithSubgraphsQuery['graph']> {
+    if (process.env.USE_LOCAL_SCHEMA === 'true') {
+      const schemas = await this.schemaLoader.loadFromFiles();
+      const localId = parseInt(graphId.replace('local-', ''));
+      const schema = schemas[localId];
+
+      if (!schema) return null;
+
+      return {
+        variants: [
+          {
+            key: `local-${localId}@current`,
+            displayName: 'current',
+            name: 'current',
+            latestPublication: {
+              publishedAt: new Date().toISOString(),
+              schema: {
+                document: schema.schema,
+              },
+            },
+          },
+        ],
+        proposals: {
+          proposals: [],
+        },
+      };
+    }
+
     const {data} = await this.apolloClient.query<GetGraphWithSubgraphsQuery>({
       query: GET_GRAPH_WITH_SUBGRAPHS,
       variables: {
-        graphId: graphId,
+        graphId,
         filterBy: {
           status: ['APPROVED', 'DRAFT', 'IMPLEMENTED', 'OPEN'],
         },
@@ -149,36 +382,35 @@ export default class Client {
     return data.graph;
   }
 
-  async getSchema(
-    graphId: string,
-    name: string
-  ): Promise<
-    | NonNullable<
-        NonNullable<
-          NonNullable<GetSchemaQuery['graph']>['variant']
-        >['latestPublication']
-      >['schema']['document']
-    | null
-  > {
+  async getSchema(graphId: string, name: string): Promise<string | null> {
+    if (process.env.USE_LOCAL_SCHEMA === 'true') {
+      const schemas = await this.schemaLoader.loadFromFiles();
+      // TODO we need to think if we want to support multiple schemas loaded from files, for now we only select the first one
+      // const debugSchema = schemas.map((s) => s.name);
+      // logger.debug('Found schemas:', {debugSchema});
+      // const schema = schemas.find(
+      //   (s) => s.name === graphId.replace('local-', '')
+      // );
+      const schema = schemas[0].schema;
+      logger.debug('found schema', {schema});
+      // return schema ? schema.schema : null;
+      return schemas[0].schema;
+    }
+
     try {
       const {data} = await this.apolloClient.query<GetSchemaQuery>({
         query: GET_SCHEMA,
         variables: {graphId, name},
       });
-
-      const document = data.graph?.variant?.latestPublication?.schema.document;
-
-      if (!document) {
-        console.error(
-          `Schema document not found for graphId: ${graphId}, variant name: ${name}. Check if the graph or variant exists and has a publication.`
-        );
-      }
-      return document;
+      return data.graph?.variant?.latestPublication?.schema.document || null;
     } catch (e) {
-      console.error(
-        `getSchema error for graphId: ${graphId}, variant name: ${name}:\n`,
-        e
+      logger.error(
+        `getSchema error for graphId: ${graphId}, variant name: ${name}`,
+        {
+          error: e as unknown,
+        }
       );
+      return null;
     }
   }
 
@@ -212,7 +444,7 @@ export default class Client {
 
     if (data) return data;
 
-    console.error(
+    logger.error(
       `Failed to create proposal for graphId: ${graphId}, variantName: ${variantName}. No data returned from mutation.`
     );
     return null;
@@ -234,7 +466,7 @@ export default class Client {
 
     if (data) return data;
 
-    console.error(
+    logger.error(
       `Failed to update proposal status for proposalId: ${proposalId}. No data returned from mutation.`
     );
     return null;
@@ -265,23 +497,32 @@ export default class Client {
 
     if (data) return data;
 
-    console.error(
+    logger.error(
       `Failed to publish proposal revision for proposalId: ${proposalId}. No data returned from mutation.`
     );
     return null;
   }
 
-  async getOrganizationId(): Promise<string> {
-    const {data} = await this.apolloClient.query<GetOrganizationIdQuery>({
-      query: GET_ORGANIZATION_ID,
-    });
-    if (data?.me?.__typename === 'User' && data.me.memberships) {
-      const memberships = data.me.memberships;
-      if (memberships.length > 0 && memberships[0].account?.id) {
-        return memberships[0].account.id;
+  async getOrganizationId(): Promise<string | null> {
+    try {
+      const {data} = await this.apolloClient.query<GetOrganizationIdQuery>({
+        query: GET_ORGANIZATION_ID,
+      });
+
+      if (data?.me?.__typename === 'User' && data.me.memberships?.length > 0) {
+        const orgId = data.me.memberships[0].account?.id;
+        if (orgId) {
+          logger.startup('Successfully retrieved organization ID', {orgId});
+          return orgId;
+        }
       }
+      logger.warn('No organization ID found in response');
+      return null;
+    } catch (error) {
+      logger.warn('Failed to retrieve organization ID', {
+        error: error instanceof Error ? error.message : error,
+      });
+      return null;
     }
-    console.error('Organization ID not found');
-    return '';
   }
 }

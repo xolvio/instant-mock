@@ -1,8 +1,7 @@
-//@ts-nocheck
 import {buildASTSchema, GraphQLSchema, parse, visit} from 'graphql';
 import {cap, findMissingFieldsWithParentTypes} from './findMissingFields';
 import {printSchemaWithDirectives} from '@graphql-tools/utils';
-import {SubgraphAST} from '../controllers/graphController';
+import {logger} from './logger';
 
 export interface MissingFieldInfo {
   parentTypeName: string | undefined;
@@ -18,23 +17,24 @@ export type ProposedSubgraph = {
   };
 };
 
+export type SubgraphAST = {name: string; schema: GraphQLSchema};
+
 export function createProposedSubgraphsFromOperationsMissingFields(
   supergraph: GraphQLSchema,
   subgraphs: SubgraphAST[],
   operation: string
 ): ProposedSubgraph[] {
-  console.log('supergraph here:');
-  console.log(printSchemaWithDirectives(supergraph));
-  console.log('subgraphs here');
-  const forTest = subgraphs.map(({name, schema}) => {
-    return {
-      name,
-      schema: printSchemaWithDirectives(schema),
-    };
+  logger.graph('Processing supergraph schema', {
+    schema: printSchemaWithDirectives(supergraph),
   });
-  console.log(JSON.stringify(forTest, null, 2));
-  console.log('operation');
-  console.log(operation);
+
+  const subgraphDetails = subgraphs.map(({name, schema}) => ({
+    name,
+    schema: printSchemaWithDirectives(schema),
+  }));
+
+  logger.graph('Processing subgraphs', {subgraphs: subgraphDetails});
+  logger.graph('Processing operation', {operation});
 
   const missingFields: Array<MissingFieldInfo> =
     findMissingFieldsWithParentTypes(operation, supergraph);
@@ -50,7 +50,9 @@ export function createProposedSubgraphsFromOperationsMissingFields(
       missingFields
     );
 
-    console.log('PRE-sanitization', updatedSubgraph.updatedSchemaString);
+    logger.debug('Pre-sanitization schema', {
+      schema: updatedSubgraph.updatedSchemaString,
+    });
 
     const sanitizedSubgraphString = updatedSubgraph.updatedSchemaString.replace(
       `directive @link(url: String!, as: String, for: link__Purpose, import: [link__Import]) repeatable on SCHEMA
@@ -70,20 +72,16 @@ enum link__Purpose {
       ''
     );
 
-    console.log('POST-sanitization', sanitizedSubgraphString);
-
-    console.log(
-      JSON.stringify(
-        {
-          name: updatedSubgraph.name,
-          activePartialSchema: {
-            sdl: sanitizedSubgraphString,
-          },
+    logger.debug('Post-sanitization schema', {schema: sanitizedSubgraphString});
+    logger.debug('Final subgraph configuration', {
+      config: {
+        name: updatedSubgraph.name,
+        activePartialSchema: {
+          sdl: sanitizedSubgraphString,
         },
-        null,
-        2
-      )
-    );
+      },
+    });
+
     return {
       name: updatedSubgraph.name,
       activePartialSchema: {
@@ -94,10 +92,13 @@ enum link__Purpose {
 }
 
 export function findSubgraphForMissingTypes(
-  subgraphs,
+  subgraphs: SubgraphAST[],
   missingFields: Array<MissingFieldInfo>
 ) {
-  const subgraphMapping = new Map();
+  const subgraphMapping = new Map<
+    string,
+    {name: string; schema: GraphQLSchema; missingFields: MissingFieldInfo[]}
+  >();
 
   if (subgraphs.length === 0) {
     throw new Error('No subgraphs provided');
@@ -105,6 +106,11 @@ export function findSubgraphForMissingTypes(
 
   missingFields.forEach((missingField) => {
     const {parentTypeName} = missingField;
+
+    if (!parentTypeName) {
+      // Skip if parentTypeName is undefined
+      return;
+    }
 
     let matchingSubgraph = subgraphs.find(({schema}) => {
       if (!(schema instanceof GraphQLSchema)) {
@@ -129,7 +135,7 @@ export function findSubgraphForMissingTypes(
         missingFields: [],
       });
     }
-    subgraphMapping.get(name).missingFields.push(missingField);
+    subgraphMapping.get(name)?.missingFields.push(missingField);
   });
 
   return Array.from(subgraphMapping.values());
@@ -145,10 +151,14 @@ export function addMissingFieldsToSchemaWithVisitor(
 
   const documentNode = parse(schemaSDL);
 
-  const fieldsToAdd: Record<string, Array<MissingFieldInfo>> = {};
+  const fieldsToAdd: Record<
+    string,
+    Array<{fieldName: string; type: string; hasGeneratedParentType: boolean}>
+  > = {};
 
   missingFields.forEach(
     ({parentTypeName, fieldName, hasGeneratedParentType, isLeaf}) => {
+      if (!parentTypeName) return;
       if (!fieldsToAdd[parentTypeName]) {
         fieldsToAdd[parentTypeName] = [];
       }
@@ -160,7 +170,7 @@ export function addMissingFieldsToSchemaWithVisitor(
     }
   );
 
-  console.log('[operationToSchema.ts:152] fieldsToAdd:', fieldsToAdd);
+  logger.debug('[operationToSchema.ts:152] fieldsToAdd:', fieldsToAdd);
   // Visit the AST and modify it
   const modifiedAst = visit(documentNode, {
     ObjectTypeDefinition(node) {

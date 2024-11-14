@@ -17,11 +17,9 @@ const config: CodegenConfig = {
     './src/graphql/apollo/types/': {
       preset: 'client',
     },
+    './src/graphql/apollo-platform-api.graphql': {
+      plugins: ['schema-ast'],
+    },
   },
-  // config: {
-  //   namingConvention: {
-  //     enumValues: './codegen.enum-naming.ts',
-  //   },
-  // },
 };
 export default config;
