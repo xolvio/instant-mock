@@ -8,6 +8,7 @@ jobs:
   e2e-tests:
     runs-on: ubuntu-latest
     env:
+      TEST_PORT: 3033
       PLAY_PORT: 3034
       RECORD_PORT: 3035
       NODE_ENV: test

@@ -64,7 +64,6 @@ function getLatestFixtureTimestamp(): string | null {
     .sort()
     .reverse();
 
-  console.log("Directories: ", directories);
   return directories.length > 0 ? directories[0] : null;
 }
 
