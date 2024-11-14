@@ -1,162 +1,99 @@
-![instant-mock-screen-cap-final](https://github.com/user-attachments/assets/de0f50d4-5a71-4e5a-b479-37c6cfa0481d)
+# 🚀 @xolvio/instant-mock
 
-# 🚀 InstantMock
+Your ultimate GraphQL Federation-native mocking solution for accelerated development! 🎭✨
 
-As GraphQL deployments scale, delays between front-end development, QA, and back-end API readiness can slow teams down. Adding the complexity of _distributed_ GraphQL ([Apollo Supergraphs](https://www.apollographql.com/federation), [Open Federation](https://open-federation.org/), [etc](https://grafbase.com/docs/federation)) can make this bottleneck even worse.
+## 🌟 Supercharge Your GraphQL Development
 
-InstantMock allows you to mock GraphQL endpoints as quickly as it takes to write a query... aka... _instantly_!
+Effortlessly spin up a fully-featured, schema-aware GraphQL mock server that:
 
-## Key Features
+* 🔗 Seamlessly integrates with Apollo Studio
+* 🏢 Supports enterprise HTTP proxies
+* 🗄️ Provides flexible database options
 
-- **Instant GraphQL Endpoint Creation**: Get a mock endpoint up and running in minutes.
-- **Apollo Studio Schema Proposal Integration**: Create mocks directly for your schema proposals with full access to all schemas.
-- **Realistic Mock Responses**: Tailor-made fake responses for accurate testing.
-- **Advanced Data Seeding**: Populate your mocks with lifelike data for production-like testing scenarios.
-- **Integration with Narrative Studio**: Fully integrated into Narrative Studio and supporting Narrative Driven Development (NDD)
+With @xolvio/instant-mock, creating consistent, team-specific mock data for GraphQL APIs is easier than ever! 🎉
 
-Run InstantMock:
+## 🔥 Key Features
 
-- Locally: Quick testing right on your machine.
-- Using Docker: For containerized environments.
-- Centrally Hosted: Share mocks with multiple teams using our AWS CDK templates (coming soon).
-- With Corporate Proxies: Seamless integration in enterprise environments.
+* 🌠 **Apollo Studio Integration:** Directly syncs with Apollo Studio, including schema and variant management.
+* 📜 **Flexible Schema Management:** Import schemas from files or Apollo Studio for on-demand introspection.
+* 🔒 **Enterprise HTTP Proxy Support:** Works seamlessly within enterprise network environments.
+* 🛡️ **Secure Data Management:** Leverages encryption keys for securely storing sensitive data.
+* 🗃️ **Database Agnostic:** Ships with SQLite by default, but also supports PostgreSQL and MySQL.
 
-## 🚀 Quick Start
+## 🚀 Quick Start (on default port 3033)
 
-### 🐳 Docker (Recommended)
+Experience the simplicity:
 
-InstantMock runs by default on `localhost:3007`. If you want to run the app on another port, adjust the `PORT` and `REACT_APP_API_BASE_URL` variables in your `.env` file accordingly.
-
-```Shell
-mv .env.example .env
-# Add your Apollo key to the .env file
+```bash
+npm start
+```
+```bash
 docker compose up
 ```
 
-### 📦 Running locally with NodeJS
+That's it! Head on over to `http://localhost:3033` to start mocking like a pro! 😎
 
-#### Node Version
+## 🎭 How It Works
 
-This project uses `nvm` to manage node versions.
+### 🖥️ Main Interface
 
-```Shell
-brew install nvm
-```
+The @xolvio/instant-mock experience is divided into three main tabs:
 
-Once nvm is installed, navigate to project root and run `nvm use`
+1. 🔍 **Query:** Select and explore schemas, inspect schema variants, and instantly mock responses.
+2. 💾 **Data:** Create and manage seed data, including Seed Groups for isolated team-specific mocks.
+3. 🤝 **Collaborate:** Use Narrative's Annotator, enabling schema-to-UI annotations and collaborative mockup validation.
 
-```Shell
-nvm use
+### 🚀 Feature Breakdown
 
-  Found '.nvmrc' with version <20.16.0>
-  Now using node v20.16.0 (npm v10.8.1
-```
+#### 🔍 Query Tab
 
-#### Database
+Instantly introspect and explore any graph from your schema. Choose a schema and variant, and let instant-mock provide you with auto-generated responses for every field using Faker.js, with sensible defaults.
 
-You will need a PostgreSQL database instance. You can either:
+🔮 **Coming Soon:** Customize Faker.js configurations for more control over default mock data.
 
-- Set one up locally,
-- Use a remote instance,
-- Or use the PostgreSQL instance that is started automatically with the above docker compose config.
-  Make sure to adjust the database connection details in your .env file accordingly.
+#### 💾 Data Tab
 
-#### Server
+Here's where @xolvio/instant-mock shines ✨. After executing an operation in the Query tab, you can create seed data by clicking "Create Seed From Response". This takes you to the Data tab, where you can modify and persist your responses.
 
-The InstantMock server runs by default on port 3007. If you want to run the server on another port, adjust the `PORT` variable in your `.env` file. Also, remember to update the `REACT_APP_API_BASE_URL` in your `.env` file accordingly.
+* 🌱 **Seed Manager:** Manage and modify seed data for consistent responses.
+* 👥 **Seed Groups:** Separate mock responses by group, allowing multiple teams to work with isolated, idempotent mock data for the same operations.
 
-```Shell
-cd backend
-mv .env.example .env
-# Add your Apollo key to the .env file
-# Add your database connection details to the .env file
-npm install
-npm run dev
-```
+#### 🤝 Collaborate Tab
 
-#### Client
+Enhance cross-functional collaboration with real data-backed annotations and schema management:
 
-The InstantMock client runs by default on port 3000. If you want to run it on another port, adjust the `PORT` variable in your `.env` file.
+* 🖊️ **Narrative Integration:** Sign up for Narrative to use the Annotator, powered by instant-mock, for UI mockup annotations directly from your schema.
+* 🔄 **Schema Proposal Automation:** Detect mismatches between your mock operations and schema, and automatically generate a schema proposal for Apollo Studio—instantly backed by a mock server.
 
-```Shell
-cd frontend
-mv .env.example .env
-npm install
-npm start
-```
+## 🙌 Powered by Open Source
 
-## API Reference
+@xolvio/instant-mock is proudly powered by gq-mock, with extensive contributions to the MockServer functionality. A special thanks to the gq-mock team for laying the groundwork that enables instant-mock to excel! 🎉
 
-#### Get All Graphs
+## 🏆 Why Choose @xolvio/instant-mock?
 
-- **Endpoint:** `GET api/graphs`
-- **Description:** Retrieves a list of all available graphs.
-- **Response:** JSON array of graph objects.
+Say goodbye to:
 
-#### Get Graph by ID
+* 👋 Unreliable Postman collections
+* 👋 Ad-hoc mock servers
+* 👋 Mismatched schemas
 
-- **Endpoint:** `GET api/graphs/:graphId`
-- **Description:** Retrieves the details of a specific graph by its `graphId`.
-- **Parameters:**
-  - `graphId` (path param): The ID of the graph.
-  - `withSubgraphs` (query param): Optional boolean parameter. If set to true, the response will include the given graph along with all its subgraphs
-- **Response:** JSON object of the requested graph. If withSubgraphs=true, the response will include the graph and all subgraphs of variants.
+By centralizing mock data with Apollo Federation awareness, @xolvio/instant-mock delivers consistent, reliable mock data that scales with your team's needs. Whether you're a frontend engineer, backend developer, or QA, instant-mock is designed to make your life easier and boost your productivity! 🚀💪
 
-#### Create a new Proposal
+## 📚 Documentation
 
-- **Endpoint:** `POST api/graphs/:graphId/:variantName/proposals`
-- **Description:** Creates a schema proposal for a specific variant of the graph.
-- **Query Parameters:**
-  - `graphId` (required): The ID of the graph.
-  - `variantName` (required): The variant name of the graph.
-- **Request Body:**
-  ```JSON
-  {
-    "displayName": "string",
-    "description": "string (optional)",
-  }
-  ```
+For detailed documentation, check out our [Wiki](comingsoon).
 
-### Seeds
+## 🤝 Contributing
 
-#### Get All Seeds
+We welcome contributions! Please see our [Contributing Guide](comingsoon) for more details.
 
-- **Endpoint:** `GET api/seeds`
-- **Description:** Retrieves a list of all seeds for a given graph and variant.
-- **Query Parameters:**
-  - `graphId` (required): The ID of the graph.
-  - `variantName` (required): The variant name of the graph.
-- **Response:** JSON array of seed objects.
+## 📄 License
 
-#### Create a New Seed
+This project is licensed under the MIT License - see the [LICENSE](comingsoon) file for details.
 
-- **Endpoint:** `POST api/seeds`
-- **Description:** Creates a new seed for a specific graph and variant.
-- **Query Parameters:**
-  - `graphId` (required): The ID of the graph.
-  - `variantName` (required): The variant name of the graph.
-- **Request Body:**
-  ```JSON
-  {
-    "seedResponse": { ... },
-    "operationName": "string",
-    "operationMatchArguments": { ... },
-    "sequenceId": "string"
-  }
-  ```
+## 🙏 Acknowledgments
 
-#### Get Seed by ID
+* The amazing [gq-mock](https://github.com/wayfair-incubator/gqmock) team
+* Our fantastic community of users and contributors
 
-- **Endpoint:** `GET /seeds/:id`
-- **Description:** Retrieves the details of a specific seed by its `id`.
-- **Parameters:**
-  - `id` (path param): The ID of the seed.
-- **Response:** JSON object containing the requested seed details.
-
-#### Delete Seed by ID
-
-- **Endpoint:** `DELETE /seeds/:id`
-- **Description:** Deletes a specific seed by its `id`.
-- **Parameters:**
-  - `id` (path param): The ID of the seed.
-- **Response:** JSON object confirming the deletion of the seed.
+Made with ❤️ by the @xolvio team
