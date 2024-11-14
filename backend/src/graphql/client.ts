@@ -128,7 +128,7 @@ export default class Client {
           const operationMatchArguments = operation.variables;
           const seedResponse = response;
 
-          const apiUrl = `http://localhost:${process.env.PLAY_PORT}/api/seeds`;
+          const apiUrl = `http://instant-mock-e2e-play:${process.env.PLAY_PORT}/api/seeds`;
 
           if (operationName === 'IntrospectionQuery') {
             return response;
