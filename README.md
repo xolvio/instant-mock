@@ -2,6 +2,19 @@
 
 Your ultimate GraphQL Federation-native mocking solution for accelerated development! 🎭✨
 
+## 🚀 Quick Start (on default port 3033)
+
+Experience the simplicity:
+
+```bash
+npm start
+```
+```bash
+docker compose up
+```
+
+That's it! Head on over to `http://localhost:3033` to start mocking like a pro! 😎
+
 ## 🌟 Supercharge Your GraphQL Development
 
 Effortlessly spin up a fully-featured, schema-aware GraphQL mock server that:
@@ -19,19 +32,6 @@ With @xolvio/instant-mock, creating consistent, team-specific mock data for Grap
 * 🔒 **Enterprise HTTP Proxy Support:** Works seamlessly within enterprise network environments.
 * 🛡️ **Secure Data Management:** Leverages encryption keys for securely storing sensitive data.
 * 🗃️ **Database Agnostic:** Ships with SQLite by default, but also supports PostgreSQL and MySQL.
-
-## 🚀 Quick Start (on default port 3033)
-
-Experience the simplicity:
-
-```bash
-npm start
-```
-```bash
-docker compose up
-```
-
-That's it! Head on over to `http://localhost:3033` to start mocking like a pro! 😎
 
 ## 🎭 How It Works
 
