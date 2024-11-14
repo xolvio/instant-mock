@@ -52,6 +52,7 @@ async function waitForServerReady(
 
 function getLatestFixtureTimestamp(): string | null {
   console.log("Getting latest timestamp");
+
   if (!fs.existsSync(FIXTURE_BASE_PATH)) {
     return null;
   }
