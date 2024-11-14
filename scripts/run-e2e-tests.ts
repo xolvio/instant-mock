@@ -1,8 +1,8 @@
-import { execSync, spawn } from "child_process";
-import { format } from "date-fns";
+import {execSync, spawn} from "child_process";
+import {format} from "date-fns";
+import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
-import dotenv from "dotenv";
 
 dotenv.config();
 
@@ -62,6 +62,7 @@ function getLatestFixtureTimestamp(): string | null {
     .sort()
     .reverse();
 
+  console.log("Directories: ", directories);
   return directories.length > 0 ? directories[0] : null;
 }
 
