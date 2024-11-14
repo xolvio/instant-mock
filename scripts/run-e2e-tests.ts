@@ -55,6 +55,8 @@ function getLatestFixtureTimestamp(): string | null {
     return null;
   }
 
+  console.log("Getting latest timestamp");
+
   const directories = fs
     .readdirSync(FIXTURE_BASE_PATH, { withFileTypes: true })
     .filter((dirent) => dirent.isDirectory())
