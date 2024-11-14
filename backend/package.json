@@ -1,6 +1,6 @@
 {
   "name": "backend",
-  "version": "1.0.0-beta.1",
+  "version": "1.0.0-beta.2",
   "main": "dist/server.js",
   "scripts": {
     "build": "npx tsc && npm run copy-graphql",
@@ -94,3 +94,4 @@
     "npm": "10"
   }
 }
+
