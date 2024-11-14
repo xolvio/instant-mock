@@ -26,6 +26,7 @@ services:
       PLAY_PORT: "${PLAY_PORT}"
       NODE_ENV: "e2e-play"
       APOLLO_API_KEY: "${APOLLO_API_KEY}"
+      USE_LOCAL_SCHEMA: "true"
     ports:
       - "${PLAY_PORT}:${PLAY_PORT}"
     volumes:
