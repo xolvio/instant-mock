@@ -2,13 +2,14 @@
 
 Your ultimate GraphQL Federation-native mocking solution for accelerated development! 🎭✨
 
-## 🚀 Quick Start (on default port 3033)
+## Quick Start
 
 Experience the simplicity:
 
 ```bash
 npm start
 ```
+OR
 ```bash
 docker compose up
 ```
