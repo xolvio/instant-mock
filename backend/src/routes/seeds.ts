@@ -3,8 +3,8 @@ import {SeedGroup} from '../models/seedGroup';
 import {SeedType} from '../seed/SeedManager';
 
 import {DI} from '../server';
-import {getOrStartNewMockServer} from './graphql';
 import {logger} from '../utilities/logger';
+import {getOrStartNewMockServer} from './graphql';
 
 const router: Router = express.Router();
 
@@ -171,6 +171,7 @@ router.post('/seeds', async (req: Request, res: Response) => {
     operationMatchArguments: operationMatchArguments,
     operationName: operationName,
   });
+  logger.api('Seed added successfully', {graphId, variantName});
   res.status(201).json({message: 'Seed registered successfully'});
 });
 
