@@ -7,7 +7,7 @@ export default defineConfig({
         log(message) {
           console.log(message);
           return null;
-        }
+        },
       });
       return config;
     },
@@ -17,5 +17,6 @@ export default defineConfig({
     viewportHeight: 800,
     defaultCommandTimeout: 10000,
     requestTimeout: 10000,
+    supportFile: false,
   },
 });

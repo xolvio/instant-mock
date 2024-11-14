@@ -2,6 +2,7 @@ import express, {Request, Response, Router} from 'express';
 import {buildASTSchema, GraphQLSchema, parse} from 'graphql';
 import {createProposedSubgraphsFromOperationsMissingFields} from '../utilities/operationToSchema';
 import {DI} from '../server';
+import {logger} from '../utilities/logger';
 
 const router: Router = express.Router();
 
@@ -63,12 +64,12 @@ const handleLaunchStatus = async (
 
     switch (status) {
       case 'LAUNCH_INITIATED':
-        console.log(`[Polling] Launch ${latestLaunchId} initiated. Waiting...`);
+        logger.polling(`Launch ${latestLaunchId} initiated. Waiting...`);
         await sleep(1000);
         break;
 
       case 'LAUNCH_FAILED':
-        console.error(`[Polling] Launch ${latestLaunchId} failed.`);
+        logger.error(`Launch ${latestLaunchId} failed.`);
         const failureLink = generateFailureLink(graphId, backingVariant.name);
         return {
           status: 'FAILED',
@@ -76,11 +77,11 @@ const handleLaunchStatus = async (
         };
 
       case 'LAUNCH_COMPLETED':
-        console.log(`[Polling] Launch ${latestLaunchId} completed.`);
+        logger.polling(`Launch ${latestLaunchId} completed.`);
         return {status: 'COMPLETED'};
 
       default:
-        console.warn(`Unexpected status: ${status}. Exiting polling.`);
+        logger.warn(`Unexpected status: ${status}. Exiting polling.`);
         return {
           status: `${status}`,
           message: `Unexpected status encountered: ${status}. Please check the logs.`,
@@ -158,10 +159,9 @@ router.post(
       }
 
       if (
-        revision?.proposal.__typename === 'ProposalMutation' &&
+        revision?.proposal?.__typename === 'ProposalMutation' &&
         revision?.proposal?.publishSubgraphs?.__typename === 'Proposal' &&
-        revision?.proposal?.publishSubgraphs?.backingVariant?.latestLaunch
-          ?.id &&
+        revision.proposal.publishSubgraphs.backingVariant?.latestLaunch?.id &&
         revision.proposal.publishSubgraphs.backingVariant.id
       ) {
         const latestLaunchId =
@@ -177,11 +177,12 @@ router.post(
           return res.status(400).json({error: launchStatus.message});
         }
 
-        //TODO: fix typing for key prop which is a devex feature
-        //@ts-ignore
-        revision.proposal.key =
-          revision.proposal.publishSubgraphs.backingVariant.id;
-        return res.json(revision);
+        const response = {
+          ...revision.proposal,
+          key: revision.proposal.publishSubgraphs.backingVariant.id,
+        };
+
+        return res.json(response);
       } else {
         return res.status(400).json({error: 'Incomplete proposal data'});
       }

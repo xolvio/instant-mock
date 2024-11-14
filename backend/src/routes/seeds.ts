@@ -4,6 +4,7 @@ import {SeedType} from '../seed/SeedManager';
 
 import {DI} from '../server';
 import {getOrStartNewMockServer} from './graphql';
+import {logger} from '../utilities/logger';
 
 const router: Router = express.Router();
 
@@ -58,7 +59,7 @@ const router: Router = express.Router();
  */
 
 router.get('/seeds', async (req: Request, res: Response) => {
-  console.log('fetching seeds');
+  logger.info('Seeds route hit', {params: req.params});
   const {graphId, variantName, seedGroupId} = req.query;
 
   try {
@@ -67,7 +68,6 @@ router.get('/seeds', async (req: Request, res: Response) => {
       variantName: variantName as string,
       seedGroup: {id: seedGroupId as unknown as number},
     });
-    console.log('[seeds.ts:60] seedGroupID:', seedGroupId);
     res.json(seeds);
   } catch (error) {
     console.error('Error fetching seeds:', error);
@@ -146,6 +146,7 @@ router.post('/seeds', async (req: Request, res: Response) => {
   } = req.body;
   if (!variantName)
     return res.status(400).json({message: 'Variant name is required'});
+  logger.debug('Attempting to add a new seed', {graphId, variantName});
 
   const mockServer = await getOrStartNewMockServer(graphId, variantName);
   const seedGroup = DI.em.getReference(SeedGroup, seedGroupId);

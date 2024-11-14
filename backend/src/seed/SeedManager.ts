@@ -3,7 +3,7 @@ import Joi from 'joi';
 import {isEqual} from 'lodash';
 import MockServer from '../MockServer';
 import deepMerge from '../utilities/deepMerge';
-import GraphqlMockingContextLogger from '../utilities/Logger';
+import {logger} from '../utilities/logger';
 import {
   NetworkErrorResponse,
   OperationMatchArguments,
@@ -43,30 +43,30 @@ export default class SeedManager {
   private validateSeed(type: SeedType, seed: Seed): boolean {
     let error;
 
+    const operationSeedSchema = Joi.object({
+      operationName: Joi.string().required(),
+      seedResponse: Joi.object({
+        data: Joi.object(),
+        errors: Joi.array().items(Joi.string(), Joi.object()),
+      })
+        .or('data', 'errors')
+        .required(),
+      operationMatchArguments: Joi.object(),
+    }).required();
+
+    const networkErrorSeedSchema = Joi.object({
+      operationName: Joi.string().required(),
+      seedResponse: Joi.alternatives()
+        .try(Joi.object(), Joi.string(), null)
+        .required(),
+      operationMatchArguments: Joi.object(),
+    });
+
     switch (type) {
       case SeedType.Operation:
-        const operationSeedSchema = Joi.object({
-          operationName: Joi.string().required(),
-          seedResponse: Joi.object({
-            data: Joi.object(),
-            errors: Joi.array().items(Joi.string(), Joi.object()),
-          })
-            .or('data', 'errors')
-            .required(),
-          operationMatchArguments: Joi.object(),
-        }).required();
-
         ({error} = operationSeedSchema.validate(seed));
         break;
       case SeedType.NetworkError:
-        const networkErrorSeedSchema = Joi.object({
-          operationName: Joi.string().required(),
-          seedResponse: Joi.alternatives()
-            .try(Joi.object(), Joi.string(), null)
-            .required(),
-          operationMatchArguments: Joi.object(),
-        });
-
         ({error} = networkErrorSeedSchema.validate(seed));
         break;
       default:
@@ -149,32 +149,26 @@ export default class SeedManager {
 
   // @ts-expect-error TODO fix types
   private matchArguments(
-    source: Record<string, any>, // eslint-disable-line @typescript-eslint/no-explicit-any
-    target: Record<string, any> // eslint-disable-line @typescript-eslint/no-explicit-any
-  ) {
-    // @ts-expect-error TODO fix types
-    const argsMatch = Object.entries(source).every(
-      ([argumentName, argumentValue]) => {
-        // null is an object, exclude it from this check
-        if (typeof argumentValue === 'object' && argumentValue != null) {
-          return this.matchArguments(argumentValue, target[argumentName]);
-        }
-        return isEqual(target[argumentName], argumentValue);
+    source: Record<string, unknown>,
+    target: Record<string, unknown>
+  ): boolean {
+    return Object.entries(source).every(([argumentName, argumentValue]) => {
+      if (typeof argumentValue === 'object' && argumentValue != null) {
+        return this.matchArguments(
+          argumentValue as Record<string, unknown>,
+          target[argumentName] as Record<string, unknown>
+        );
       }
-    );
-
-    return argsMatch;
+      return isEqual(target[argumentName], argumentValue);
+    });
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   // @ts-expect-error TODO fix types
-  private argumentCount(args: Record<string, any>) {
+  private argumentCount(args: Record<string, unknown>): number {
     return Object.entries(args).reduce((acc, [, value]) => {
-      // null is an object,  exclude it from this check
       if (typeof value === 'object' && value != null) {
-        return acc + this.argumentCount(value) + 1;
+        return acc + this.argumentCount(value as Record<string, unknown>) + 1;
       }
-
       return acc + 1;
     }, 0);
   }
@@ -193,9 +187,11 @@ export default class SeedManager {
       !this.seedCache[seedGroupId] ||
       !this.seedCache[seedGroupId][operationName]
     ) {
-      GraphqlMockingContextLogger.info(
-        `🟡 no matching seed found for operationName: ${operationName}`,
-        seedGroupId
+      logger.info(
+        `No matching seed found for operationName: ${operationName}`,
+        {
+          seedGroupId,
+        }
       );
       return {
         seed: {},
@@ -225,16 +221,12 @@ export default class SeedManager {
     const seed = this.seedCache[seedGroupId][operationName][seedIndex] || {};
 
     if (seedIndex === -1) {
-      GraphqlMockingContextLogger.info(
-        `🟡 matching seed found but operation arguments: ${JSON.stringify(
-          operationArguments,
-          null,
-          2
-        )} are not a match `,
-        seedGroupId
-      );
+      logger.debug(`No matching seed found for operation arguments`, {
+        operationArguments,
+        seedGroupId,
+      });
     } else {
-      GraphqlMockingContextLogger.info(`🟢 found matching seed`, seedGroupId);
+      logger.debug(`Found matching seed`, {seedGroupId});
     }
 
     return {
@@ -266,39 +258,42 @@ export default class SeedManager {
       operationName,
       variables
     );
+
     if (Object.entries(seed).length) {
       const validSeed = seed as SeedCacheInstance;
-      switch (validSeed.type) {
-        case SeedType.Operation:
-          const errors =
-            validSeed.seedResponse.errors || operationMock.errors || [];
-          const seededMock = await deepMerge(
-            {data: operationMock.data || null},
-            {data: validSeed.seedResponse.data || {}},
-            {
-              mockServer,
-              query,
-              variables,
-              operationName,
-            }
-          );
-          this.maybeDiscardSeed(seedGroupId, operationName, seedIndex);
-          return {
-            operationResponse: {
-              data: seededMock.data.data as Record<string, unknown>,
-              ...(errors.length && {errors}),
-              ...(seededMock.warnings.length && {
-                warnings: seededMock.warnings,
-              }),
-            },
-            statusCode: validSeed.options.statusCode,
-          };
-        case SeedType.NetworkError:
-          this.maybeDiscardSeed(seedGroupId, operationName, seedIndex);
-          return Promise.resolve({
-            operationResponse: validSeed.seedResponse,
-            statusCode: validSeed.options.statusCode,
-          });
+
+      if (validSeed.type === SeedType.Operation) {
+        const errors =
+          validSeed.seedResponse.errors || operationMock.errors || [];
+        const seededMock = await deepMerge(
+          {data: operationMock.data || null},
+          {data: validSeed.seedResponse.data || {}},
+          {
+            mockServer,
+            query,
+            variables,
+            operationName,
+          }
+        );
+        this.maybeDiscardSeed(seedGroupId, operationName, seedIndex);
+        return {
+          operationResponse: {
+            data: seededMock.data.data as Record<string, unknown>,
+            ...(errors.length && {errors}),
+            ...(seededMock.warnings.length && {
+              warnings: seededMock.warnings,
+            }),
+          },
+          statusCode: validSeed.options.statusCode,
+        };
+      }
+
+      if (validSeed.type === SeedType.NetworkError) {
+        this.maybeDiscardSeed(seedGroupId, operationName, seedIndex);
+        return Promise.resolve({
+          operationResponse: validSeed.seedResponse,
+          statusCode: validSeed.options.statusCode,
+        });
       }
     }
 

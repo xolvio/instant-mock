@@ -1,7 +1,11 @@
 import express, {Request, Response, Router} from 'express';
 import {buildASTSchema, parse} from 'graphql';
-import {CreateProposalMutation} from '../graphql/apollo/types/graphql';
+import {
+  CreateProposalMutation,
+  GetGraphQuery,
+} from '../graphql/apollo/types/graphql';
 import {DI} from '../server';
+import {logger} from '../utilities/logger';
 
 const router: Router = express.Router();
 
@@ -9,6 +13,7 @@ const prepareSubgraphSchema = (subgraph: {
   name: string;
   activePartialSchema: {sdl: string};
 }) => {
+  logger.debug('Preparing subgraph schema', {subgraphName: subgraph.name});
   const schemaStringWithDirectives = `
     scalar FieldSet
     scalar link__Import
@@ -25,14 +30,14 @@ const prepareSubgraphSchema = (subgraph: {
   return {name: subgraph.name, schema};
 };
 
-// @ts-ignore
-const unifyVariantAndProposalDataShapes = (graph) => {
+const unifyVariantAndProposalDataShapes = (graph: GetGraphQuery['graph']) => {
+  logger.debug('Unifying variant and proposal data shapes');
+  if (!graph?.proposals) return {...graph};
   const {
     proposals: {proposals},
   } = graph;
 
   const updatedProposals = proposals.map(
-    // @ts-ignore
     ({displayName, key, latestPublication}) => ({
       displayName,
       key: key.key,
@@ -57,6 +62,7 @@ router.get('/graphs', async (_: Request, res: Response) => {
 });
 
 router.get('/graphs/:graphId', async (req: Request, res: Response) => {
+  logger.info('Graphs endpoint hit with req params: ', {params: req.params});
   const graphId = req.params.graphId;
   const withSubgraphs = req.query.withSubgraphs === 'true';
 
@@ -70,7 +76,7 @@ router.get('/graphs/:graphId', async (req: Request, res: Response) => {
 
     res.json(graphDataWithUnifiedVariantAndProposalShapes);
   } catch (error) {
-    console.error(error);
+    logger.error('/graphs error', {error});
     res.status(500).send({error: 'Error querying GraphQL API'});
   }
 });

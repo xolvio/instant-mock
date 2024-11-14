@@ -20,7 +20,7 @@ export const GET_GRAPH_WITH_SUBGRAPHS = gql`
           }
         }
       }
-      proposals(filterBy: $filterBy) {
+      proposals(filterBy: $filterBy, limit: 100) {
         proposals {
           displayName
           key: backingVariant {

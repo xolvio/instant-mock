@@ -1,4 +1,4 @@
-//Dont move these
+import './loadEnv';
 import 'reflect-metadata';
 import {
   EntityManager,
@@ -22,31 +22,26 @@ import graphsRoutes from './routes/graphs';
 import proposalsRoutes from './routes/proposals';
 import seedGroupsRoutes from './routes/seedGroups';
 import seedsRoutes from './routes/seeds';
-
-require('dotenv').config();
+import {logger} from './utilities/logger';
 
 const isTypescript = __filename.endsWith('.ts');
-
-// Migrations are specified in the config file and run upon config init
-const mikroOrmConfig = {
-  ...require(
-    `./mikro-orm.${process.env.MIKRO_ORM_DRIVER || 'sqlite'}${isTypescript ? '.ts' : '.js'}`
-  ).default,
-  debug: process.env.NODE_ENV !== 'production',
-};
-
 const ProxyAgent = Undici.ProxyAgent;
 const setGlobalDispatcher = Undici.setGlobalDispatcher;
-if (process.env.HTTP_PROXY)
-  console.log('process.env.HTTP_PROXY: ', process.env.HTTP_PROXY);
-console.log(
-  'process.env.APOLLO_API_KEY is present: ',
-  !!process.env.APOLLO_API_KEY
-);
 
 if (process.env.HTTP_PROXY) {
+  logger.startup('HTTP_PROXY configuration detected', {
+    proxy: process.env.HTTP_PROXY,
+  });
   setGlobalDispatcher(new ProxyAgent(process.env.HTTP_PROXY));
+} else {
+  logger.startup('No HTTP_PROXY configuration detected');
 }
+
+logger.startup('Checking APOLLO_API_KEY presence', {
+  present: !!process.env.APOLLO_API_KEY,
+});
+
+const port = process.env.PORT || 3033;
 
 export const DI = {} as {
   orm: MikroORM;
@@ -57,15 +52,16 @@ export const DI = {} as {
   apolloClient: Client;
 };
 
-const app = express();
-const port = process.env.PORT || 3033;
+const initializeApp = async () => {
+  const mikroOrmConfig = {
+    ...(await import(
+      `./mikro-orm.${process.env.MIKRO_ORM_DRIVER || 'sqlite'}${isTypescript ? '.ts' : '.js'}`
+    ).then((module) => module.default)),
+  };
 
-(async () => {
-  // Migrations run here
   DI.orm = await MikroORM.init(mikroOrmConfig);
-
-  const migrator = DI.orm.getMigrator();
-  await migrator.up();
+  await DI.orm.getMigrator().up();
+  logger.startup('Database initialized and migrations applied');
 
   DI.em = DI.orm.em;
   DI.seeds = DI.orm.em.getRepository(Seed);
@@ -75,19 +71,35 @@ const port = process.env.PORT || 3033;
   if (process.env.APOLLO_API_KEY) {
     const em = DI.orm.em.fork();
     try {
-      const newApiKey = em.getRepository(ApolloApiKey).create({
-        key: process.env.APOLLO_API_KEY,
-      });
-      await em.persistAndFlush(newApiKey);
-      console.log('Apollo API key saved successfully.');
+      const apiKey = process.env.APOLLO_API_KEY;
+      const existingKey = await em.findOne(ApolloApiKey, {id: 1});
+
+      if (existingKey) {
+        const newApiKey = new ApolloApiKey(apiKey);
+        existingKey.encryptedKey = newApiKey.encryptedKey;
+        existingKey.iv = newApiKey.iv;
+        existingKey.tag = newApiKey.tag;
+        await em.flush();
+      } else {
+        const newApiKey = new ApolloApiKey(apiKey);
+        await em.persistAndFlush(newApiKey);
+      }
+      logger.startup('Apollo API key saved successfully');
     } catch (error) {
-      console.error('Failed to save Apollo API key:', error);
+      if (error instanceof Error) {
+        logger.error('Failed to save Apollo API key', {
+          message: error.message,
+          stack: error.stack,
+        });
+      } else {
+        logger.error('Failed to save Apollo API key', {error});
+      }
     }
   }
 
   DI.apolloClient = new Client();
   await DI.apolloClient.initializeClient();
-  console.log('after client...');
+  logger.startup('Apollo client initialized');
 
   const em = DI.orm.em.fork();
   const defaultGroup = await em
@@ -98,6 +110,7 @@ const port = process.env.PORT || 3033;
     await em.persistAndFlush(newGroup);
   }
 
+  const app = express();
   app.use(express.json({limit: '50mb'}));
   app.use(express.urlencoded({limit: '50mb', extended: true}));
   app.use(cors());
@@ -118,6 +131,7 @@ const port = process.env.PORT || 3033;
       uptime: process.uptime(),
       database: isConnected ? 'connected' : 'disconnected',
     };
+    logger.http('Health check performed', healthcheck);
     res.json(healthcheck);
   });
 
@@ -141,6 +155,7 @@ const port = process.env.PORT || 3033;
   app.get('/api/openapi.json', (_, res) => {
     res.setHeader('Content-Type', 'application/json');
     res.send(swaggerSpec);
+    logger.api('Swagger API documentation served');
   });
 
   app.use(express.static(path.join(__dirname, '../../frontend/build')));
@@ -149,6 +164,10 @@ const port = process.env.PORT || 3033;
   });
 
   app.listen(port, () => {
-    console.log(`Server running on http://localhost:${port}`);
+    logger.startup('Server running', {port, url: `http://localhost:${port}`});
   });
-})();
+};
+
+initializeApp().catch((error) => {
+  logger.error('Failed to start the application', error);
+});

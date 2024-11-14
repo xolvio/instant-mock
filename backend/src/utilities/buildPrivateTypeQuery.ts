@@ -10,6 +10,7 @@ import {
   parse,
   print,
   visit,
+  DocumentNode,
 } from 'graphql';
 import ApolloServerManager from '../MockServer';
 import {SelectionNode} from 'graphql/language/ast';
@@ -224,8 +225,7 @@ export default function ({
   });
 
   const variableDefinitions: VariableDefinitionNode[] = [];
-  // @ts-ignore meh
-  visit(newQueryAst, {
+  visit(newQueryAst as DocumentNode, {
     Variable(node) {
       const matchingVariable = allVariableDefinitions.find(
         (definition) => definition.variable.name.value === node.name.value

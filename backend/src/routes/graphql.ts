@@ -5,6 +5,7 @@ import mockInstances from '../mockInstances';
 import MockServer from '../MockServer';
 import {SeedType} from '../seed/SeedManager';
 import {DI} from '../server';
+import {logger} from '../utilities/logger';
 
 const router = Router();
 const mutex = new Mutex();
@@ -17,6 +18,10 @@ export const getOrStartNewMockServer = async (
   try {
     let mockInstance = mockInstances[graphId]?.[variantName];
     if (!mockInstance) {
+      logger.debug('No existing mock instance found, creating new one', {
+        graphId,
+        variantName,
+      });
       mockInstance = await startNewMockServer(graphId, variantName);
     }
     return mockInstance;
@@ -29,6 +34,7 @@ const startNewMockServer = async (
   graphId: string,
   variantName: string
 ): Promise<MockServer> => {
+  logger.debug('Starting new mock server', {graphId, variantName});
   const schema = await DI.apolloClient.getSchema(graphId, variantName);
 
   const mockServer = new MockServer(schema, {
@@ -37,6 +43,11 @@ const startNewMockServer = async (
   });
 
   const seeds = await DI.seeds.find({graphId, variantName});
+  logger.debug('Loading seeds into mock server', {
+    seedCount: seeds.length,
+    graphId,
+    variantName,
+  });
 
   seeds.forEach((seed) => {
     mockServer.seedManager.registerSeed(seed.seedGroup.id, SeedType.Operation, {
@@ -49,6 +60,7 @@ const startNewMockServer = async (
   mockInstances[graphId] = mockInstances[graphId] || {};
   mockInstances[graphId][variantName] = mockServer;
 
+  logger.debug('Mock server started successfully', {graphId, variantName});
   return mockServer;
 };
 
@@ -60,20 +72,21 @@ const handleGraphQLRequest = async (
 ) => {
   const {query = '', variables = {}} = req.body;
   const operationName = req.body.operationName;
-  // TODO I think it should be name, not id
   const seedGroupName = req.headers['seed-group'] as string;
 
-  // TODO Accessing the database is not a good idea
+  //could be cached
   const seedGroup = await DI.seedGroups.findOne({name: seedGroupName});
 
   if (!seedGroup) {
     return res.status(400).json({message: 'Seed group not found'});
   }
 
-  console.log('Handling GraphQL Request:', {
+  logger.graph('Handling GraphQL Request:', {
     graphId,
     variantName,
     operationName,
+    // query,
+    // variables,
   });
 
   if (!operationName) {
