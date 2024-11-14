@@ -100,8 +100,8 @@ export default class Client {
           if (apiKeyEntity) {
             _headers = {
               ..._headers,
-              'apollographql-client-name': 'explorer',
-              'apollographql-client-version': '1.0.0',
+              'apollographql-client-name': 'instant-mock',
+              'apollographql-client-version': '1.0.0-beta.2',
               'X-API-KEY': apiKeyEntity.getDecryptedKey(),
             };
           }
