@@ -9,6 +9,8 @@ import {setContext} from '@apollo/client/link/context';
 import {RequestContext} from '@mikro-orm/core';
 import {ApolloApiKey} from '../models/apolloApiKey';
 import {DI} from '../server';
+import {logger} from '../utilities/logger';
+import {SchemaLoader} from '../utilities/schemaLoader';
 import {
   CreateProposalMutation,
   GetGraphQuery,
@@ -32,8 +34,6 @@ import {GET_ORGANIZATION_ID} from './queries/getOrganizationId';
 import {GET_SCHEMA} from './queries/getSchema';
 import {GET_VARIANT} from './queries/getVariant';
 import {PROPOSAL_LAUNCHES} from './queries/proposalLaunches';
-import {logger} from '../utilities/logger';
-import {SchemaLoader} from '../utilities/schemaLoader';
 
 export default class Client {
   private apolloClient!: ApolloClient<unknown>;
@@ -75,7 +75,7 @@ export default class Client {
     let uri;
     switch (process.env.NODE_ENV) {
       case 'e2e-test':
-        uri = `http://localhost:${process.env.PLAY_PORT}/api/local-apollo-platform-api/current/graphql`;
+        uri = `http://instant-mock-e2e-play:${process.env.PLAY_PORT}/api/local-apollo-platform-api/current/graphql`;
         break;
       default:
         uri = 'https://api.apollographql.com/api/graphql';
@@ -148,7 +148,18 @@ export default class Client {
               operationMatchArguments: operationMatchArguments,
             }),
           })
-            .then((res) => res.json())
+            .then((res) => {
+              if (!res.ok) {
+                logger.api('Error registering seed', {
+                  operationName,
+                });
+                // Throw an error with the HTTP status text if the response is not OK
+                throw new Error(
+                  `HTTP error! Status: ${res.status} - ${res.statusText}`
+                );
+              }
+              return res.json();
+            })
             .then((json) => {
               logger.api('Seed registered via InstantMockLink', {
                 operationName,
@@ -156,6 +167,7 @@ export default class Client {
               });
             })
             .catch((err) => {
+              // This will catch both network errors and HTTP errors
               logger.error('Failed to create seed via InstantMockLink', {
                 operationName,
                 error: err.message,
@@ -373,13 +385,16 @@ export default class Client {
   async getSchema(graphId: string, name: string): Promise<string | null> {
     if (process.env.USE_LOCAL_SCHEMA === 'true') {
       const schemas = await this.schemaLoader.loadFromFiles();
-      const debugSchema = schemas.map((s) => s.name);
-      logger.debug('Found schemas:', {debugSchema});
-      const schema = schemas.find(
-        (s) => s.name === graphId.replace('local-', '')
-      );
-      logger.debug('found schmea', {schemas, schema});
-      return schema ? schema.schema : null;
+      // TODO we need to think if we want to support multiple schemas loaded from files, for now we only select the first one
+      // const debugSchema = schemas.map((s) => s.name);
+      // logger.debug('Found schemas:', {debugSchema});
+      // const schema = schemas.find(
+      //   (s) => s.name === graphId.replace('local-', '')
+      // );
+      const schema = schemas[0].schema;
+      logger.debug('found schema', {schema});
+      // return schema ? schema.schema : null;
+      return schemas[0].schema;
     }
 
     try {
