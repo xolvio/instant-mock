@@ -1,4 +1,4 @@
-import {readFileSync, readdirSync, existsSync} from 'fs';
+import {existsSync, readdirSync, readFileSync} from 'fs';
 import {join} from 'path';
 import {logger} from './logger';
 
@@ -10,7 +10,8 @@ export interface SchemaSource {
 export class SchemaLoader {
   private schemaDirectory: string;
 
-  constructor(schemaDirectory: string = join(process.cwd(), 'src/graphql/')) {
+  // TODO it's supposed to be src/graphql for dev env
+  constructor(schemaDirectory: string = join(process.cwd(), 'dist/graphql/')) {
     this.schemaDirectory = process.env.SCHEMA_DIRECTORY || schemaDirectory;
     logger.startup('SchemaLoader initialized', {
       schemaDirectory: this.schemaDirectory,
