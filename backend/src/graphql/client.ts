@@ -75,7 +75,7 @@ export default class Client {
     let uri;
     switch (process.env.NODE_ENV) {
       case 'e2e-test':
-        uri = `http://localhost:${process.env.PLAY_PORT}/api/Apollo-Platform-API-lkwnx/current/graphql`;
+        uri = `http://localhost:${process.env.PLAY_PORT}/api/local-apollo-platform-api/current/graphql`;
         break;
       default:
         uri = 'https://api.apollographql.com/api/graphql';
