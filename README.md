@@ -70,7 +70,7 @@ Enhance cross-functional collaboration with real data-backed annotations and sch
 * **Narrative Integration:** Sign up for Narrative to use the Annotator, powered by instant-mock, for UI mockup annotations directly from your schema.
 * **Schema Proposal Automation:** Detect mismatches between your mock operations and schema, and automatically generate a schema proposal for Apollo Studio—instantly backed by a mock server.
 
-## 🏆 Why `nstant-mock`?
+## 🏆 Why `instant-mock`?
 
 Say goodbye to:
 
