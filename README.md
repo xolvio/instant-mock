@@ -1,100 +1,93 @@
 # 🚀 @xolvio/instant-mock
 
-Your ultimate GraphQL Federation-native mocking solution for accelerated development! 🎭✨
+InstantMock is an **enterprise-ready Express.js server** and **React UI** for creating and distributing **GraphQL mock servers**—designed to simplify API mocking across development teams.
 
-## Quick Start
+With **first-class Apollo Federation integration**, you can instantly mock any **Supergraph, Subgraph, or Schema Proposal**.
 
-Clone the repo and run:
+> **Not using Apollo?** No worries! InstantMock supports any valid GraphQL schema.
 
-```bash
+## ⏩ Quick Start
+
+### Requirements
+
+- **Apollo Studio**: [Generate a `user:` API key here](https://studio.apollographql.com/user-settings/api-keys) if using Apollo Studio schemas.
+- **Local Files**: To use schema files, place `.graphql` files in `backend/src/graphql`.
+
+### Running Locally
+
+**Clone the repo** and run:
+
+```shell
 npm start
 ```
-OR
-```bash
+
+Using Docker Compose:
+
+```shell
 docker compose up
 ```
 
-That's it! Head on over to `http://localhost:3033` to start mocking like a pro! 😎
+Or if you don't want to clone the repo, pull from Docker Hub:
 
-🔮 **Coming Soon:** `npx @xolvio/instant-mock`
+```shell
+docker pull xolvio/instant-mock:1.0.0-beta.2
+docker run -p 3033:3033 xolvio/instant-mock:1.0.0-beta.2
+```
 
-## 🌟 Supercharge GraphQL Development
+InstantMock will be available on http://localhost:3033.
 
-Effortlessly spin up a fully-featured, schema-aware GraphQL mock server that:
+To connect with Apollo, go to the settings page and enter your key: http://localhost:3033/settings.
 
-* Seamlessly integrates with Apollo Studio
-* Supports enterprise HTTP proxies
-* Provides flexible database options
+> 🔮 Coming Soon: npx @xolvio/instant-mock for an even faster start.
 
-With `instant-mock`, creating consistent, team-specific mock data for GraphQL APIs is easier than ever! 🎉
+## 💡 Why InstantMock?
 
-## 🔥 Key Features
+### Problem
+GraphQL Federation teams often struggle with:
+- Managing complex supergraph schemas across teams
+- Maintaining consistent mock data
+- Time spent creating and updating mock servers
+- Integration testing with proposed schema changes
 
-* **Apollo Studio Integration:** Directly syncs with Apollo Studio, including schema and variant management.
-* **Flexible Schema Management:** Import schemas from files or Apollo Studio for on-demand introspection.
-* **Enterprise HTTP Proxy Support:** Works seamlessly within enterprise network environments.
-* **Secure Data Management:** Leverages encryption keys for securely storing sensitive data.
-* **Database Agnostic:** Ships with SQLite by default, but also supports PostgreSQL and MySQL.
-* 🔮 **SSO Support Coming Soon**
+### Solution
+InstantMock provides:
+- Centralized mock data management
+- Native Federation support (supergraphs/subgraphs)
+- GUI for creating and managing mocks
+- Instant deployment of mock responses
 
+### Enterprise Features
+- **Security**: Encryption key management, secure data storage
+- **Infrastructure**: HTTP proxy support, K8s-ready deployment
+- **Flexibility**: SQLite, PostgreSQL, or MySQL support
+- **Data Control**: Idempotent seed management with group organization
 
-## 🎭 How It Works
+### Key Benefits
+- **Faster Development**: Create and share mocks in minutes
+- **Better Testing**: Consistent mock data across teams
+- **Federation Ready**: Test schema changes before deployment
+- **No Setup**: Replace local mock servers and manual JSON files
 
-### Main Interface
+> 🔮 **Coming Soon**: SSO support, file uploads, and enhanced Helm charts with PostgreSQL
 
-The @xolvio/instant-mock experience is divided into three main tabs:
+## 🚢 Deployment Options
 
-1. **Query:** Select and explore schemas, inspect schema variants, and instantly mock responses.
-2. **Data:** Create and manage seed data, including Seed Groups for isolated team-specific mocks.
-3. **Collaborate:** Use Narrative's Annotator, enabling schema-to-UI annotations and collaborative mockup validation.
+### Docker
 
-### Feature Breakdown
+InstantMock is containerized for easy deployment in Docker-supported environments.
 
-#### Query Tab
+```shell
+docker pull xolvio/instant-mock:<version>
+```
 
-Instantly introspect and explore any graph from your schema. Choose a schema and variant, and let instant-mock provide you with auto-generated responses for every field using Faker.js, with sensible defaults.
+### Kubernetes (K8s)
 
-🔮 **Coming Soon:** Customize Faker.js configurations for more control over default mock data.
+A basic Helm chart is provided to deploy InstantMock with Kubernetes. Currently, it ships with SQLite and is limited to a single replica.
 
-#### Data Tab
-
-Here's where @xolvio/instant-mock shines ✨. After executing an operation in the Query tab, you can create seed data by clicking "Create Seed From Response". This takes you to the Data tab, where you can modify and persist your responses.
-
-* **Seed Manager:** Manage and modify seed data for consistent responses.
-* **Seed Groups:** Separate mock responses by group, allowing multiple teams to work with isolated, idempotent mock data for the same operations.
-
-#### 🤝 Collaborate Tab
-
-Enhance cross-functional collaboration with real data-backed annotations and schema management:
-
-* **Narrative Integration:** Sign up for Narrative to use the Annotator, powered by instant-mock, for UI mockup annotations directly from your schema.
-* **Schema Proposal Automation:** Detect mismatches between your mock operations and schema, and automatically generate a schema proposal for Apollo Studio—instantly backed by a mock server.
-
-## 🏆 Why `instant-mock`?
-
-Say goodbye to:
-
-👋 Unreliable Postman collections
-👋 Ad-hoc mock servers
-👋 Mismatched schemas
-
-By centralizing mock data with Apollo Federation awareness, @xolvio/instant-mock delivers consistent, reliable mock data that scales with your team's needs. Whether you're a frontend engineer, backend developer, or QA, instant-mock is designed to make your life easier and boost your productivity! 🚀💪
-
-## 📚 Documentation
-
-For detailed documentation, check out our [Wiki](comingsoon).
-
-## 🤝 Contributing
-
-We welcome contributions! Please see our [Contributing Guide](comingsoon) for more details.
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](comingsoon) file for details.
+> 🔮 Coming Soon: Full Helm chart with scaling support and PostgreSQL.
 
 ## 🙏 Acknowledgments
 
-* The amazing [gq-mock](https://github.com/wayfair-incubator/gqmock) team
-* Our fantastic community of users and contributors
+InstantMock builds on the work from gqmock, with many of the base MockServer utilities adapted and extended for seamless integration.
 
-Made with ❤️ by the @xolvio team
+> Made with ❤️ by the @xolvio team
