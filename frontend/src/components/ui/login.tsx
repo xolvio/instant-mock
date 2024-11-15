@@ -1,6 +1,6 @@
 'use client';
 
-import {Github, Globe} from 'lucide-react';
+import {MarkGithubIcon} from '@primer/octicons-react';
 import * as React from 'react';
 import logo from '../../assets/xolvio_logo.png';
 import {Button} from './button';
@@ -33,15 +33,7 @@ export default function Login() {
               className="relative w-full justify-center gap-2"
               type="button"
             >
-              <Globe className="h-4 w-4" />
-              Continue with Google
-            </Button>
-            <Button
-              variant="outline"
-              className="relative w-full justify-center gap-2"
-              type="button"
-            >
-              <Github className="h-4 w-4" />
+              <MarkGithubIcon size={16} />
               Continue with GitHub
             </Button>
           </div>
