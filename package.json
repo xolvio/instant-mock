@@ -10,7 +10,9 @@
     "e2e:record": "ts-node scripts/run-e2e-tests.ts record",
     "e2e:test": "ts-node scripts/run-e2e-tests.ts test",
     "cypress:basic": "concurrently -k -s first \"NODE_ENV=development PORT=3032 npm --prefix backend start\" \"wait-on http://localhost:3032 && CYPRESS_BASE_URL=http://localhost:3032 cypress run --spec 'cypress/e2e/basic-functionality.cy.ts'\"",
-    "cypress:open": "concurrently --kill-others --success first --color always \"FORCE_COLOR=1 npm start\" \"wait-on http://localhost:3032 && FORCE_COLOR=1 CYPRESS_BASE_URL=http://localhost:3032 cypress open\""
+    "cypress:open": "concurrently --kill-others --success first --color always \"FORCE_COLOR=1 npm start\" \"wait-on http://localhost:3032 && FORCE_COLOR=1 CYPRESS_BASE_URL=http://localhost:3032 cypress open\"",
+    "dev": "docker-compose up",
+    "dev:build": "docker-compose up --build"
   },
   "keywords": [],
   "author": "",

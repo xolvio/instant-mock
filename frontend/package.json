@@ -43,6 +43,7 @@
     "react-router-dom": "^6.26.0",
     "react-scripts": "5.0.1",
     "react-syntax-highlighter": "^15.5.0",
+    "supertokens-auth-react": "latest",
     "tailwind-merge": "^2.4.0",
     "tailwindcss-animate": "^1.0.7",
     "typescript": "^4.9.5",

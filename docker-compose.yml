@@ -10,7 +10,57 @@ services:
       APOLLO_API_KEY: "${APOLLO_API_KEY}"
       NODE_ENV: "development"
       HOST: "0.0.0.0"
+      SUPERTOKENS_CONNECTION_URI: "http://supertokens:3567"
+      GITHUB_CLIENT_ID: "${GITHUB_CLIENT_ID}"
+      GITHUB_CLIENT_SECRET: "${GITHUB_CLIENT_SECRET}"
     ports:
       - "${PORT:-3031}:${PORT:-3031}"
     volumes:
       - ./backend/data:/app/backend/data
+    networks:
+      - app_network
+    depends_on:
+      - supertokens
+      - db
+
+  db:
+    image: 'postgres:latest'
+    container_name: supertokens_db
+    environment:
+      POSTGRES_USER: supertokens_user
+      POSTGRES_PASSWORD: somePassword
+      POSTGRES_DB: supertokens
+    ports:
+      - 5432:5432
+    networks:
+      - app_network
+    restart: unless-stopped
+    healthcheck:
+      test: [ 'CMD', 'pg_isready', '-U', 'supertokens_user', '-d', 'supertokens' ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  supertokens:
+    image: registry.supertokens.io/supertokens/supertokens-postgresql:latest
+    container_name: supertokens
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      POSTGRESQL_CONNECTION_URI: "postgresql://supertokens_user:somePassword@db:5432/supertokens"
+    ports:
+      - "3567:3567"
+    networks:
+      - app_network
+    restart: unless-stopped
+    healthcheck:
+      test: >
+        bash -c 'exec 3<>/dev/tcp/127.0.0.1/3567 && echo -e "GET /hello HTTP/1.1\r\nhost: 127.0.0.1:3567\r\nConnection: close\r\n\r\n" >&3 && cat <&3 | grep "Hello"'
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  app_network:
+    driver: bridge

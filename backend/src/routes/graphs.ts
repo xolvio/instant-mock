@@ -1,19 +1,19 @@
-import express, {Request, Response, Router} from 'express';
-import {buildASTSchema, parse} from 'graphql';
+import express, { Request, Response, Router } from 'express';
+import { buildASTSchema, parse } from 'graphql';
 import {
   CreateProposalMutation,
   GetGraphQuery,
 } from '../graphql/apollo/types/graphql';
-import {DI} from '../server';
-import {logger} from '../utilities/logger';
+import { DI } from '../server';
+import { logger } from '../utilities/logger';
 
 const router: Router = express.Router();
 
 const prepareSubgraphSchema = (subgraph: {
   name: string;
-  activePartialSchema: {sdl: string};
+  activePartialSchema: { sdl: string };
 }) => {
-  logger.debug('Preparing subgraph schema', {subgraphName: subgraph.name});
+  logger.debug('Preparing subgraph schema', { subgraphName: subgraph.name });
   const schemaStringWithDirectives = `
     scalar FieldSet
     scalar link__Import
@@ -27,18 +27,18 @@ const prepareSubgraphSchema = (subgraph: {
   `;
 
   const schema = buildASTSchema(parse(schemaStringWithDirectives));
-  return {name: subgraph.name, schema};
+  return { name: subgraph.name, schema };
 };
 
 const unifyVariantAndProposalDataShapes = (graph: GetGraphQuery['graph']) => {
   logger.debug('Unifying variant and proposal data shapes');
-  if (!graph?.proposals) return {...graph};
+  if (!graph?.proposals) return { ...graph };
   const {
-    proposals: {proposals},
+    proposals: { proposals },
   } = graph;
 
   const updatedProposals = proposals.map(
-    ({displayName, key, latestPublication}) => ({
+    ({ displayName, key, latestPublication }) => ({
       displayName,
       key: key.key,
       latestPublication: latestPublication.latestPublication,
@@ -51,18 +51,25 @@ const unifyVariantAndProposalDataShapes = (graph: GetGraphQuery['graph']) => {
   };
 };
 
-router.get('/graphs', async (_: Request, res: Response) => {
+router.get('/graphs', async (req: Request, res: Response) => {
+  logger.info('Graphs endpoint accessed', {
+    userId: (req as any).session?.getUserId(),
+    method: req.method,
+    path: req.path
+  });
+
   try {
     const graphs = await DI.apolloClient.getGraphs();
+    logger.debug('Graphs retrieved successfully', { count: graphs.length });
     res.json(graphs);
   } catch (error) {
-    console.error(error);
-    res.status(500).send({error: 'Error querying GraphQL API'});
+    logger.error('Failed to retrieve graphs', { error });
+    res.status(500).send({ error: 'Error querying GraphQL API' });
   }
 });
 
 router.get('/graphs/:graphId', async (req: Request, res: Response) => {
-  logger.info('Graphs endpoint hit with req params: ', {params: req.params});
+  logger.info('Graphs endpoint hit with req params: ', { params: req.params });
   const graphId = req.params.graphId;
   const withSubgraphs = req.query.withSubgraphs === 'true';
 
@@ -76,19 +83,19 @@ router.get('/graphs/:graphId', async (req: Request, res: Response) => {
 
     res.json(graphDataWithUnifiedVariantAndProposalShapes);
   } catch (error) {
-    logger.error('/graphs error', {error});
-    res.status(500).send({error: 'Error querying GraphQL API'});
+    logger.error('/graphs error', { error });
+    res.status(500).send({ error: 'Error querying GraphQL API' });
   }
 });
 
 router.post(
   '/graphs/:graphId/:variantName/proposals',
   async (req: Request, res: Response) => {
-    const {graphId, variantName} = req.params;
-    const {displayName, description} = req.body;
+    const { graphId, variantName } = req.params;
+    const { displayName, description } = req.body;
 
     if (!graphId || !variantName || !displayName) {
-      return res.status(400).json({error: 'Missing required parameters'});
+      return res.status(400).json({ error: 'Missing required parameters' });
     }
 
     try {
@@ -100,7 +107,7 @@ router.post(
       );
 
       if (!data?.graph?.createProposal) {
-        return res.status(500).json({error: 'Failed to create proposal'});
+        return res.status(500).json({ error: 'Failed to create proposal' });
       }
 
       const response = extractProposalData(data.graph?.createProposal);
@@ -112,7 +119,7 @@ router.post(
       res.json(response);
     } catch (error) {
       console.error(error);
-      res.status(500).send({error: 'Error creating proposal'});
+      res.status(500).send({ error: 'Error creating proposal' });
     }
   }
 );
@@ -121,7 +128,7 @@ function extractProposalData(
   createProposal: NonNullable<CreateProposalMutation['graph']>['createProposal']
 ) {
   if (!createProposal) {
-    return {error: 'No data available'};
+    return { error: 'No data available' };
   }
 
   switch (createProposal.__typename) {
@@ -135,9 +142,9 @@ function extractProposalData(
     case 'CreateProposalError':
     case 'PermissionError':
     case 'ValidationError':
-      return {error: createProposal.message};
+      return { error: createProposal.message };
     default:
-      return {error: 'Unexpected response type'};
+      return { error: 'Unexpected response type' };
   }
 }
 
@@ -157,7 +164,7 @@ router.post('/graphs/:graphId/reset', async (req: Request, res: Response) => {
     res.json('success');
   } catch (error) {
     console.error(error);
-    res.status(500).send({error: 'Error resetting graph'});
+    res.status(500).send({ error: 'Error resetting graph' });
   }
 });
 
