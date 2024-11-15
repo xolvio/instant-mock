@@ -21,13 +21,13 @@ With **first-class Apollo Federation integration**, you can instantly mock any *
 npm start
 ```
 
-Using Docker Compose:
+Or use Docker Compose:
 
 ```shell
 docker compose up
 ```
 
-Or if you don't want to clone the repo, pull from Docker Hub:
+Or, if you don't want to clone the repo, pull from Docker Hub:
 
 ```shell
 docker pull xolvio/instant-mock:1.0.0-beta.2
