@@ -1,12 +1,12 @@
-import {execSync, spawn} from "child_process";
-import {format} from "date-fns";
+import { execSync, spawn } from "child_process";
+import { format } from "date-fns";
 import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
 
 dotenv.config();
 
-const FIXTURE_BASE_PATH = path.join("test", "e2e", "fixtures");
+const FIXTURE_BASE_PATH = path.join("cypress", "e2e", "fixtures");
 
 const colors = {
   play: "\x1b[34m", // Blue for play server logs
