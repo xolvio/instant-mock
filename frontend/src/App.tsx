@@ -1,6 +1,7 @@
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import {BrowserRouter as Router, Route, Routes} from 'react-router-dom';
 import Home from './components/ui/home';
+import Login from './components/ui/login';
 import NotFound from './components/ui/not-found';
 import SeedDetails from './components/ui/seed-details';
 import SettingsPage from './components/ui/settings';
@@ -11,6 +12,7 @@ function App() {
   return (
     <Router>
       <Routes>
+        <Route path="/login" element={<Login />}></Route>
         <Route path="/" element={<Home />} />
         <Route
           path="/graphs/:graphId/variants"
