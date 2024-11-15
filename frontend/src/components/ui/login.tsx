@@ -24,7 +24,7 @@ export default function Login() {
           <div className="space-y-2 text-center">
             <h1 className="text-2xl font-semibold tracking-tight">Welcome</h1>
             <p className="text-sm text-muted-foreground">
-              Log in to Narrative to continue to Narrative.
+              Log in to InstantMock to start mocking.
             </p>
           </div>
           <div className="space-y-4">
