@@ -2,11 +2,13 @@ import {Seed} from '@/models/Seed';
 import {ApolloSandbox} from '@apollo/sandbox/react';
 import {HandleRequest} from '@apollo/sandbox/src/helpers/postMessageRelayHelpers';
 import {zodResolver} from '@hookform/resolvers/zod';
-import {ChevronsUpDown, Plus, Settings, Trash} from 'lucide-react';
+import {ChevronsUpDown, LogOut, Plus, Settings, Trash} from 'lucide-react';
 import React, {useCallback, useEffect, useState} from 'react';
 import {useForm} from 'react-hook-form';
 import {useNavigate} from 'react-router';
-import {useSessionContext} from 'supertokens-auth-react/recipe/session';
+import Session, {
+  useSessionContext,
+} from 'supertokens-auth-react/recipe/session';
 import {z} from 'zod';
 import instant_mock_logo from '../../assets/instant_mock_logo.svg';
 import narrative from '../../assets/narrative.png';
@@ -48,6 +50,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from './dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from './dropdown-menu';
 import {
   Form,
   FormControl,
@@ -118,6 +126,11 @@ const Home = () => {
     setSelectedTab('seeds');
     setIsSeedButtonVisible(false);
   };
+
+  async function handleSignOut() {
+    await Session.signOut();
+    navigate('/auth');
+  }
 
   useEffect(() => {
     const fetchSeedGroups = () => {
@@ -560,11 +573,20 @@ const Home = () => {
               className="h-5 w-5 text-gray-500 cursor-pointer"
               onClick={handleSettingsClick}
             />
-            <Avatar>
-              <AvatarImage src={avatarUrl} />
-              {/*TODO probably first letter of user's name*/}
-              <AvatarFallback>?</AvatarFallback>
-            </Avatar>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Avatar className="cursor-pointer">
+                  <AvatarImage src={avatarUrl} />
+                  <AvatarFallback>?</AvatarFallback>
+                </Avatar>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem onSelect={handleSignOut}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Sign out</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
         <div className="flex items-center gap-4 px-4 py-2 bg-white border-t">
