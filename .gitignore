@@ -37,3 +37,5 @@ node_modules/
 .docusaurus
 seeds.db
 .pgpass
+
+.idea/
