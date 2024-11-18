@@ -1,17 +1,18 @@
-import { Seed } from '@/models/Seed';
-import { ApolloSandbox } from '@apollo/sandbox/react';
-import { HandleRequest } from '@apollo/sandbox/src/helpers/postMessageRelayHelpers';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { ChevronsUpDown, Plus, Settings, Trash, User } from 'lucide-react';
-import React, { useCallback, useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router';
-import { z } from 'zod';
+import {Seed} from '@/models/Seed';
+import {ApolloSandbox} from '@apollo/sandbox/react';
+import {HandleRequest} from '@apollo/sandbox/src/helpers/postMessageRelayHelpers';
+import {zodResolver} from '@hookform/resolvers/zod';
+import {ChevronsUpDown, Plus, Settings, Trash} from 'lucide-react';
+import React, {useCallback, useEffect, useState} from 'react';
+import {useForm} from 'react-hook-form';
+import {useNavigate} from 'react-router';
+import {useSessionContext} from 'supertokens-auth-react/recipe/session';
+import {z} from 'zod';
 import instant_mock_logo from '../../assets/instant_mock_logo.svg';
 import narrative from '../../assets/narrative.png';
 import logo from '../../assets/xolvio_logo.png';
-import { getApiBaseUrl } from '../../config';
-import { getSeeds } from '../../services/SeedService';
+import {getApiBaseUrl} from '../../config';
+import {getSeeds} from '../../services/SeedService';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,7 +23,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from './alert-dialog';
-import { Button } from './button';
+import {Avatar, AvatarFallback, AvatarImage} from './avatar';
+import {Button} from './button';
 import {
   Card,
   CardContent,
@@ -55,9 +57,9 @@ import {
   FormLabel,
   FormMessage,
 } from './form';
-import { Input } from './input';
-import { Label } from './label';
-import { Popover, PopoverContent, PopoverTrigger } from './popover';
+import {Input} from './input';
+import {Label} from './label';
+import {Popover, PopoverContent, PopoverTrigger} from './popover';
 import {
   Select,
   SelectContent,
@@ -67,7 +69,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from './select';
-import { Switch } from './switch';
+import {Switch} from './switch';
 import {
   Table,
   TableBody,
@@ -76,11 +78,10 @@ import {
   TableHeader,
   TableRow,
 } from './table';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from './tabs';
-import { Textarea } from './textarea';
-import { Toaster } from './toaster';
-import { toast } from './use-toast';
-import { useSessionContext } from "supertokens-auth-react/recipe/session";
+import {Tabs, TabsContent, TabsList, TabsTrigger} from './tabs';
+import {Textarea} from './textarea';
+import {Toaster} from './toaster';
+import {toast} from './use-toast';
 
 const Home = () => {
   const sessionContext = useSessionContext();
@@ -107,6 +108,7 @@ const Home = () => {
   const [seedArgs, setSeedArgs] = useState('{}');
   const [seedResponse, setSeedResponse] = useState('');
   const [operationName, setOperationName] = useState('');
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const serverBaseUrl = getApiBaseUrl();
 
   const handleSettingsClick = () => navigate('/settings');
@@ -193,10 +195,10 @@ const Home = () => {
 
         return fetchGraphs().then((firstVariant) => {
           console.log('Graphs and variants processed.');
-          return { defaultGroup, firstVariant };
+          return {defaultGroup, firstVariant};
         });
       })
-      .then(({ defaultGroup, firstVariant }) => {
+      .then(({defaultGroup, firstVariant}) => {
         if (firstVariant && defaultGroup) {
           console.log(
             'Fetching seeds with:',
@@ -331,6 +333,32 @@ const Home = () => {
   });
 
   useEffect(() => {
+    const fetchAvatar = async () => {
+      try {
+        console.log('fetching avatar');
+        const response = await fetch(`${serverBaseUrl}/api/avatar`, {
+          method: 'GET',
+          credentials: 'include', // Include cookies for session-based auth
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch avatar: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        setAvatarUrl(data.avatarUrl);
+      } catch (err: any) {
+        console.error('Error fetching avatar:', err);
+      }
+    };
+
+    fetchAvatar();
+  }, []);
+
+  useEffect(() => {
     console.log('Session Context:', JSON.stringify(sessionContext, null, 2));
   }, [sessionContext]);
 
@@ -338,7 +366,7 @@ const Home = () => {
     return null;
   }
 
-  const { setValue } = form;
+  const {setValue} = form;
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
@@ -396,8 +424,8 @@ const Home = () => {
     try {
       const response = await fetch(`${serverBaseUrl}/api/seedGroups`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: newGroupName }),
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({name: newGroupName}),
       });
 
       if (response.ok) {
@@ -406,13 +434,13 @@ const Home = () => {
         setSelectedSeedGroup(newGroup);
         setDialogOpen(false);
         setNewGroupName('');
-        toast({ title: 'New seed group added successfully!' });
+        toast({title: 'New seed group added successfully!'});
       } else {
-        toast({ variant: 'destructive', title: 'Failed to add seed group.' });
+        toast({variant: 'destructive', title: 'Failed to add seed group.'});
       }
     } catch (error) {
       console.error('Error creating new seed group:', error);
-      toast({ variant: 'destructive', title: 'Error adding new seed group.' });
+      toast({variant: 'destructive', title: 'Error adding new seed group.'});
     }
   };
 
@@ -525,7 +553,11 @@ const Home = () => {
               className="h-5 w-5 text-gray-500 cursor-pointer"
               onClick={handleSettingsClick}
             />
-            <User className="h-5 w-5 text-gray-500" />
+            <Avatar>
+              <AvatarImage src={avatarUrl} />
+              {/*TODO probably first letter of user's name*/}
+              <AvatarFallback>?</AvatarFallback>
+            </Avatar>
           </div>
         </div>
         <div className="flex items-center gap-4 px-4 py-2 bg-white border-t">
@@ -803,7 +835,7 @@ const Home = () => {
                         <FormField
                           control={form.control}
                           name="operationName"
-                          render={({ field }) => (
+                          render={({field}) => (
                             <FormItem>
                               <FormLabel>Operation name</FormLabel>
                               <FormControl>
@@ -839,12 +871,13 @@ const Home = () => {
                         <FormField
                           control={form.control}
                           name="operationMatchArguments"
-                          render={({ field }) => (
+                          render={({field}) => (
                             <FormItem
-                              className={`transition-all duration-500 ease-in-out ${seedWithArguments
-                                ? 'max-h-[500px] opacity-100 visible'
-                                : 'max-h-0 opacity-0 invisible'
-                                }`}
+                              className={`transition-all duration-500 ease-in-out ${
+                                seedWithArguments
+                                  ? 'max-h-[500px] opacity-100 visible'
+                                  : 'max-h-0 opacity-0 invisible'
+                              }`}
                             >
                               <FormLabel>Matching arguments (JSON)</FormLabel>
                               <FormControl>
@@ -865,7 +898,7 @@ const Home = () => {
                         <FormField
                           control={form.control}
                           name="seedResponse"
-                          render={({ field }) => (
+                          render={({field}) => (
                             <FormItem>
                               <FormLabel>Response (JSON)</FormLabel>
                               <FormControl>
@@ -919,11 +952,12 @@ const Home = () => {
                           // ref={matchArgumentsRef}
                           // contentEditable={isEditing}
                           suppressContentEditableWarning={true}
-                          className={`bg-gray-100 p-4 rounded overflow-auto focus:border-primary focus:outline-none ${false
-                            ? 'border-[1px] border-[hsl(var(--primary))]'
-                            : 'border-[1px] border-transparent'
-                            }`}
-                          style={{ minHeight: '100px' }}
+                          className={`bg-gray-100 p-4 rounded overflow-auto focus:border-primary focus:outline-none ${
+                            false
+                              ? 'border-[1px] border-[hsl(var(--primary))]'
+                              : 'border-[1px] border-transparent'
+                          }`}
+                          style={{minHeight: '100px'}}
                         >
                           <code className="text-sm">
                             {JSON.stringify(
@@ -940,11 +974,12 @@ const Home = () => {
                           // ref={responseRef}
                           // contentEditable={isEditing}
                           suppressContentEditableWarning={true}
-                          className={`bg-gray-100 p-4 rounded overflow-auto focus:border-primary focus:outline-none ${false
-                            ? 'border-[1px] border-[hsl(var(--primary))]'
-                            : 'border-[1px] border-transparent'
-                            }`}
-                          style={{ minHeight: '100px' }}
+                          className={`bg-gray-100 p-4 rounded overflow-auto focus:border-primary focus:outline-none ${
+                            false
+                              ? 'border-[1px] border-[hsl(var(--primary))]'
+                              : 'border-[1px] border-transparent'
+                          }`}
+                          style={{minHeight: '100px'}}
                         >
                           <code className="text-sm">
                             {JSON.stringify(seedToView?.seedResponse, null, 2)}
