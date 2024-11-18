@@ -1,5 +1,6 @@
-import ThirdParty from 'supertokens-node/recipe/thirdparty';
 import Session from 'supertokens-node/recipe/session';
+import ThirdParty from 'supertokens-node/recipe/thirdparty';
+import UserMetadata from 'supertokens-node/recipe/usermetadata';
 import {TypeInput} from 'supertokens-node/types';
 import config from './config';
 
@@ -25,6 +26,30 @@ export const SuperTokensConfig: TypeInput = {
   },
   recipeList: [
     ThirdParty.init({
+      override: {
+        functions: (originalImplementation) => {
+          return {
+            ...originalImplementation,
+            // override the thirdparty sign in / up API
+            signInUp: async function (input) {
+              const response = await originalImplementation.signInUp(input);
+
+              if (response.status === 'OK') {
+                const avatar =
+                  response.rawUserInfoFromProvider.fromUserInfoAPI?.user
+                    .avatar_url;
+                if (avatar) {
+                  await UserMetadata.updateUserMetadata(response.user.id, {
+                    avatarUrl: avatar,
+                  });
+                }
+              }
+
+              return response;
+            },
+          };
+        },
+      },
       signInAndUpFeature: {
         providers: [
           {
@@ -58,5 +83,6 @@ export const SuperTokensConfig: TypeInput = {
       },
     }),
     Session.init(),
+    UserMetadata.init(),
   ],
 };
