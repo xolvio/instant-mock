@@ -233,7 +233,14 @@ const Home = () => {
     async (endpointUrl, requestOptions) => {
       console.log('Fetching with custom fetcher');
 
-      const result = await fetch(endpointUrl, requestOptions);
+      const result = await fetch(endpointUrl, {
+        method: 'POST',
+        headers: {
+          'seed-group': requestOptions.headers['seed-group'],
+          'Content-Type': 'application/json',
+        },
+        body: requestOptions.body,
+      });
       const responseBody = await result.json();
       const requestBody = JSON.parse(requestOptions.body?.toString()!);
 

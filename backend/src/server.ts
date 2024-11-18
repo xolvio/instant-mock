@@ -125,8 +125,12 @@ const initializeApp = async () => {
   app.use(express.urlencoded({limit: '50mb', extended: true}));
   app.use(
     cors({
-      origin: getWebsiteDomain(),
-      allowedHeaders: ['content-type', ...supertokens.getAllCORSHeaders()],
+      origin: [getWebsiteDomain()],
+      allowedHeaders: [
+        'content-type',
+        ...supertokens.getAllCORSHeaders(),
+        'seed-group',
+      ],
       methods: ['GET', 'PUT', 'POST', 'DELETE'],
       credentials: true,
     })
