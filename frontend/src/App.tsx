@@ -1,12 +1,12 @@
 import {BrowserRouter as Router, Route, Routes} from 'react-router-dom';
 import SuperTokens, {SuperTokensWrapper} from 'supertokens-auth-react';
-import {getSuperTokensRoutesForReactRouterDom} from 'supertokens-auth-react/ui';
 import {SessionAuth} from 'supertokens-auth-react/recipe/session';
+import CallbackHandler from './CallbackHandler';
 import Home from './components/ui/home';
 import Login from './components/ui/login';
 import NotFound from './components/ui/not-found';
 import SettingsPage from './components/ui/settings';
-import {PreBuiltUIList, SuperTokensConfig} from './config';
+import {SuperTokensConfig} from './config';
 
 SuperTokens.init(SuperTokensConfig);
 
@@ -15,10 +15,12 @@ function App() {
     <SuperTokensWrapper>
       <Router>
         <Routes>
-          {getSuperTokensRoutesForReactRouterDom(
-            require('react-router-dom'),
-            PreBuiltUIList
-          )}
+          {/*{getSuperTokensRoutesForReactRouterDom(*/}
+          {/*  require('react-router-dom'),*/}
+          {/*  PreBuiltUIList*/}
+          {/*)}*/}
+          <Route path={'/auth/callback/github'} element={<CallbackHandler />} />
+          <Route path={'/auth'} element={<Login />} />s
           <Route
             path="/"
             element={
@@ -27,9 +29,8 @@ function App() {
               </SessionAuth>
             }
           />
-          <Route path="/login" element={<Login />}></Route>
           <Route
-            path="settings"
+            path="/settings"
             element={
               <SessionAuth>
                 <SettingsPage />
