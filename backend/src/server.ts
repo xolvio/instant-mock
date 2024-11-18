@@ -9,25 +9,24 @@ import {
 import cors from 'cors';
 import express from 'express';
 import path from 'path';
+import supertokens from 'supertokens-node';
 import swaggerJsdoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import * as Undici from 'undici';
+import {getWebsiteDomain, SuperTokensConfig} from './config/supertokens';
 import Client from './graphql/client';
-import { ApolloApiKey } from './models/apolloApiKey';
-import { Seed } from './models/seed';
-import { SeedGroup } from './models/seedGroup';
+import {authMiddleware} from './middleware/auth';
+import {ApolloApiKey} from './models/apolloApiKey';
+import {Seed} from './models/seed';
+import {SeedGroup} from './models/seedGroup';
 import apolloApiKeysRoutes from './routes/apolloApiKey';
+import avatarRoutes from './routes/avatar';
 import graphqlRoutes from './routes/graphql';
 import graphsRoutes from './routes/graphs';
 import proposalsRoutes from './routes/proposals';
 import seedGroupsRoutes from './routes/seedGroups';
 import seedsRoutes from './routes/seeds';
-import { logger } from './utilities/logger';
-import supertokens from 'supertokens-node';
-import { middleware, errorHandler } from 'supertokens-node/framework/express';
-import { SuperTokensConfig } from './config/supertokens';
-import { authMiddleware } from './middleware/auth';
-import { getWebsiteDomain } from './config/supertokens';
+import {logger} from './utilities/logger';
 
 const isTypescript = __filename.endsWith('.ts');
 const ProxyAgent = Undici.ProxyAgent;
@@ -83,7 +82,7 @@ const initializeApp = async () => {
     const em = DI.orm.em.fork();
     try {
       const apiKey = process.env.APOLLO_API_KEY;
-      const existingKey = await em.findOne(ApolloApiKey, { id: 1 });
+      const existingKey = await em.findOne(ApolloApiKey, {id: 1});
 
       if (existingKey) {
         const newApiKey = new ApolloApiKey(apiKey);
@@ -103,7 +102,7 @@ const initializeApp = async () => {
           stack: error.stack,
         });
       } else {
-        logger.error('Failed to save Apollo API key', { error });
+        logger.error('Failed to save Apollo API key', {error});
       }
     }
   }
@@ -115,21 +114,23 @@ const initializeApp = async () => {
   const em = DI.orm.em.fork();
   const defaultGroup = await em
     .getRepository(SeedGroup)
-    .findOne({ name: 'default' });
+    .findOne({name: 'default'});
   if (!defaultGroup) {
-    const newGroup = em.getRepository(SeedGroup).create({ name: 'default' });
+    const newGroup = em.getRepository(SeedGroup).create({name: 'default'});
     await em.persistAndFlush(newGroup);
   }
 
   const app = express();
-  app.use(express.json({ limit: '50mb' }));
-  app.use(express.urlencoded({ limit: '50mb', extended: true }));
-  app.use(cors({
-    origin: getWebsiteDomain(),
-    allowedHeaders: ['content-type', ...supertokens.getAllCORSHeaders()],
-    methods: ['GET', 'PUT', 'POST', 'DELETE'],
-    credentials: true,
-  }));
+  app.use(express.json({limit: '50mb'}));
+  app.use(express.urlencoded({limit: '50mb', extended: true}));
+  app.use(
+    cors({
+      origin: getWebsiteDomain(),
+      allowedHeaders: ['content-type', ...supertokens.getAllCORSHeaders()],
+      methods: ['GET', 'PUT', 'POST', 'DELETE'],
+      credentials: true,
+    })
+  );
   app.use(authMiddleware.init);
   app.use('/api', authMiddleware.verify);
   app.use((_, __, next) => RequestContext.create(DI.orm.em, next));
@@ -139,6 +140,7 @@ const initializeApp = async () => {
   app.use('/api', graphqlRoutes);
   app.use('/api', seedGroupsRoutes);
   app.use('/api', apolloApiKeysRoutes);
+  app.use('/api', avatarRoutes);
 
   const isConnected = await DI.orm.isConnected();
   app.get('/health', (_, res) => {
@@ -183,7 +185,7 @@ const initializeApp = async () => {
   app.use(authMiddleware.error);
 
   app.listen(port, () => {
-    logger.startup('Server running', { port, url: `http://localhost:${port}` });
+    logger.startup('Server running', {port, url: `http://localhost:${port}`});
   });
 };
 
