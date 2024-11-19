@@ -78,35 +78,6 @@ const initializeApp = async () => {
   DI.seedGroups = DI.orm.em.getRepository(SeedGroup);
   DI.apolloApiKeys = DI.orm.em.getRepository(ApolloApiKey);
 
-  if (process.env.APOLLO_API_KEY) {
-    const em = DI.orm.em.fork();
-    try {
-      const apiKey = process.env.APOLLO_API_KEY;
-      const existingKey = await em.findOne(ApolloApiKey, {id: 1});
-
-      if (existingKey) {
-        const newApiKey = new ApolloApiKey(apiKey);
-        existingKey.encryptedKey = newApiKey.encryptedKey;
-        existingKey.iv = newApiKey.iv;
-        existingKey.tag = newApiKey.tag;
-        await em.flush();
-      } else {
-        const newApiKey = new ApolloApiKey(apiKey);
-        await em.persistAndFlush(newApiKey);
-      }
-      logger.startup('Apollo API key saved successfully');
-    } catch (error) {
-      if (error instanceof Error) {
-        logger.error('Failed to save Apollo API key', {
-          message: error.message,
-          stack: error.stack,
-        });
-      } else {
-        logger.error('Failed to save Apollo API key', {error});
-      }
-    }
-  }
-
   DI.apolloClient = new Client();
   await DI.apolloClient.initializeClient();
   logger.startup('Apollo client initialized');

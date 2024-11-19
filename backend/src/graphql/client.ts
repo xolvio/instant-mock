@@ -213,19 +213,19 @@ export default class Client {
     });
   }
 
-  public async updateApiKey(newApiKey: string): Promise<void> {
+  public async updateApiKey(newApiKey: string, userId: string): Promise<void> {
     logger.security('Updating Apollo API key');
     const em = DI.orm.em.fork();
     await RequestContext.create(em, async () => {
       let apiKeyEntity = await em.getRepository(ApolloApiKey).findOne({id: 1});
       if (apiKeyEntity) {
-        const newEntity = new ApolloApiKey(newApiKey);
+        const newEntity = new ApolloApiKey(newApiKey, userId);
         apiKeyEntity.encryptedKey = newEntity.encryptedKey;
         apiKeyEntity.iv = newEntity.iv;
         apiKeyEntity.tag = newEntity.tag;
         logger.security('Existing API key updated');
       } else {
-        apiKeyEntity = new ApolloApiKey(newApiKey);
+        apiKeyEntity = new ApolloApiKey(newApiKey, userId);
         em.persist(apiKeyEntity);
         logger.security('New API key created');
       }

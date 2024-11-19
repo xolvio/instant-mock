@@ -3,10 +3,11 @@
   "version": "1.0.0-beta.2",
   "description": "![instant-mock-screen-cap-final](https://github.com/user-attachments/assets/de0f50d4-5a71-4e5a-b479-37c6cfa0481d)",
   "main": "index.js",
-  "module": true,
+  "module": "true",
   "scripts": {
     "install:all": "npm install && npm --prefix frontend install && npm --prefix backend install",
     "start": "npm run install:all && npm --prefix frontend run build && npm --prefix backend run build && NODE_ENV=development PORT=3032 npm --prefix backend start",
+    "db:connect": "docker exec -it supertokens_db psql -U supertokens_user -d supertokens",
     "e2e:record": "ts-node scripts/run-e2e-tests.ts record",
     "e2e:test": "ts-node scripts/run-e2e-tests.ts test",
     "cypress:basic": "concurrently -k -s first \"NODE_ENV=development PORT=3032 npm --prefix backend start\" \"wait-on http://localhost:3032 && CYPRESS_BASE_URL=http://localhost:3032 cypress run --spec 'cypress/e2e/basic-functionality.cy.ts'\"",

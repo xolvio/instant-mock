@@ -3,8 +3,11 @@ import {Encryption} from '../utilities/encryption';
 
 @Entity()
 export class ApolloApiKey {
-  @PrimaryKey()
-  id: number = 1;
+  @PrimaryKey({autoincrement: true})
+  id!: number;
+
+  @Property()
+  userId!: string;
 
   @Property()
   encryptedKey!: string;
@@ -15,9 +18,12 @@ export class ApolloApiKey {
   @Property()
   tag!: string;
 
-  constructor(key: string) {
+  constructor(key: string, userId: string) {
     if (!key) throw new Error('API key cannot be empty');
+    if (!userId) throw new Error('User ID is required');
+
     const encrypted = Encryption.encrypt(key);
+    this.userId = userId;
     this.encryptedKey = encrypted.encryptedData;
     this.iv = encrypted.iv;
     this.tag = encrypted.tag;
@@ -25,11 +31,5 @@ export class ApolloApiKey {
 
   getDecryptedKey(): string {
     return Encryption.decrypt(this.encryptedKey, this.iv, this.tag);
-  }
-
-  static create(key: string): ApolloApiKey {
-    const apiKey = new ApolloApiKey(key);
-    apiKey.id = 1;
-    return apiKey;
   }
 }
