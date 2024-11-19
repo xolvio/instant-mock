@@ -1,8 +1,12 @@
 'use client';
 
-import {MarkGithubIcon} from '@primer/octicons-react';
 import * as React from 'react';
-import {redirectToThirdPartyLogin} from 'supertokens-auth-react/recipe/thirdparty';
+import {
+  getAuthorisationURLWithQueryParamsAndSetState,
+  redirectToThirdPartyLogin,
+} from 'supertokens-auth-react/recipe/thirdparty';
+import githubLogo from '../../assets/github_logo.svg';
+import microsoftLogo from '../../assets/microsoft_logo.svg';
 import logo from '../../assets/xolvio_logo.png';
 import {Button} from './button';
 import {Card, CardContent} from './card';
@@ -10,7 +14,15 @@ import {Card, CardContent} from './card';
 export default function Login() {
   const handleSignIn = async (providerId: string) => {
     try {
-      await redirectToThirdPartyLogin({thirdPartyId: providerId});
+      if (providerId === 'azure') {
+        const authUrl = await getAuthorisationURLWithQueryParamsAndSetState({
+          thirdPartyId: 'azure',
+          frontendRedirectURI: 'http://localhost:3000/auth/callback/azure',
+        });
+        window.location.assign(authUrl);
+      } else {
+        await redirectToThirdPartyLogin({thirdPartyId: providerId});
+      }
     } catch (error) {
       console.error('Error signing in:', error);
     }
@@ -34,15 +46,35 @@ export default function Login() {
             </p>
           </div>
           <div className="space-y-4">
-            {/*{githubProvider.getButton('github')}*/}
             <Button
               variant="outline"
-              className="relative w-full justify-center gap-2"
+              className="relative w-full h-10 px-4 py-2"
               type="button"
               onClick={() => handleSignIn('github')}
             >
-              <MarkGithubIcon size={16} />
-              Continue with GitHub
+              <img
+                src={githubLogo}
+                alt="GitHub logo"
+                className="absolute left-4 h-[21px] w-[21px]"
+              />
+              <span className="absolute inset-0 flex items-center justify-center">
+                Continue with GitHub
+              </span>
+            </Button>
+            <Button
+              variant="outline"
+              className="relative w-full h-10 px-4 py-2"
+              type="button"
+              onClick={() => handleSignIn('azure')}
+            >
+              <img
+                src={microsoftLogo}
+                alt="Microsoft logo"
+                className="absolute left-4 h-[21px] w-[21px]"
+              />
+              <span className="absolute inset-0 flex items-center justify-center">
+                Continue with Microsoft
+              </span>
             </Button>
           </div>
           {/*<div className="relative">*/}
