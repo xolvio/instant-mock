@@ -13,6 +13,7 @@ export function getWebsiteDomain(): string {
 }
 
 export const SuperTokensConfig: TypeInput = {
+  debug: true,
   supertokens: {
     connectionURI:
       config.get('supertokens.connectionUri') || 'http://localhost:3567',
@@ -35,9 +36,10 @@ export const SuperTokensConfig: TypeInput = {
               const response = await originalImplementation.signInUp(input);
 
               if (response.status === 'OK') {
+                // TODO fix avatar for azure
                 const avatar =
                   response.rawUserInfoFromProvider.fromUserInfoAPI?.user
-                    .avatar_url;
+                    ?.avatar_url;
                 if (avatar) {
                   await UserMetadata.updateUserMetadata(response.user.id, {
                     avatarUrl: avatar,
@@ -77,6 +79,34 @@ export const SuperTokensConfig: TypeInput = {
                   })(),
                 },
               ],
+            },
+          },
+          {
+            config: {
+              thirdPartyId: 'azure',
+              name: 'azure',
+              clients: [
+                {
+                  clientId: '',
+                  clientSecret: '',
+                  scope: ['openid', 'email', 'profile', 'User.Read'], // Include 'openid' explicitly
+                },
+              ],
+              authorizationEndpoint:
+                'https://login.microsoftonline.com/common/oauth2/v2.0/authorize',
+              tokenEndpoint:
+                'https://login.microsoftonline.com/common/oauth2/v2.0/token', // Correct endpoint
+              userInfoEndpoint: 'https://graph.microsoft.com/v1.0/me',
+              authorizationEndpointQueryParams: {
+                redirect_uri: 'http://localhost:3000/auth/callback/azure', // Must match Azure registration
+              },
+              userInfoMap: {
+                fromUserInfoAPI: {
+                  userId: 'id', // Maps to the Microsoft Graph user ID
+                  email: 'mail', // Retrieves email
+                  // emailVerified: 'email_verified', // Not directly available; needs a custom field
+                },
+              },
             },
           },
         ],
