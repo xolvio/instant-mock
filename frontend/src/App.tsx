@@ -15,11 +15,10 @@ function App() {
     <SuperTokensWrapper>
       <Router>
         <Routes>
-          {/*{getSuperTokensRoutesForReactRouterDom(*/}
-          {/*  require('react-router-dom'),*/}
-          {/*  PreBuiltUIList*/}
-          {/*)}*/}
-          <Route path={'/auth/callback/github'} element={<CallbackHandler />} />
+          <Route
+            path={'/auth/callback/:providerId'}
+            element={<CallbackHandler />}
+          />
           <Route path={'/auth'} element={<Login />} />s
           <Route
             path="/"
