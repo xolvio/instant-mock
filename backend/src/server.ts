@@ -21,6 +21,7 @@ import {Seed} from './models/seed';
 import {SeedGroup} from './models/seedGroup';
 import apolloApiKeysRoutes from './routes/apolloApiKey';
 import avatarRoutes from './routes/avatar';
+import authRoutes from './routes/auth';
 import graphqlRoutes from './routes/graphql';
 import graphsRoutes from './routes/graphs';
 import proposalsRoutes from './routes/proposals';
@@ -107,6 +108,7 @@ const initializeApp = async () => {
     })
   );
   app.use(authMiddleware.init);
+  app.use(authRoutes);
   app.use('/api', authMiddleware.verify);
   app.use((_, __, next) => RequestContext.create(DI.orm.em, next));
   app.use('/api', seedsRoutes);

@@ -4,17 +4,24 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        REACT_APP_BACKEND_URL: "${BACKEND_URL:-http://localhost}"
+        REACT_APP_BACKEND_PORT: "${PORT:-3033}"
+        REACT_APP_FRONTEND_URL: "${FRONTEND_URL:-http://localhost}"
+        REACT_APP_FRONTEND_PORT: "${FRONTEND_PORT:-3033}"
     container_name: instant-mock
     environment:
-      PORT: "${PORT:-3031}"
+      PORT: "${PORT:-3033}"
       APOLLO_API_KEY: "${APOLLO_API_KEY}"
       NODE_ENV: "development"
       HOST: "0.0.0.0"
       SUPERTOKENS_CONNECTION_URI: "http://supertokens:3567"
       GITHUB_CLIENT_ID: "${GITHUB_CLIENT_ID}"
       GITHUB_CLIENT_SECRET: "${GITHUB_CLIENT_SECRET}"
+      AZURE_CLIENT_ID: "${AZURE_CLIENT_ID}"
+      AZURE_CLIENT_SECRET: "${AZURE_CLIENT_SECRET}"
     ports:
-      - "${PORT:-3031}:${PORT:-3031}"
+      - "${PORT:-3033}:${PORT:-3033}"
     volumes:
       - ./backend/data:/app/backend/data
     networks:
@@ -22,7 +29,6 @@ services:
     depends_on:
       - supertokens
       - db
-
   db:
     image: 'postgres:latest'
     container_name: supertokens_db
@@ -36,11 +42,10 @@ services:
       - app_network
     restart: unless-stopped
     healthcheck:
-      test: [ 'CMD', 'pg_isready', '-U', 'supertokens_user', '-d', 'supertokens' ]
+      test: ['CMD', 'pg_isready', '-U', 'supertokens_user', '-d', 'supertokens']
       interval: 5s
       timeout: 5s
       retries: 5
-
   supertokens:
     image: registry.supertokens.io/supertokens/supertokens-postgresql:latest
     container_name: supertokens
@@ -57,10 +62,10 @@ services:
     healthcheck:
       test: >
         bash -c 'exec 3<>/dev/tcp/127.0.0.1/3567 && echo -e "GET /hello HTTP/1.1\r\nhost: 127.0.0.1:3567\r\nConnection: close\r\n\r\n" >&3 && cat <&3 | grep "Hello"'
+
       interval: 10s
       timeout: 5s
       retries: 5
-
 networks:
   app_network:
     driver: bridge

@@ -551,19 +551,19 @@ const Home = () => {
                 value="sandbox"
                 className="px-0 pb-2 pt-0 text-sm font-small border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none rounded-none bg-transparent"
               >
-                SANDBOX
+                OPERATIONS
               </TabsTrigger>
               <TabsTrigger
                 value="seeds"
                 className="px-0 pb-2 pt-0 text-sm font-small border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none rounded-none bg-transparent"
               >
-                SEEDS
+                MOCK DATA
               </TabsTrigger>
               <TabsTrigger
                 value="narratives"
                 className="px-0 pb-2 pt-0 text-sm font-small border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none rounded-none bg-transparent"
               >
-                NARRATIVES
+                COLLABORATE
               </TabsTrigger>
             </TabsList>
           </div>

@@ -23,15 +23,25 @@ const config = convict({
       format: 'port',
       default: 3033,
     },
-    apiUrl: {
-      env: 'API_URL',
+    host: {
+      env: 'HOST',
       format: String,
-      default: 'http://localhost:3033',
+      default: '0.0.0.0',
     },
-    websiteUrl: {
-      env: 'WEBSITE_URL',
+    backendUrl: {
+      env: 'BACKEND_URL',
       format: String,
-      default: 'http://localhost:3000',
+      default: 'http://localhost',
+    },
+    frontendUrl: {
+      env: 'FRONTEND_URL',
+      format: String,
+      default: 'http://localhost',
+    },
+    frontendPort: {
+      env: 'FRONTEND_PORT',
+      format: 'port',
+      default: 3033,
     },
   },
   supertokens: {
@@ -58,11 +68,6 @@ const config = convict({
         sensitive: true,
         default: null,
       },
-      tenantId: {
-        env: 'AZURE_TENANT_ID',
-        format: '*',
-        default: null,
-      },
     },
     github: {
       clientId: {
@@ -74,42 +79,6 @@ const config = convict({
         env: 'GITHUB_CLIENT_SECRET',
         format: '*',
         sensitive: true,
-        default: null,
-      },
-    },
-    google: {
-      clientId: {
-        env: 'GOOGLE_CLIENT_ID',
-        format: '*',
-        default: null,
-      },
-      clientSecret: {
-        env: 'GOOGLE_CLIENT_SECRET',
-        format: '*',
-        sensitive: true,
-        default: null,
-      },
-    },
-    aws: {
-      clientId: {
-        env: 'AWS_CLIENT_ID',
-        format: '*',
-        default: null,
-      },
-      clientSecret: {
-        env: 'AWS_CLIENT_SECRET',
-        format: '*',
-        sensitive: true,
-        default: null,
-      },
-      region: {
-        env: 'AWS_REGION',
-        format: String,
-        default: 'us-east-1',
-      },
-      userPoolId: {
-        env: 'AWS_USER_POOL_ID',
-        format: '*',
         default: null,
       },
     },
