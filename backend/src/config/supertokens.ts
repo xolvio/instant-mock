@@ -91,7 +91,7 @@ function getConfiguredProviders() {
 }
 
 export const SuperTokensConfig: TypeInput = {
-  debug: true,
+  // debug: true,
   supertokens: {
     connectionURI: config.get('supertokens.connectionUri'),
   },

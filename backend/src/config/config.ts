@@ -41,7 +41,7 @@ const config = convict({
     frontendPort: {
       env: 'FRONTEND_PORT',
       format: 'port',
-      default: 3033,
+      default: 3032,
     },
   },
   supertokens: {

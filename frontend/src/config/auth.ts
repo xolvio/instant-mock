@@ -1,15 +1,13 @@
 import ThirdParty, {Github} from 'supertokens-auth-react/recipe/thirdparty';
 import {ThirdPartyPreBuiltUI} from 'supertokens-auth-react/recipe/thirdparty/prebuiltui';
 import Session from 'supertokens-auth-react/recipe/session';
-
-export const apiDomain = `${process.env.REACT_APP_BACKEND_URL}:${process.env.REACT_APP_BACKEND_PORT}`;
-const websiteDomain = `${process.env.REACT_APP_FRONTEND_URL}:${process.env.REACT_APP_FRONTEND_PORT}`;
+import {config} from './config';
 
 export const SuperTokensConfig = {
   appInfo: {
     appName: 'Instant Mock',
-    apiDomain,
-    websiteDomain,
+    apiDomain: config.backend.url,
+    websiteDomain: config.frontend.url,
     apiBasePath: '/auth',
     websiteBasePath: '/auth',
   },
@@ -30,5 +28,3 @@ export const ComponentWrapper = (props: {
 }): JSX.Element => {
   return props.children;
 };
-export const getApiBaseUrl = () =>
-  process.env.NODE_ENV === 'development' ? websiteDomain : apiDomain; // we serve up the front end in a static bundle in prod

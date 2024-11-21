@@ -1,4 +1,4 @@
-import {getApiBaseUrl} from '../config';
+import {getApiBaseUrl} from '../config/config';
 import {Seed} from '@/models/Seed';
 import axios from 'axios';
 // TODO types

@@ -1,0 +1,64 @@
+type Category {
+  id: ID!
+  name: String!
+  description: String
+  products: [Product]
+}
+
+type Mutation {
+  addProduct(input: ProductInput!): Product!
+  updateProduct(id: ID!, input: ProductInput!): Product!
+  deleteProduct(id: ID!): Boolean!
+}
+
+input PriceRangeInput {
+  min: Float
+  max: Float
+}
+
+type Product {
+  id: ID!
+  name: String!
+  description: String!
+  price: Float!
+  stock: Int!
+  category: Category!
+  brand: String
+  reviews: [Review]
+}
+
+input ProductFilter {
+  category: String
+  priceRange: PriceRangeInput
+  brand: String
+  name: String
+}
+
+input ProductInput {
+  name: String!
+  description: String!
+  price: Float!
+  stock: Int!
+  categoryId: ID!
+  brand: String
+}
+
+type Query {
+  product(id: ID!): Product
+  products(filter: ProductFilter, first: Int, skip: Int): [Product]
+}
+
+type Review {
+  id: ID!
+  rating: Int!
+  comment: String
+  product: Product!
+  user: User!
+}
+
+type User {
+  id: ID!
+  username: String!
+  email: String!
+  reviews: [Review]
+}

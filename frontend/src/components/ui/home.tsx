@@ -6,14 +6,11 @@ import {ChevronsUpDown, LogOut, Plus, Settings, Trash} from 'lucide-react';
 import React, {useCallback, useEffect, useState} from 'react';
 import {useForm} from 'react-hook-form';
 import {useNavigate} from 'react-router';
-import Session, {
-  useSessionContext,
-} from 'supertokens-auth-react/recipe/session';
 import {z} from 'zod';
 import instant_mock_logo from '../../assets/instant_mock_logo.svg';
 import narrative from '../../assets/narrative.png';
 import logo from '../../assets/xolvio_logo.png';
-import {getApiBaseUrl} from '../../config';
+import {getApiBaseUrl} from '../../config/config';
 import {getSeeds} from '../../services/SeedService';
 import {
   AlertDialog,
@@ -92,7 +89,6 @@ import {Toaster} from './toaster';
 import {toast} from './use-toast';
 
 const Home = () => {
-  const sessionContext = useSessionContext();
   const navigate = useNavigate();
 
   const [selectedTab, setSelectedTab] = useState('sandbox');
@@ -116,7 +112,7 @@ const Home = () => {
   const [seedArgs, setSeedArgs] = useState('{}');
   const [seedResponse, setSeedResponse] = useState('');
   const [operationName, setOperationName] = useState('');
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string>('/anonymous-avatar.svg');
   const serverBaseUrl = getApiBaseUrl();
 
   const handleSettingsClick = () => navigate('/settings');
@@ -127,10 +123,10 @@ const Home = () => {
     setIsSeedButtonVisible(false);
   };
 
-  async function handleSignOut() {
-    await Session.signOut();
-    navigate('/auth');
-  }
+  // async function handleSignOut() {
+  //   await Session.signOut();
+  //   navigate('/auth');
+  // }
 
   useEffect(() => {
     const fetchSeedGroups = () => {
@@ -355,36 +351,29 @@ const Home = () => {
   useEffect(() => {
     const fetchAvatar = async () => {
       try {
-        console.log('fetching avatar');
         const response = await fetch(`${serverBaseUrl}/api/avatar`, {
           method: 'GET',
-          credentials: 'include', // Include cookies for session-based auth
+          credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
           },
         });
 
         if (!response.ok) {
-          throw new Error(`Failed to fetch avatar: ${response.statusText}`);
+          return;
         }
 
         const data = await response.json();
-        setAvatarUrl(data.avatarUrl);
-      } catch (err: any) {
+        if (data.avatarUrl) {
+          setAvatarUrl(data.avatarUrl);
+        }
+      } catch (err) {
         console.error('Error fetching avatar:', err);
       }
     };
 
     fetchAvatar();
   }, []);
-
-  useEffect(() => {
-    console.log('Session Context:', JSON.stringify(sessionContext, null, 2));
-  }, [sessionContext]);
-
-  if (sessionContext.loading) {
-    return null;
-  }
 
   const {setValue} = form;
 
@@ -526,10 +515,6 @@ const Home = () => {
     setIsDeleteDialogOpen(true);
   };
 
-  if (sessionContext.loading === true) {
-    return null;
-  }
-
   return (
     <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
       <Toaster />
@@ -581,9 +566,9 @@ const Home = () => {
                 </Avatar>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem onSelect={handleSignOut}>
+                <DropdownMenuItem onSelect={() => navigate('/auth')}>
                   <LogOut className="mr-2 h-4 w-4" />
-                  <span>Sign out</span>
+                  <span>Login</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

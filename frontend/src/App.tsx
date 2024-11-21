@@ -1,45 +1,28 @@
 import {BrowserRouter as Router, Route, Routes} from 'react-router-dom';
-import SuperTokens, {SuperTokensWrapper} from 'supertokens-auth-react';
-import {SessionAuth} from 'supertokens-auth-react/recipe/session';
+import SuperTokens from 'supertokens-auth-react';
 import CallbackHandler from './CallbackHandler';
 import Home from './components/ui/home';
 import Login from './components/ui/login';
 import NotFound from './components/ui/not-found';
 import SettingsPage from './components/ui/settings';
-import {SuperTokensConfig} from './config';
+import {SuperTokensConfig} from './config/auth';
 
 SuperTokens.init(SuperTokensConfig);
 
 function App() {
   return (
-    <SuperTokensWrapper>
-      <Router>
-        <Routes>
-          <Route
-            path={'/auth/callback/:providerId'}
-            element={<CallbackHandler />}
-          />
-          <Route path={'/auth'} element={<Login />} />s
-          <Route
-            path="/"
-            element={
-              <SessionAuth>
-                <Home />
-              </SessionAuth>
-            }
-          />
-          <Route
-            path="/settings"
-            element={
-              <SessionAuth>
-                <SettingsPage />
-              </SessionAuth>
-            }
-          />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </Router>
-    </SuperTokensWrapper>
+    <Router>
+      <Routes>
+        <Route
+          path={'/auth/callback/:providerId'}
+          element={<CallbackHandler />}
+        />
+        <Route path={'/auth'} element={<Login />} />
+        <Route path="/" element={<Home />} />
+        <Route path="/settings" element={<SettingsPage />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </Router>
   );
 }
 

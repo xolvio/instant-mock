@@ -8,13 +8,25 @@ router.get('/avatar', async (req: Request, res: Response) => {
   logger.debug('api avatar route hit');
   // @ts-ignore
   const session = req.session;
-  const userId = session.getUserId();
-  const {metadata} = await UserMetadata.getUserMetadata(userId);
-  const avatarUrl = metadata.avatarUrl;
-  if (avatarUrl) {
-    res.json({avatarUrl: avatarUrl});
-  } else {
-    res.json({avatarUrl: null});
+
+  if (!session) {
+    return res.status(401).json({
+      error: 'Unauthorized',
+      message: 'No session found',
+    });
+  }
+
+  try {
+    const userId = session.getUserId();
+    const {metadata} = await UserMetadata.getUserMetadata(userId);
+    const avatarUrl = metadata.avatarUrl;
+    res.json({avatarUrl: avatarUrl || null});
+  } catch (error) {
+    logger.error('Error fetching avatar', {error});
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Failed to fetch avatar',
+    });
   }
 });
 

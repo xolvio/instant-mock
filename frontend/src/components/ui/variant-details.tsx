@@ -1,9 +1,10 @@
+import {getApiBaseUrl} from '../../config/config';
 import {Seed} from '@/models/Seed';
 import {ApolloSandbox} from '@apollo/sandbox/react';
 import {HandleRequest} from '@apollo/sandbox/src/helpers/postMessageRelayHelpers';
 import {zodResolver} from '@hookform/resolvers/zod';
 import {Link, MoreHorizontal} from 'lucide-react';
-import React, {useEffect, useState} from 'react';
+import {useEffect, useState} from 'react';
 import {useForm} from 'react-hook-form';
 import {useNavigate, useParams} from 'react-router';
 
@@ -67,7 +68,7 @@ import {Toaster} from './toaster';
 import {useToast} from './use-toast';
 
 const VariantDetails = () => {
-  const apiUrl = process.env.REACT_APP_API_BASE_URL || 'http://localhost:3000';
+  const apiUrl = getApiBaseUrl();
   const navigate = useNavigate();
   const {toast} = useToast();
   const {graphId, variantName} = useParams();

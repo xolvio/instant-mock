@@ -1,13 +1,14 @@
 'use client';
 
+import {getApiBaseUrl} from '../../config/config';
 import {Seed} from '@/models/Seed';
-import React, {useEffect, useRef, useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {useParams} from 'react-router';
 import {Button} from './button';
 import {Card, CardContent, CardHeader, CardTitle} from './card';
 
 export default function SeedDetails() {
-  const {proposalId, seedId} = useParams<{
+  const {seedId} = useParams<{
     proposalId: string;
     seedId: string;
   }>();
@@ -28,7 +29,7 @@ export default function SeedDetails() {
     ? seed.operationMatchArguments
     : {};
   const seedResponse = seed?.seedResponse ? seed.seedResponse : {};
-  const apiUrl = process.env.REACT_APP_API_BASE_URL || 'http://localhost:3000';
+  const apiUrl = getApiBaseUrl();
 
   useEffect(() => {
     fetchSeed();

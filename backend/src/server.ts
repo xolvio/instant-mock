@@ -13,6 +13,7 @@ import supertokens from 'supertokens-node';
 import swaggerJsdoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import * as Undici from 'undici';
+import figlet from 'figlet';
 import {getWebsiteDomain, SuperTokensConfig} from './config/supertokens';
 import Client from './graphql/client';
 import {authMiddleware} from './middleware/auth';
@@ -29,9 +30,21 @@ import seedGroupsRoutes from './routes/seedGroups';
 import seedsRoutes from './routes/seeds';
 import {logger} from './utilities/logger';
 
+const packageJson = require('../../package.json');
+const APP_VERSION = packageJson.version;
+
 const isTypescript = __filename.endsWith('.ts');
 const ProxyAgent = Undici.ProxyAgent;
 const setGlobalDispatcher = Undici.setGlobalDispatcher;
+
+const displayBanner = () => {
+  const banner = figlet.textSync('Instant Mock', {
+    font: 'Standard',
+    horizontalLayout: 'default',
+    verticalLayout: 'default',
+  });
+  logger.startup(`\n${banner}\nVersion: ${APP_VERSION}`);
+};
 
 if (process.env.HTTP_PROXY) {
   logger.startup('HTTP_PROXY configuration detected', {
@@ -58,6 +71,8 @@ export const DI = {} as {
 };
 
 const initializeApp = async () => {
+  displayBanner();
+
   logger.startup('Initializing SuperTokens with config', {
     apiDomain: SuperTokensConfig.appInfo.apiDomain,
     websiteDomain: SuperTokensConfig.appInfo.websiteDomain,
@@ -80,8 +95,13 @@ const initializeApp = async () => {
   DI.apolloApiKeys = DI.orm.em.getRepository(ApolloApiKey);
 
   DI.apolloClient = new Client();
-  await DI.apolloClient.initializeClient();
-  logger.startup('Apollo client initialized');
+
+  logger.startup(
+    'Schema Client (apollo client + local schema support) initialization complete',
+    {
+      organizationId: DI.apolloClient.getOrganizationId(),
+    }
+  );
 
   const em = DI.orm.em.fork();
   const defaultGroup = await em
@@ -136,7 +156,7 @@ const initializeApp = async () => {
       openapi: '3.0.0',
       info: {
         title: 'Instant Mock',
-        version: '0.1.0-alpha',
+        version: APP_VERSION,
         description: 'Mocks, but more instantly...',
       },
     },

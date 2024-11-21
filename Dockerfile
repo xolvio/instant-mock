@@ -11,7 +11,7 @@ ARG REACT_APP_FRONTEND_PORT
 ENV REACT_APP_FRONTEND_PORT=$REACT_APP_FRONTEND_PORT
 
 COPY frontend/package*.json ./
-RUN npm install
+RUN npm ci
 
 COPY frontend/ .
 RUN npm run build
@@ -21,7 +21,7 @@ FROM node:20-alpine AS backend-builder
 WORKDIR /app/backend
 
 COPY backend/package*.json ./
-RUN npm install
+RUN npm ci 
 
 COPY backend/ .
 RUN npm run build

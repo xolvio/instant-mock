@@ -42,6 +42,15 @@ const createLogger = (options: LoggerOptions = {}): LoggerMethods => {
     level: isProduction ? 'info' : 'debug',
     timestamp: pino.stdTimeFunctions.isoTime,
     ...options,
+    hooks: {
+      logMethod(args, method) {
+        //TODO: overcome this known issue: https://github.com/pinojs/pino/issues/1983
+        if (process.env.DEBUGGING === 'true') {
+          console.log(args[0]);
+        }
+        method.apply(this, args);
+      },
+    },
   });
 
   const sanitizeApiKeys = (message: string): string => {

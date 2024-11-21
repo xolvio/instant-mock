@@ -10,7 +10,7 @@ import {Button} from './button';
 import {Card, CardContent} from './card';
 import {useAuthProviders} from '../../hooks/useAuthProviders';
 import {Loader2} from 'lucide-react';
-import {getApiBaseUrl} from '../../config';
+import {getApiBaseUrl} from '../../config/config';
 
 export default function Login() {
   const {providers, loading} = useAuthProviders();
