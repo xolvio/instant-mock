@@ -17,6 +17,11 @@ const config = convict({
       default: NodeEnvironment.Development,
     },
   },
+  requireAuth: {
+    env: 'BACKEND_REQUIRE_AUTH',
+    format: Boolean,
+    default: false,
+  },
   server: {
     port: {
       env: 'PORT',

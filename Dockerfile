@@ -9,6 +9,8 @@ ARG REACT_APP_FRONTEND_URL
 ENV REACT_APP_FRONTEND_URL=$REACT_APP_FRONTEND_URL
 ARG REACT_APP_FRONTEND_PORT
 ENV REACT_APP_FRONTEND_PORT=$REACT_APP_FRONTEND_PORT
+ARG REACT_APP_FRONTEND_REQUIRE_AUTH
+ENV REACT_APP_FRONTEND_REQUIRE_AUTH=$REACT_APP_FRONTEND_REQUIRE_AUTH
 
 COPY frontend/package*.json ./
 RUN npm ci
@@ -25,12 +27,14 @@ RUN npm ci
 
 COPY backend/ .
 RUN npm run build
+RUN cp package.json dist/
 
 
 FROM node:20-alpine AS final
 WORKDIR /app
 
 COPY --from=backend-builder /app/backend/dist ./backend/dist
+COPY --from=backend-builder /app/backend/package.json ./backend/
 COPY --from=backend-builder /app/backend/node_modules ./backend/node_modules
 COPY --from=frontend-builder /app/frontend/build ./frontend/build
 

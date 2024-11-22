@@ -6,6 +6,7 @@ export const config = {
   frontend: {
     url: `${process.env.REACT_APP_FRONTEND_URL || 'http://localhost'}:${process.env.REACT_APP_FRONTEND_PORT || '3032'}`,
   },
+  requireAuth: process.env.REACT_APP_FRONTEND_REQUIRE_AUTH || false,
 } as const;
 
 export function useConfig() {

@@ -6,14 +6,15 @@ services:
       dockerfile: Dockerfile
       args:
         REACT_APP_BACKEND_URL: "${BACKEND_URL:-http://localhost}"
-        REACT_APP_BACKEND_PORT: "${PORT:-3033}"
+        REACT_APP_BACKEND_PORT: "${BACKEND_PORT:-3033}"
         REACT_APP_FRONTEND_URL: "${FRONTEND_URL:-http://localhost}"
         REACT_APP_FRONTEND_PORT: "${FRONTEND_PORT:-3033}"
+        REACT_APP_FRONTEND_REQUIRE_AUTH: true
     container_name: instant-mock
     environment:
-      PORT: "${PORT:-3033}"
-      APOLLO_API_KEY: "${APOLLO_API_KEY}"
-      NODE_ENV: "development"
+      REQUIRE_AUTH: true
+      PORT: "${BACKEND_PORT:-3033}"
+      NODE_ENV: "production"
       HOST: "0.0.0.0"
       SUPERTOKENS_CONNECTION_URI: "http://supertokens:3567"
       GITHUB_CLIENT_ID: "${GITHUB_CLIENT_ID}"
@@ -21,7 +22,7 @@ services:
       AZURE_CLIENT_ID: "${AZURE_CLIENT_ID}"
       AZURE_CLIENT_SECRET: "${AZURE_CLIENT_SECRET}"
     ports:
-      - "${PORT:-3033}:${PORT:-3033}"
+      - "${BACKEND_PORT:-3033}:${BACKEND_PORT:-3033}"
     volumes:
       - ./backend/data:/app/backend/data
     networks:

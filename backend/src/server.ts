@@ -29,13 +29,18 @@ import proposalsRoutes from './routes/proposals';
 import seedGroupsRoutes from './routes/seedGroups';
 import seedsRoutes from './routes/seeds';
 import {logger} from './utilities/logger';
-import {version as APP_VERSION} from '../package.json';
+import fs from 'fs';
 
 const isTypescript = __filename.endsWith('.ts');
 const ProxyAgent = Undici.ProxyAgent;
 const setGlobalDispatcher = Undici.setGlobalDispatcher;
 
 const displayBanner = () => {
+  if (process.env.NODE_ENV === 'production') {
+    logger.startup(`🚀 Instant Mock v${APP_VERSION}`);
+    return;
+  }
+
   const banner = figlet.textSync('Instant Mock', {
     font: 'Standard',
     horizontalLayout: 'default',
@@ -183,6 +188,16 @@ const initializeApp = async () => {
     logger.startup('Server running', {port, url: `http://localhost:${port}`});
   });
 };
+
+let APP_VERSION = '0.0.0';
+try {
+  const packageJson = JSON.parse(
+    fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8')
+  );
+  APP_VERSION = packageJson.version;
+} catch (error) {
+  console.warn('Failed to load package.json version:', error);
+}
 
 initializeApp().catch((error) => {
   logger.error('Failed to start the application', error);

@@ -84,13 +84,15 @@ const handleGraphQLRequest = async (
     return res.status(400).json({message: 'Seed group not found'});
   }
 
-  logger.graph('Handling GraphQL Request:', {
-    graphId,
-    variantName,
-    operationName,
-    // query,
-    // variables,
-  });
+  if (operationName !== 'IntrospectionQuery') {
+    logger.graph('Handling GraphQL Request:', {
+      graphId,
+      variantName,
+      operationName,
+      // query,
+      // variables,
+    });
+  }
 
   if (!operationName) {
     return res

@@ -40,6 +40,7 @@ import {
   CommandList,
   CommandSeparator,
 } from './command';
+import ConditionalLoginDropdown from './conditional-login-dropdown';
 import {
   Dialog,
   DialogContent,
@@ -91,42 +92,41 @@ import {toast} from './use-toast';
 const Home = () => {
   const navigate = useNavigate();
 
-  const [selectedTab, setSelectedTab] = useState('sandbox');
-  const [selectedGraph, setSelectedGraph] = useState(null);
-  const [selectedVariant, setSelectedVariant] = useState(null);
-  const [variants, setVariants] = useState([]);
-  const [proposals, setProposals] = useState([]);
-  const [seedGroups, setSeedGroups] = useState([]);
-  const [selectedSeedGroup, setSelectedSeedGroup] = useState(null);
-  const [graphs, setGraphs] = useState([]);
-  const [open, setOpen] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string>('/anonymous-avatar.svg');
+
   const [dialogOpen, setDialogOpen] = React.useState(false);
-  const [newGroupName, setNewGroupName] = React.useState('');
-  const [seedWithArguments, setSeedWithArguments] = useState(false);
-  const [seeds, setSeeds] = useState([]);
+  const [graphs, setGraphs] = useState([]);
+
+  const [isCreateSeedView, setIsCreateSeedView] = useState(true);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isSeedButtonVisible, setIsSeedButtonVisible] = useState(false);
+  const [newGroupName, setNewGroupName] = React.useState('');
+  const [open, setOpen] = useState(false);
+  const [operationName, setOperationName] = useState('');
+  const [proposals, setProposals] = useState([]);
+
+  const [seedArgs, setSeedArgs] = useState('{}');
+  const [seedGroups, setSeedGroups] = useState([]);
+  const [seedResponse, setSeedResponse] = useState('');
   const [seedToDelete, setSeedToDelete] = useState(null);
   const [seedToView, setSeedToView] = useState(null);
-  const [isSeedButtonVisible, setIsSeedButtonVisible] = useState(false);
-  const [isCreateSeedView, setIsCreateSeedView] = useState(true);
-  const [seedArgs, setSeedArgs] = useState('{}');
-  const [seedResponse, setSeedResponse] = useState('');
-  const [operationName, setOperationName] = useState('');
-  const [avatarUrl, setAvatarUrl] = useState<string>('/anonymous-avatar.svg');
+  const [seedWithArguments, setSeedWithArguments] = useState(false);
+  const [seeds, setSeeds] = useState([]);
+
+  const [selectedGraph, setSelectedGraph] = useState(null);
+  const [selectedSeedGroup, setSelectedSeedGroup] = useState(null);
+  const [selectedTab, setSelectedTab] = useState('sandbox');
+  const [selectedVariant, setSelectedVariant] = useState(null);
+  const [variants, setVariants] = useState([]);
+
   const serverBaseUrl = getApiBaseUrl();
 
   const handleSettingsClick = () => navigate('/settings');
-
   const handleCreateSeedClick = () => {
     populateSeedForm();
     setSelectedTab('seeds');
     setIsSeedButtonVisible(false);
   };
-
-  // async function handleSignOut() {
-  //   await Session.signOut();
-  //   navigate('/auth');
-  // }
 
   useEffect(() => {
     const fetchSeedGroups = () => {
@@ -348,33 +348,6 @@ const Home = () => {
     },
   });
 
-  useEffect(() => {
-    const fetchAvatar = async () => {
-      try {
-        const response = await fetch(`${serverBaseUrl}/api/avatar`, {
-          method: 'GET',
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-
-        if (!response.ok) {
-          return;
-        }
-
-        const data = await response.json();
-        if (data.avatarUrl) {
-          setAvatarUrl(data.avatarUrl);
-        }
-      } catch (err) {
-        console.error('Error fetching avatar:', err);
-      }
-    };
-
-    fetchAvatar();
-  }, []);
-
   const {setValue} = form;
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
@@ -558,20 +531,7 @@ const Home = () => {
               className="h-5 w-5 text-gray-500 cursor-pointer"
               onClick={handleSettingsClick}
             />
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Avatar className="cursor-pointer">
-                  <AvatarImage src={avatarUrl} />
-                  <AvatarFallback>?</AvatarFallback>
-                </Avatar>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem onSelect={() => navigate('/auth')}>
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>Login</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <ConditionalLoginDropdown />
           </div>
         </div>
         <div className="flex items-center gap-4 px-4 py-2 bg-white border-t">

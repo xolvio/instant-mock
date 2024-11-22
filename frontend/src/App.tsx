@@ -1,15 +1,18 @@
 import {BrowserRouter as Router, Route, Routes} from 'react-router-dom';
-import SuperTokens from 'supertokens-auth-react';
+import SuperTokens, {SuperTokensWrapper} from 'supertokens-auth-react';
 import CallbackHandler from './CallbackHandler';
 import Home from './components/ui/home';
 import Login from './components/ui/login';
 import NotFound from './components/ui/not-found';
 import SettingsPage from './components/ui/settings';
 import {SuperTokensConfig} from './config/auth';
+import {config} from './config/config';
 
-SuperTokens.init(SuperTokensConfig);
+if (config.requireAuth) {
+  SuperTokens.init(SuperTokensConfig);
+}
 
-function App() {
+function AppRoutes() {
   return (
     <Router>
       <Routes>
@@ -24,6 +27,18 @@ function App() {
       </Routes>
     </Router>
   );
+}
+
+function App() {
+  if (config.requireAuth) {
+    return (
+      <SuperTokensWrapper>
+        <AppRoutes />
+      </SuperTokensWrapper>
+    );
+  }
+
+  return <AppRoutes />;
 }
 
 export default App;

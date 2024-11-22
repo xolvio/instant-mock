@@ -44,6 +44,7 @@ input ProductInput {
 }
 
 type Query {
+  id: ID
   product(id: ID!): Product
   products(filter: ProductFilter, first: Int, skip: Int): [Product]
 }
@@ -62,3 +63,4 @@ type User {
   email: String!
   reviews: [Review]
 }
+

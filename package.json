@@ -5,10 +5,10 @@
   "main": "index.js",
   "module": "true",
   "scripts": {
-    "start": "concurrently \"npm --prefix frontend start\" \"npm --prefix backend run dev\"",
+    "dev": "npm run install:all && concurrently -n backend,frontend -c yellow,cyan \"yes | npm --prefix backend run dev\" \"wait-on http://localhost:3033 && npm --prefix frontend start\"",
+    "start": "npm run install:all && npm --prefix frontend run build && npm --prefix backend run build && NODE_ENV=production npm --prefix backend start",
     "install:all": "npm install && npm --prefix frontend install && npm --prefix backend install",
-    "start:auth": "docker compose up",
-    "start:auth:build": "docker compose up --build",
+    "start:auth": "docker compose up --build",
     "cypress:basic": "concurrently -k -s first \"NODE_ENV=development PORT=3032 npm --prefix backend start\" \"wait-on http://localhost:3032 && CYPRESS_BASE_URL=http://localhost:3032 cypress run --spec 'cypress/e2e/basic-functionality.cy.ts'\"",
     "cypress:open": "concurrently --kill-others --success first --color always \"FORCE_COLOR=1 npm run start:auth\" \"wait-on http://localhost:3032 && FORCE_COLOR=1 CYPRESS_BASE_URL=http://localhost:3032 cypress open\"",
     "db:auth": "docker exec -it supertokens_db psql -U supertokens_user -d supertokens",
@@ -26,6 +26,7 @@
     "date-fns": "^4.1.0",
     "dotenv": "^16.4.5",
     "globals": "^15.12.0",
+    "prettier": "^3.3.3",
     "ts-node": "^10.9.2",
     "typescript-eslint": "^8.13.0",
     "wait-on": "^7.0.0"

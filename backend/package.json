@@ -3,9 +3,9 @@
   "version": "1.0.0-beta.2",
   "main": "dist/server.js",
   "scripts": {
-    "build": "npx tsc && npm run copy-graphql",
+    "build": "rm -rf dist/ && npx tsc && npm run copy-graphql",
     "codegen:apollo": "graphql-codegen --config codegen.apollo.ts",
-    "copy-graphql": "cp -R src/**/*.graphql dist/graphql/",
+    "copy-graphql": "cp src/graphql/*.graphql dist/graphql/",
     "db:reset": "ts-node src/scripts/reset-database.ts",
     "debug": "kill -9 $(lsof -t -i :9229) 2>/dev/null || true && DEBUGGING=true node --inspect-brk=9229 -r ts-node/register src/server.ts & pid=$! && sleep 2 && open -a 'Google Chrome' 'chrome://inspect' && wait $pid",
     "dev": "npm run db:reset && ts-node-dev --respawn --transpile-only src/server.ts",
