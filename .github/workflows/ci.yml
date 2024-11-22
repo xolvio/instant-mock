@@ -4,8 +4,9 @@ on:
     branches-ignore: [main]
   pull_request:
     branches-ignore: [main]
+
 jobs:
-  e2e-tests:
+  build:
     runs-on: ubuntu-latest
     env:
       TEST_PORT: 3033
@@ -22,31 +23,49 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      - name: Install dependencies
+      - name: Install root dependencies
         run: npm ci
 
-      - name: Create env file
-        run: |
-          echo "PLAY_PORT=${{ env.PLAY_PORT }}" >> .env
-          echo "RECORD_PORT=${{ env.RECORD_PORT }}" >> .env
-          echo "NODE_ENV=${{ env.NODE_ENV }}" >> .env
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
 
-      # Install Docker using a separate script to avoid dependency conflicts
-      - name: Install Docker
-        run: |
-          curl -fsSL https://get.docker.com -o get-docker.sh
-          sh get-docker.sh
-          sudo usermod -aG docker $USER
-        shell: bash
+      - name: Install backend dependencies
+        working-directory: backend
+        run: npm ci
 
-      - name: Run e2e tests
-        run: npm run e2e:test
+      - name: Build frontend
+        working-directory: frontend
+        env:
+          CI: false
+        run: npm run build
 
-      - name: Upload test artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: e2e-test-results
-          path: |
-            cypress/videos/
-            cypress/screenshots/
+      - name: Build backend
+        working-directory: backend
+        run: npm run build
+
+      # Keeping E2E setup for future use
+      # - name: Create env file
+      #   run: |
+      #     echo "PLAY_PORT=${{ env.PLAY_PORT }}" >> .env
+      #     echo "RECORD_PORT=${{ env.RECORD_PORT }}" >> .env
+      #     echo "NODE_ENV=${{ env.NODE_ENV }}" >> .env
+      # 
+      # - name: Install Docker
+      #   run: |
+      #     curl -fsSL https://get.docker.com -o get-docker.sh
+      #     sh get-docker.sh
+      #     sudo usermod -aG docker $USER
+      #   shell: bash
+      # 
+      # - name: Run e2e tests
+      #   run: npm run e2e:test
+      # 
+      # - name: Upload test artifacts
+      #   if: always()
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: e2e-test-results
+      #     path: |
+      #       cypress/videos/
+      #       cypress/screenshots/

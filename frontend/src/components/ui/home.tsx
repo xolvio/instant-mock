@@ -2,7 +2,7 @@ import {Seed} from '@/models/Seed';
 import {ApolloSandbox} from '@apollo/sandbox/react';
 import {HandleRequest} from '@apollo/sandbox/src/helpers/postMessageRelayHelpers';
 import {zodResolver} from '@hookform/resolvers/zod';
-import {ChevronsUpDown, Plus, Settings, Trash, User} from 'lucide-react';
+import {ChevronsUpDown, LogOut, Plus, Settings, Trash} from 'lucide-react';
 import React, {useCallback, useEffect, useState} from 'react';
 import {useForm} from 'react-hook-form';
 import {useNavigate} from 'react-router';
@@ -10,7 +10,7 @@ import {z} from 'zod';
 import instant_mock_logo from '../../assets/instant_mock_logo.svg';
 import narrative from '../../assets/narrative.png';
 import logo from '../../assets/xolvio_logo.png';
-import {getApiBaseUrl} from '../../config';
+import {getApiBaseUrl} from '../../config/config';
 import {getSeeds} from '../../services/SeedService';
 import {
   AlertDialog,
@@ -22,6 +22,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from './alert-dialog';
+import {Avatar, AvatarFallback, AvatarImage} from './avatar';
 import {Button} from './button';
 import {
   Card,
@@ -39,6 +40,7 @@ import {
   CommandList,
   CommandSeparator,
 } from './command';
+import ConditionalLoginDropdown from './conditional-login-dropdown';
 import {
   Dialog,
   DialogContent,
@@ -46,6 +48,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from './dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from './dropdown-menu';
 import {
   Form,
   FormControl,
@@ -83,33 +91,37 @@ import {toast} from './use-toast';
 
 const Home = () => {
   const navigate = useNavigate();
-  const [selectedTab, setSelectedTab] = useState('sandbox');
-  const [selectedGraph, setSelectedGraph] = useState(null);
-  const [selectedVariant, setSelectedVariant] = useState(null);
-  const [variants, setVariants] = useState([]);
-  const [proposals, setProposals] = useState([]);
-  const [seedGroups, setSeedGroups] = useState([]);
-  const [selectedSeedGroup, setSelectedSeedGroup] = useState(null);
-  const [graphs, setGraphs] = useState([]);
-  const [open, setOpen] = useState(false);
+
+  const [avatarUrl, setAvatarUrl] = useState<string>('/anonymous-avatar.svg');
+
   const [dialogOpen, setDialogOpen] = React.useState(false);
-  const [newGroupName, setNewGroupName] = React.useState('');
-  const [seedWithArguments, setSeedWithArguments] = useState(false);
-  const [seeds, setSeeds] = useState([]);
+  const [graphs, setGraphs] = useState([]);
+
+  const [isCreateSeedView, setIsCreateSeedView] = useState(true);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isSeedButtonVisible, setIsSeedButtonVisible] = useState(false);
+  const [newGroupName, setNewGroupName] = React.useState('');
+  const [open, setOpen] = useState(false);
+  const [operationName, setOperationName] = useState('');
+  const [proposals, setProposals] = useState([]);
+
+  const [seedArgs, setSeedArgs] = useState('{}');
+  const [seedGroups, setSeedGroups] = useState([]);
+  const [seedResponse, setSeedResponse] = useState('');
   const [seedToDelete, setSeedToDelete] = useState(null);
   const [seedToView, setSeedToView] = useState(null);
-  const [isSeedButtonVisible, setIsSeedButtonVisible] = useState(false);
-  const [isCreateSeedView, setIsCreateSeedView] = useState(true);
+  const [seedWithArguments, setSeedWithArguments] = useState(false);
+  const [seeds, setSeeds] = useState([]);
+
+  const [selectedGraph, setSelectedGraph] = useState(null);
+  const [selectedSeedGroup, setSelectedSeedGroup] = useState(null);
+  const [selectedTab, setSelectedTab] = useState('sandbox');
+  const [selectedVariant, setSelectedVariant] = useState(null);
+  const [variants, setVariants] = useState([]);
+
   const serverBaseUrl = getApiBaseUrl();
 
-  //TODO: refine names
-  const [seedArgs, setSeedArgs] = useState('{}');
-  const [seedResponse, setSeedResponse] = useState('');
-  const [operationName, setOperationName] = useState('');
-
   const handleSettingsClick = () => navigate('/settings');
-
   const handleCreateSeedClick = () => {
     populateSeedForm();
     setSelectedTab('seeds');
@@ -230,7 +242,14 @@ const Home = () => {
     async (endpointUrl, requestOptions) => {
       console.log('Fetching with custom fetcher');
 
-      const result = await fetch(endpointUrl, requestOptions);
+      const result = await fetch(endpointUrl, {
+        method: 'POST',
+        headers: {
+          'seed-group': requestOptions.headers['seed-group'],
+          'Content-Type': 'application/json',
+        },
+        body: requestOptions.body,
+      });
       const responseBody = await result.json();
       const requestBody = JSON.parse(requestOptions.body?.toString()!);
 
@@ -490,19 +509,19 @@ const Home = () => {
                 value="sandbox"
                 className="px-0 pb-2 pt-0 text-sm font-small border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none rounded-none bg-transparent"
               >
-                SANDBOX
+                OPERATIONS
               </TabsTrigger>
               <TabsTrigger
                 value="seeds"
                 className="px-0 pb-2 pt-0 text-sm font-small border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none rounded-none bg-transparent"
               >
-                SEEDS
+                MOCK DATA
               </TabsTrigger>
               <TabsTrigger
                 value="narratives"
                 className="px-0 pb-2 pt-0 text-sm font-small border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none rounded-none bg-transparent"
               >
-                NARRATIVES
+                COLLABORATE
               </TabsTrigger>
             </TabsList>
           </div>
@@ -512,7 +531,7 @@ const Home = () => {
               className="h-5 w-5 text-gray-500 cursor-pointer"
               onClick={handleSettingsClick}
             />
-            <User className="h-5 w-5 text-gray-500" />
+            <ConditionalLoginDropdown />
           </div>
         </div>
         <div className="flex items-center gap-4 px-4 py-2 bg-white border-t">

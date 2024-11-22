@@ -42,12 +42,27 @@ export default class Client {
 
   constructor() {
     this.schemaLoader = new SchemaLoader();
+    this.loadLocalSchemas();
+  }
+
+  private async loadLocalSchemas() {
+    logger.startup('Loading local schemas');
+    const schemas = await this.schemaLoader.loadFromFiles();
+    logger.startup('Local schemas loaded', {
+      count: schemas.length,
+      schemaNames: schemas.map((s) => s.name),
+    });
   }
 
   private async getGraphsFromFiles(): Promise<
     NonNullable<GetGraphsQuery['organization']>['graphs']
   > {
+    logger.debug('Attempting to load schemas from files');
     const schemas = await this.schemaLoader.loadFromFiles();
+    logger.debug('Loaded schemas:', {
+      count: schemas.length,
+      schemaNames: schemas.map((s) => s.name),
+    });
 
     return schemas.map(({name}) => ({
       id: `local-${name}`,
@@ -213,19 +228,19 @@ export default class Client {
     });
   }
 
-  public async updateApiKey(newApiKey: string): Promise<void> {
+  public async updateApiKey(newApiKey: string, userId: string): Promise<void> {
     logger.security('Updating Apollo API key');
     const em = DI.orm.em.fork();
     await RequestContext.create(em, async () => {
       let apiKeyEntity = await em.getRepository(ApolloApiKey).findOne({id: 1});
       if (apiKeyEntity) {
-        const newEntity = new ApolloApiKey(newApiKey);
+        const newEntity = new ApolloApiKey(newApiKey, userId);
         apiKeyEntity.encryptedKey = newEntity.encryptedKey;
         apiKeyEntity.iv = newEntity.iv;
         apiKeyEntity.tag = newEntity.tag;
         logger.security('Existing API key updated');
       } else {
-        apiKeyEntity = new ApolloApiKey(newApiKey);
+        apiKeyEntity = new ApolloApiKey(newApiKey, userId);
         em.persist(apiKeyEntity);
         logger.security('New API key created');
       }
@@ -237,42 +252,47 @@ export default class Client {
   async getGraphs(): Promise<
     NonNullable<GetGraphsQuery['organization']>['graphs']
   > {
-    if (process.env.USE_LOCAL_SCHEMA === 'true') {
-      logger.graph('Fetching graphs from local files');
-      return this.getGraphsFromFiles();
+    logger.graph('Fetching graphs from local files');
+    const localGraphs = await this.getGraphsFromFiles();
+
+    if (!this.organizationId) {
+      return localGraphs;
     }
 
     logger.graph('Fetching graphs from Apollo', {
       organizationId: this.organizationId,
     });
 
-    const {data} = await this.apolloClient.query<GetGraphsQuery>({
-      query: GET_GRAPHS,
-      variables: {organizationId: this.organizationId},
-    });
-
-    if (data.organization?.__typename === 'Organization') {
-      logger.graph('Successfully retrieved graphs', {
-        count: data.organization.graphs.length,
+    try {
+      const {data} = await this.apolloClient.query<GetGraphsQuery>({
+        query: GET_GRAPHS,
+        variables: {organizationId: this.organizationId},
       });
-      return data.organization.graphs;
+
+      if (data.organization?.__typename === 'Organization') {
+        logger.graph('Successfully retrieved graphs', {
+          count: data.organization.graphs.length,
+        });
+        return [...localGraphs, ...data.organization.graphs];
+      }
+    } catch (e) {
+      logger.error('Error fetching Apollo graphs', {error: e});
+      return localGraphs;
     }
 
     logger.error('Failed to retrieve organization graphs', {
       organizationId: this.organizationId,
-      typename: data.organization?.__typename,
     });
     throw new Error('Unable to retrieve graphs');
   }
 
   async getGraph(graphId: string): Promise<GetGraphQuery['graph']> {
-    if (process.env.USE_LOCAL_SCHEMA === 'true') {
-      const schemas = await this.schemaLoader.loadFromFiles();
-      const graphName = graphId.replace('local-', '');
-      const schema = schemas.find((s) => s.name === graphName);
+    // Always check local schemas first
+    const schemas = await this.schemaLoader.loadFromFiles();
+    const graphName = graphId.replace('local-', '');
+    const localSchema = schemas.find((s) => s.name === graphName);
 
-      if (!schema) return null;
-
+    if (localSchema) {
       return {
         variants: [
           {
@@ -282,7 +302,7 @@ export default class Client {
             latestPublication: {
               publishedAt: new Date().toISOString(),
               schema: {
-                document: schema.schema,
+                document: localSchema.schema,
               },
             },
           },
@@ -293,31 +313,34 @@ export default class Client {
       };
     }
 
-    const res = await this.apolloClient.query<GetGraphQuery>({
-      query: GET_GRAPH,
-      variables: {
-        graphId,
-        filterBy: {
-          status: ['APPROVED', 'DRAFT', 'IMPLEMENTED', 'OPEN'],
+    // If not found locally and we have Apollo client initialized, try remote
+    if (this.apolloClient) {
+      const res = await this.apolloClient.query<GetGraphQuery>({
+        query: GET_GRAPH,
+        variables: {
+          graphId,
+          filterBy: {
+            status: ['APPROVED', 'DRAFT', 'IMPLEMENTED', 'OPEN'],
+          },
         },
-      },
-    });
-    return res.data.graph;
+      });
+      return res.data.graph;
+    }
+
+    return null;
   }
 
   async getVariant(
     graphId: string,
     variantName: string
   ): Promise<NonNullable<GetVariantQuery['graph']>['variant']> {
-    if (process.env.USE_LOCAL_SCHEMA === 'true') {
-      const schemas = await this.schemaLoader.loadFromFiles();
-      const localId = parseInt(graphId.replace('local-', ''));
-      const schema = schemas[localId];
+    const schemas = await this.schemaLoader.loadFromFiles();
+    const graphName = graphId.replace('local-', '');
+    const localSchema = schemas.find((s) => s.name === graphName);
 
-      if (!schema) return null;
-
+    if (localSchema) {
       return {
-        id: `local-${localId}@${variantName}`,
+        id: `local-${graphName}@${variantName}`,
         name: variantName,
         url: null,
         isProposal: false,
@@ -327,39 +350,41 @@ export default class Client {
         latestPublication: {
           publishedAt: new Date().toISOString(),
           schema: {
-            document: schema.schema,
+            document: localSchema.schema,
           },
         },
       };
     }
 
-    const {data} = await this.apolloClient.query<GetVariantQuery>({
-      query: GET_VARIANT,
-      variables: {graphId, name: variantName},
-    });
-    return data.graph?.variant;
+    if (this.apolloClient) {
+      const {data} = await this.apolloClient.query<GetVariantQuery>({
+        query: GET_VARIANT,
+        variables: {graphId, name: variantName},
+      });
+      return data.graph?.variant;
+    }
+
+    return null;
   }
 
   async getGraphWithSubgraphs(
     graphId: string
   ): Promise<GetGraphWithSubgraphsQuery['graph']> {
-    if (process.env.USE_LOCAL_SCHEMA === 'true') {
-      const schemas = await this.schemaLoader.loadFromFiles();
-      const localId = parseInt(graphId.replace('local-', ''));
-      const schema = schemas[localId];
+    const schemas = await this.schemaLoader.loadFromFiles();
+    const graphName = graphId.replace('local-', '');
+    const localSchema = schemas.find((s) => s.name === graphName);
 
-      if (!schema) return null;
-
+    if (localSchema) {
       return {
         variants: [
           {
-            key: `local-${localId}@current`,
+            key: `local-${graphName}@current`,
             displayName: 'current',
             name: 'current',
             latestPublication: {
               publishedAt: new Date().toISOString(),
               schema: {
-                document: schema.schema,
+                document: localSchema.schema,
               },
             },
           },
@@ -370,31 +395,31 @@ export default class Client {
       };
     }
 
-    const {data} = await this.apolloClient.query<GetGraphWithSubgraphsQuery>({
-      query: GET_GRAPH_WITH_SUBGRAPHS,
-      variables: {
-        graphId,
-        filterBy: {
-          status: ['APPROVED', 'DRAFT', 'IMPLEMENTED', 'OPEN'],
+    if (this.apolloClient) {
+      const {data} = await this.apolloClient.query<GetGraphWithSubgraphsQuery>({
+        query: GET_GRAPH_WITH_SUBGRAPHS,
+        variables: {
+          graphId,
+          filterBy: {
+            status: ['APPROVED', 'DRAFT', 'IMPLEMENTED', 'OPEN'],
+          },
         },
-      },
-    });
-    return data.graph;
+      });
+      return data.graph;
+    }
+
+    return null;
   }
 
   async getSchema(graphId: string, name: string): Promise<string | null> {
-    if (process.env.USE_LOCAL_SCHEMA === 'true') {
-      const schemas = await this.schemaLoader.loadFromFiles();
-      // TODO we need to think if we want to support multiple schemas loaded from files, for now we only select the first one
-      // const debugSchema = schemas.map((s) => s.name);
-      // logger.debug('Found schemas:', {debugSchema});
-      // const schema = schemas.find(
-      //   (s) => s.name === graphId.replace('local-', '')
-      // );
-      const schema = schemas[0].schema;
-      logger.debug('found schema', {schema});
-      // return schema ? schema.schema : null;
-      return schemas[0].schema;
+    const schemas = await this.schemaLoader.loadFromFiles();
+    const localSchema = schemas.find(
+      (s) => s.name === graphId.replace('local-', '')
+    );
+
+    if (localSchema) {
+      logger.debug('Using local schema', {name: localSchema.name});
+      return localSchema.schema;
     }
 
     try {

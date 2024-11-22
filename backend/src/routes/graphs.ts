@@ -51,12 +51,19 @@ const unifyVariantAndProposalDataShapes = (graph: GetGraphQuery['graph']) => {
   };
 };
 
-router.get('/graphs', async (_: Request, res: Response) => {
+router.get('/graphs', async (req: Request, res: Response) => {
+  logger.info('Graphs endpoint accessed', {
+    userId: (req as any).session?.getUserId(),
+    method: req.method,
+    path: req.path,
+  });
+
   try {
     const graphs = await DI.apolloClient.getGraphs();
+    logger.debug('Graphs retrieved successfully', {count: graphs.length});
     res.json(graphs);
   } catch (error) {
-    console.error(error);
+    logger.error('Failed to retrieve graphs', {error});
     res.status(500).send({error: 'Error querying GraphQL API'});
   }
 });

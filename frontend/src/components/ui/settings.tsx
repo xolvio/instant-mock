@@ -1,8 +1,8 @@
 'use client';
 
+import {getApiBaseUrl} from '../../config/config';
 import {CheckCircle2, Trash2} from 'lucide-react';
 import {useEffect, useState} from 'react';
-import {getApiBaseUrl} from '../../config';
 import {Button} from './button';
 import {
   Card,

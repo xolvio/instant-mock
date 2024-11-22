@@ -10,8 +10,12 @@ export interface SchemaSource {
 export class SchemaLoader {
   private schemaDirectory: string;
 
-  // TODO it's supposed to be src/graphql for dev env
-  constructor(schemaDirectory: string = join(process.cwd(), 'dist/graphql/')) {
+  constructor(
+    schemaDirectory: string = join(
+      process.cwd(),
+      process.env.NODE_ENV === 'production' ? 'dist/graphql/' : 'src/graphql/'
+    )
+  ) {
     this.schemaDirectory = process.env.SCHEMA_DIRECTORY || schemaDirectory;
     logger.startup('SchemaLoader initialized', {
       schemaDirectory: this.schemaDirectory,

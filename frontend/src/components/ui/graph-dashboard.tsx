@@ -1,5 +1,6 @@
+import {getApiBaseUrl} from '../../config/config';
 import {ListFilter, Search} from 'lucide-react';
-import React, {useEffect, useState} from 'react';
+import {useEffect, useState} from 'react';
 import {Graph} from '../../models/Graph';
 import {Button} from './button';
 import {DropdownMenu, DropdownMenuTrigger} from './dropdown-menu';
@@ -7,12 +8,11 @@ import {GraphCard} from './graph-card';
 import {Input} from './input';
 
 const GraphDashboard = () => {
-  // TODO store it somewhere globally
-  const apiUrl = process.env.REACT_APP_API_BASE_URL || 'http://localhost:3000';
+  const apiUrl = getApiBaseUrl();
 
   const [graphs, setGraphs] = useState<Graph[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchGraphs = async () => {
