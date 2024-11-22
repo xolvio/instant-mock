@@ -29,9 +29,7 @@ import proposalsRoutes from './routes/proposals';
 import seedGroupsRoutes from './routes/seedGroups';
 import seedsRoutes from './routes/seeds';
 import {logger} from './utilities/logger';
-
-const packageJson = require('../../package.json');
-const APP_VERSION = packageJson.version;
+import {version as APP_VERSION} from '../package.json';
 
 const isTypescript = __filename.endsWith('.ts');
 const ProxyAgent = Undici.ProxyAgent;
