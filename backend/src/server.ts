@@ -8,28 +8,28 @@ import {
 } from '@mikro-orm/core';
 import cors from 'cors';
 import express from 'express';
+import figlet from 'figlet';
+import fs from 'fs';
 import path from 'path';
 import supertokens from 'supertokens-node';
 import swaggerJsdoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import * as Undici from 'undici';
-import figlet from 'figlet';
-import {getWebsiteDomain, SuperTokensConfig} from './config/supertokens';
+import {SuperTokensConfig} from './config/supertokens';
 import Client from './graphql/client';
 import {authMiddleware} from './middleware/auth';
 import {ApolloApiKey} from './models/apolloApiKey';
 import {Seed} from './models/seed';
 import {SeedGroup} from './models/seedGroup';
 import apolloApiKeysRoutes from './routes/apolloApiKey';
-import avatarRoutes from './routes/avatar';
 import authRoutes from './routes/auth';
+import avatarRoutes from './routes/avatar';
 import graphqlRoutes from './routes/graphql';
 import graphsRoutes from './routes/graphs';
 import proposalsRoutes from './routes/proposals';
 import seedGroupsRoutes from './routes/seedGroups';
 import seedsRoutes from './routes/seeds';
 import {logger} from './utilities/logger';
-import fs from 'fs';
 
 const isTypescript = __filename.endsWith('.ts');
 const ProxyAgent = Undici.ProxyAgent;
@@ -120,13 +120,13 @@ const initializeApp = async () => {
   app.use(express.urlencoded({limit: '50mb', extended: true}));
   app.use(
     cors({
-      origin: [getWebsiteDomain()],
+      // origin: [getWebsiteDomain()],
       allowedHeaders: [
         'content-type',
         ...supertokens.getAllCORSHeaders(),
         'seed-group',
       ],
-      methods: ['GET', 'PUT', 'POST', 'DELETE'],
+      methods: ['GET', 'PUT', 'POST', 'DELETE', 'PATCH'],
       credentials: true,
     })
   );
