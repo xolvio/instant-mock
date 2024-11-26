@@ -1,35 +1,30 @@
 import './loadEnv';
 import 'reflect-metadata';
-import {
-  EntityManager,
-  EntityRepository,
-  MikroORM,
-  RequestContext,
-} from '@mikro-orm/core';
+import {EntityManager, EntityRepository, MikroORM, RequestContext,} from '@mikro-orm/core';
 import cors from 'cors';
 import express from 'express';
-import figlet from 'figlet';
-import fs from 'fs';
 import path from 'path';
 import supertokens from 'supertokens-node';
 import swaggerJsdoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import * as Undici from 'undici';
-import {SuperTokensConfig} from './config/supertokens';
+import figlet from 'figlet';
+import {getWebsiteDomain, SuperTokensConfig} from './config/supertokens';
 import Client from './graphql/client';
 import {authMiddleware} from './middleware/auth';
 import {ApolloApiKey} from './models/apolloApiKey';
 import {Seed} from './models/seed';
 import {SeedGroup} from './models/seedGroup';
 import apolloApiKeysRoutes from './routes/apolloApiKey';
-import authRoutes from './routes/auth';
 import avatarRoutes from './routes/avatar';
+import authRoutes from './routes/auth';
 import graphqlRoutes from './routes/graphql';
 import graphsRoutes from './routes/graphs';
 import proposalsRoutes from './routes/proposals';
 import seedGroupsRoutes from './routes/seedGroups';
 import seedsRoutes from './routes/seeds';
 import {logger} from './utilities/logger';
+import fs from 'fs';
 
 const isTypescript = __filename.endsWith('.ts');
 const ProxyAgent = Undici.ProxyAgent;
@@ -85,7 +80,7 @@ const initializeApp = async () => {
   const mikroOrmConfig = {
     ...(await import(
       `./mikro-orm.${process.env.MIKRO_ORM_DRIVER || 'sqlite'}${isTypescript ? '.ts' : '.js'}`
-    ).then((module) => module.default)),
+      ).then((module) => module.default)),
   };
 
   DI.orm = await MikroORM.init(mikroOrmConfig);
@@ -120,13 +115,18 @@ const initializeApp = async () => {
   app.use(express.urlencoded({limit: '50mb', extended: true}));
   app.use(
     cors({
-      // origin: [getWebsiteDomain()],
+      origin: (origin, callback) => {
+        const allowedOrigins = [getWebsiteDomain()];
+        const regex = /^(https:\/\/[a-zA-Z0-9-]+\.narrative\.tech|https?:\/\/localhost(:\d+)?)$/;
+        if (!origin || allowedOrigins.includes(origin) || regex.test(origin)) callback(null, true);
+        else callback(new Error('Not allowed by CORS'));
+      },
       allowedHeaders: [
         'content-type',
         ...supertokens.getAllCORSHeaders(),
         'seed-group',
       ],
-      methods: ['GET', 'PUT', 'POST', 'DELETE', 'PATCH'],
+      methods: ['GET', 'PUT', 'POST', 'DELETE'],
       credentials: true,
     })
   );
