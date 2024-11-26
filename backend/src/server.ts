@@ -1,11 +1,6 @@
 import './loadEnv';
 import 'reflect-metadata';
-import {
-  EntityManager,
-  EntityRepository,
-  MikroORM,
-  RequestContext,
-} from '@mikro-orm/core';
+import {EntityManager, EntityRepository, MikroORM, RequestContext,} from '@mikro-orm/core';
 import cors from 'cors';
 import express from 'express';
 import path from 'path';
@@ -85,7 +80,7 @@ const initializeApp = async () => {
   const mikroOrmConfig = {
     ...(await import(
       `./mikro-orm.${process.env.MIKRO_ORM_DRIVER || 'sqlite'}${isTypescript ? '.ts' : '.js'}`
-    ).then((module) => module.default)),
+      ).then((module) => module.default)),
   };
 
   DI.orm = await MikroORM.init(mikroOrmConfig);
@@ -120,7 +115,12 @@ const initializeApp = async () => {
   app.use(express.urlencoded({limit: '50mb', extended: true}));
   app.use(
     cors({
-      origin: [getWebsiteDomain()],
+      origin: (origin, callback) => {
+        const allowedOrigins = [getWebsiteDomain()];
+        const regex = /^(https:\/\/[a-zA-Z0-9-]+\.narrative\.tech|https?:\/\/localhost(:\d+)?)$/;
+        if (!origin || allowedOrigins.includes(origin) || regex.test(origin)) callback(null, true);
+        else callback(new Error('Not allowed by CORS'));
+      },
       allowedHeaders: [
         'content-type',
         ...supertokens.getAllCORSHeaders(),
