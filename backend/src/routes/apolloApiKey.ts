@@ -1,19 +1,22 @@
-import express, {Response} from 'express';
+import express, {Response, Request} from 'express';
 import {DI} from '../server';
 import {logger} from '../utilities/logger';
 import {ApolloApiKey} from '../models/apolloApiKey';
 import {SessionRequest} from 'supertokens-node/framework/express';
+import config from '../config/config';
 
 const router = express.Router();
 
-router.get('/apollo-api-key', async (req: SessionRequest, res: Response) => {
-  try {
-    const userId = req.session?.getUserId();
-    if (!userId) {
-      return res.status(401).json({error: 'Unauthorized'});
-    }
+const handleRequest = async (req: Request | SessionRequest, defaultUserId = 'anonymous') => {
+  const userId = (req as SessionRequest).session?.getUserId() || defaultUserId;
+  return userId;
+};
 
+router.get('/apollo-api-key', async (req: Request | SessionRequest, res: Response) => {
+  try {
+    const userId = await handleRequest(req);
     const apiKey = await DI.apolloApiKeys.findOne({userId});
+    
     if (apiKey) {
       const decryptedKey = apiKey.getDecryptedKey();
       const obfuscatedKey = `${decryptedKey.slice(0, 4)}****${decryptedKey.slice(-4)}`;
@@ -27,14 +30,11 @@ router.get('/apollo-api-key', async (req: SessionRequest, res: Response) => {
   }
 });
 
-router.post('/apollo-api-key', async (req: SessionRequest, res: Response) => {
+router.post('/apollo-api-key', async (req: Request | SessionRequest, res: Response) => {
   try {
-    const userId = req.session?.getUserId();
-    if (!userId) {
-      return res.status(401).json({error: 'Unauthorized'});
-    }
-
+    const userId = await handleRequest(req);
     const {key} = req.body;
+    
     if (!key) {
       return res.status(400).json({error: 'API key is required'});
     }
@@ -59,14 +59,11 @@ router.post('/apollo-api-key', async (req: SessionRequest, res: Response) => {
   }
 });
 
-router.delete('/apollo-api-key', async (req: SessionRequest, res: Response) => {
+router.delete('/apollo-api-key', async (req: Request | SessionRequest, res: Response) => {
   try {
-    const userId = req.session?.getUserId();
-    if (!userId) {
-      return res.status(401).json({error: 'Unauthorized'});
-    }
-
+    const userId = await handleRequest(req);
     const apiKey = await DI.apolloApiKeys.findOne({userId});
+    
     if (!apiKey) {
       return res.status(404).json({error: 'API key not found'});
     }

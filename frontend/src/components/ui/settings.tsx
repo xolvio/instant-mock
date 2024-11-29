@@ -14,6 +14,7 @@ import {
 } from './card';
 import {Input} from './input';
 import {useToast} from './use-toast';
+import {useNavigate} from 'react-router-dom';
 
 interface ApiKey {
   id: string;
@@ -28,6 +29,7 @@ export default function SettingsPage() {
   const [isLoading, setIsLoading] = useState(false);
   const {toast} = useToast();
   const serverBaseUrl = getApiBaseUrl();
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchApiKey();
@@ -65,6 +67,7 @@ export default function SettingsPage() {
           title: 'Apollo API Key Saved',
           description: 'Your Apollo API key has been saved successfully.',
         });
+        navigate('/');
       }
     });
   };
