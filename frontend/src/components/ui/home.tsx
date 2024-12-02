@@ -2,8 +2,8 @@ import {Seed} from '@/models/Seed';
 import {ApolloSandbox} from '@apollo/sandbox/react';
 import {HandleRequest} from '@apollo/sandbox/src/helpers/postMessageRelayHelpers';
 import {zodResolver} from '@hookform/resolvers/zod';
-import {ChevronsUpDown, LogOut, Plus, Settings, Trash} from 'lucide-react';
-import React, {useCallback, useEffect, useState} from 'react';
+import {ChevronsUpDown, Plus, Settings, Trash} from 'lucide-react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useForm} from 'react-hook-form';
 import {useNavigate} from 'react-router';
 import {z} from 'zod';
@@ -22,7 +22,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from './alert-dialog';
-import {Avatar, AvatarFallback, AvatarImage} from './avatar';
 import {Button} from './button';
 import {
   Card,
@@ -48,12 +47,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from './dialog';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from './dropdown-menu';
 import {
   Form,
   FormControl,
@@ -120,6 +113,9 @@ const Home = () => {
   const [selectedTab, setSelectedTab] = useState('sandbox');
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [variants, setVariants] = useState([]);
+  const [isEditing, setIsEditing] = useState(false);
+  const matchArgumentsRef = useRef<HTMLPreElement>(null);
+  const responseRef = useRef<HTMLPreElement>(null);
 
   const serverBaseUrl = getApiBaseUrl();
 
@@ -499,6 +495,69 @@ const Home = () => {
   const handleDeleteClick = (seed: Seed) => {
     setSeedToDelete(seed);
     setIsDeleteDialogOpen(true);
+  };
+
+  const handleCancel = () => {
+    setIsEditing(false);
+    if (matchArgumentsRef.current) {
+      matchArgumentsRef.current.textContent = JSON.stringify(
+        seedToView.operationMatchArguments,
+        null,
+        2
+      );
+    }
+    if (responseRef.current) {
+      responseRef.current.textContent = JSON.stringify(
+        seedToView.seedResponse,
+        null,
+        2
+      );
+    }
+  };
+
+  const handleSave = async () => {
+    try {
+      const updatedMatchArguments =
+        matchArgumentsRef.current?.textContent || '';
+      const updatedResponse = responseRef.current?.textContent || '';
+
+      const payload = {
+        id: seedToView.id,
+        operationName: seedToView.operationName,
+        seedResponse: JSON.parse(updatedResponse),
+        operationMatchArguments: JSON.parse(updatedMatchArguments),
+        seedGroupId: selectedSeedGroup.id,
+        graphId: seedToView.graphId,
+        variantName: seedToView.variantName,
+        oldOperationMatchArguments: seedToView.operationMatchArguments,
+      };
+
+      console.log('server base url: ', serverBaseUrl);
+      const response = await fetch(`${serverBaseUrl}/api/seeds`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update seed data');
+      }
+      setIsEditing(false);
+      toast({
+        title: 'Seed Updated Successfully',
+        description: 'Your changes have been saved.',
+      });
+    } catch (error) {
+      console.log('Error updating seed:', error);
+      toast({
+        title: 'Error Updating Seed',
+        description:
+          'An error occurred while saving your changes. Please try again.',
+        variant: 'destructive',
+      });
+    }
   };
 
   return (
@@ -905,13 +964,6 @@ const Home = () => {
                           )}
                         />
                         <div className="flex space-x-2">
-                          <Button
-                            id="cancel-seed-button"
-                            type="button"
-                            variant="secondary"
-                          >
-                            Discard
-                          </Button>
                           <Button id="save-seed-button" type="submit">
                             Save seed
                           </Button>
@@ -930,17 +982,39 @@ const Home = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      <div className="flex items-center mb-2">
-                        <span>{`Operation name: ${seedToView?.operationName}`}</span>
+                      <div className="flex items-center justify-between mb-2">
+                        <span>{`Operation name: ${seedToView.operationName}`}</span>
+                        {!isEditing ? (
+                          <Button onClick={() => setIsEditing(true)}>
+                            Edit seed
+                          </Button>
+                        ) : (
+                          <div className="flex space-x-2">
+                            <Button
+                              id="discard-changes-button"
+                              type="button"
+                              variant="secondary"
+                              onClick={handleCancel}
+                            >
+                              Discard Changes
+                            </Button>
+                            <Button
+                              id="save-changes-button"
+                              onClick={handleSave}
+                            >
+                              Save Changes
+                            </Button>
+                          </div>
+                        )}
                       </div>
                       <div>
                         <h3 className="font-semibold">Matching Arguments</h3>
                         <pre
-                          // ref={matchArgumentsRef}
-                          // contentEditable={isEditing}
+                          ref={matchArgumentsRef}
+                          contentEditable={isEditing}
                           suppressContentEditableWarning={true}
                           className={`bg-gray-100 p-4 rounded overflow-auto focus:border-primary focus:outline-none ${
-                            false
+                            isEditing
                               ? 'border-[1px] border-[hsl(var(--primary))]'
                               : 'border-[1px] border-transparent'
                           }`}
@@ -948,7 +1022,7 @@ const Home = () => {
                         >
                           <code className="text-sm">
                             {JSON.stringify(
-                              seedToView?.operationMatchArguments,
+                              seedToView.operationMatchArguments,
                               null,
                               2
                             )}
@@ -958,18 +1032,18 @@ const Home = () => {
                       <div>
                         <h3 className="font-semibold">Response</h3>
                         <pre
-                          // ref={responseRef}
-                          // contentEditable={isEditing}
+                          ref={responseRef}
+                          contentEditable={isEditing}
                           suppressContentEditableWarning={true}
                           className={`bg-gray-100 p-4 rounded overflow-auto focus:border-primary focus:outline-none ${
-                            false
+                            isEditing
                               ? 'border-[1px] border-[hsl(var(--primary))]'
                               : 'border-[1px] border-transparent'
                           }`}
                           style={{minHeight: '100px'}}
                         >
                           <code className="text-sm">
-                            {JSON.stringify(seedToView?.seedResponse, null, 2)}
+                            {JSON.stringify(seedToView.seedResponse, null, 2)}
                           </code>
                         </pre>
                       </div>
