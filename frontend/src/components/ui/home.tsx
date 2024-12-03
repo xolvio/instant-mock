@@ -81,6 +81,8 @@ import {Tabs, TabsContent, TabsList, TabsTrigger} from './tabs';
 import {Textarea} from './textarea';
 import {Toaster} from './toaster';
 import {toast} from './use-toast';
+import {Badge} from './badge';
+import {SettingsBadge} from './settings-badge';
 
 const Home = () => {
   const navigate = useNavigate();
@@ -116,6 +118,17 @@ const Home = () => {
   const responseRef = useRef<HTMLPreElement>(null);
 
   const serverBaseUrl = getApiBaseUrl();
+
+  const [hasApolloKey, setHasApolloKey] = useState(true);
+
+  useEffect(() => {
+    fetch(`${serverBaseUrl}/api/apollo-api-key`)
+      .then((response) => response.json())
+      .then((data) => {
+        setHasApolloKey(!!data.key);
+      })
+      .catch(() => setHasApolloKey(false));
+  }, [serverBaseUrl]);
 
   const handleSettingsClick = () => navigate('/settings');
   const handleCreateSeedClick = () => {
@@ -586,8 +599,8 @@ const Home = () => {
           </div>
 
           <div className="flex items-center gap-4">
-            <Settings
-              className="h-5 w-5 text-gray-500 cursor-pointer"
+            <SettingsBadge
+              hasApolloKey={hasApolloKey}
               onClick={handleSettingsClick}
             />
             <ConditionalLoginDropdown />
