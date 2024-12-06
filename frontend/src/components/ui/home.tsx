@@ -2,7 +2,7 @@ import {Seed} from '@/models/Seed';
 import {ApolloSandbox} from '@apollo/sandbox/react';
 import {HandleRequest} from '@apollo/sandbox/src/helpers/postMessageRelayHelpers';
 import {zodResolver} from '@hookform/resolvers/zod';
-import {ChevronsUpDown, Plus, Settings, Trash} from 'lucide-react';
+import {ChevronsUpDown, Plus, Settings, SquarePlus, Trash} from 'lucide-react';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useForm} from 'react-hook-form';
 import {useNavigate} from 'react-router';
@@ -81,13 +81,10 @@ import {Tabs, TabsContent, TabsList, TabsTrigger} from './tabs';
 import {Textarea} from './textarea';
 import {Toaster} from './toaster';
 import {toast} from './use-toast';
-import {Badge} from './badge';
 import {SettingsBadge} from './settings-badge';
 
 const Home = () => {
   const navigate = useNavigate();
-
-  const [avatarUrl, setAvatarUrl] = useState<string>('/anonymous-avatar.svg');
 
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [graphs, setGraphs] = useState([]);
@@ -695,11 +692,13 @@ const Home = () => {
         />
         {isSeedButtonVisible && (
           <Button
-            id="create-seed-from-response"
+            id="new-seed-from-response"
             onClick={handleCreateSeedClick}
-            className="absolute right-[121px] top-[76px] p-3 border border-gray-300 shadow-lg rounded-md text-sm"
+            className="absolute right-4 top-[78px] px-4 py-2 border border-transparent shadow-md rounded-md text-sm text-[#fdfdfd] bg-[#264250] hover:bg-[#1d3440] transition-all flex items-center gap-2 font-medium leading-[20px]"
+            style={{height: '35px'}}
           >
-            Create Seed From Response
+            <SquarePlus size={14} color="#fdfdfd" />
+            New Seed from Response
           </Button>
         )}
       </TabsContent>
