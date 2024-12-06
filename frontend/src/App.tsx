@@ -1,5 +1,6 @@
 import {BrowserRouter as Router, Route, Routes} from 'react-router-dom';
 import SuperTokens, {SuperTokensWrapper} from 'supertokens-auth-react';
+import {SessionAuth} from 'supertokens-auth-react/recipe/session';
 import CallbackHandler from './CallbackHandler';
 import Home from './components/ui/home';
 import Login from './components/ui/login';
@@ -13,16 +14,19 @@ if (config.requireAuth) {
 }
 
 function AppRoutes() {
+  const protectedElement = (element: JSX.Element) =>
+    config.requireAuth ? <SessionAuth>{element}</SessionAuth> : element;
+
   return (
     <Router>
       <Routes>
         <Route
-          path={'/auth/callback/:providerId'}
+          path="/auth/callback/:providerId"
           element={<CallbackHandler />}
         />
-        <Route path={'/auth'} element={<Login />} />
-        <Route path="/" element={<Home />} />
-        <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/auth" element={<Login />} />
+        <Route path="/" element={protectedElement(<Home />)} />
+        <Route path="/settings" element={protectedElement(<SettingsPage />)} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
