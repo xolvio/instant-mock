@@ -30,15 +30,15 @@ docker compose up
 Or, if you don't want to clone the repo, pull from Docker Hub:
 
 ```shell
-docker pull xolvio/instant-mock:1.0.0-beta.2
-docker run -p 3033:3033 xolvio/instant-mock:1.0.0-beta.2
+docker pull xolvio/instant-mock:<version>
+docker run -it -p 3033:3033 xolvio/instant-mock:<version>
 ```
 
 InstantMock will be available on http://localhost:3033.
 
 To connect with Apollo, go to the settings page and enter your key: http://localhost:3033/settings.
 
-> 🔮 Coming Soon: npx @xolvio/instant-mock for an even faster start.
+> 🔮 **Coming Soon**: `npx create-instant-mock` for even quicker start.
 
 ## 💡 Why InstantMock?
 
@@ -61,6 +61,7 @@ InstantMock provides:
 - **Infrastructure**: HTTP proxy support, K8s-ready deployment
 - **Flexibility**: SQLite, PostgreSQL, or MySQL support
 - **Data Control**: Idempotent seed management with group organization
+- **SSO Support**: Currently support Github and Azure SSO. 
 
 ### Key Benefits
 - **Faster Development**: Create and share mocks in minutes
@@ -68,7 +69,7 @@ InstantMock provides:
 - **Federation Ready**: Test schema changes before deployment
 - **No Setup**: Replace local mock servers and manual JSON files
 
-> 🔮 **Coming Soon**: SSO support, file uploads, and enhanced Helm charts with PostgreSQL
+> 🔮 **Coming Soon**: More SSO provider support, file uploads, and enhanced Helm charts with PostgreSQL
 
 ## 🚢 Deployment Options
 
@@ -84,7 +85,7 @@ docker pull xolvio/instant-mock:<version>
 
 A basic Helm chart is provided to deploy InstantMock with Kubernetes. Currently, it ships with SQLite and is limited to a single replica.
 
-> 🔮 Coming Soon: Full Helm chart with scaling support and PostgreSQL.
+> 🔮 **Coming Soon**: Full Helm chart with scaling support and PostgreSQL.
 
 ## 🙏 Acknowledgments
 
