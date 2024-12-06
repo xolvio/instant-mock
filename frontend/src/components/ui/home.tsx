@@ -706,8 +706,8 @@ const Home = () => {
         value="seeds"
         className="w-full h-[calc(100vh-64px)] relative"
       >
-        <div className="flex flex-col h-full">
-          <div className="w-full p-4 bg-background">
+        <div className="flex flex-col h-full overflow-hidden">
+          <div className="w-full p-4 bg-background flex-shrink-0">
             <div className="flex items-center space-x-4">
               <Label htmlFor="seed-group-select">Seed Group</Label>
               <Popover open={open} onOpenChange={setOpen}>
@@ -776,8 +776,8 @@ const Home = () => {
               </Popover>
             </div>
           </div>
-          <div className="flex flex-1 overflow-auto p-4 space-x-4">
-            <Card className="w-[250px] flex-shrink-0 flex-grow-0 p-4">
+          <div className="flex flex-1 p-4 space-x-4 overflow-auto">
+            <Card className="w-[250px] flex-shrink-0">
               <div className="overflow-y-auto">
                 <Table>
                   <TableHeader>
@@ -849,8 +849,7 @@ const Home = () => {
               </AlertDialog>
             </Card>
 
-            {/* Main Content as a Card */}
-            <Card className="flex-1 h-full">
+            <Card className="flex-1 min-h-min">
               {isCreateSeedView ? (
                 <>
                   <CardHeader>
