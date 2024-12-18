@@ -247,9 +247,30 @@ router.patch('/seeds', async (req: Request, res: Response) => {
   const {id, ...updateData} = req.body;
   const seed = await DI.seeds.findOne({id});
   if (!seed) return res.status(404).json({message: 'Seed not found'});
+
   DI.seeds.assign(seed, updateData);
   await DI.em.persistAndFlush(seed);
+
+  const mockServer = await getOrStartNewMockServer(
+    seed.graphId,
+    seed.variantName
+  );
+
+  mockServer?.seedManager.updateSeed(
+    seed.seedGroup.id.toString(),
+    seed.operationMatchArguments,
+    {
+      operationName: seed.operationName,
+      seedResponse: seed.seedResponse,
+      operationMatchArguments: seed.operationMatchArguments,
+    }
+  );
+
+  if (!mockServer) {
+    console.error('Could not start mock server');
+    return res.status(422).json({message: 'Could not start mock server'});
+  }
+
   res.json({message: 'Seed updated successfully'});
 });
-
 export default router;
