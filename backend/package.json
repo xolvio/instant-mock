@@ -1,6 +1,6 @@
 {
   "name": "backend",
-  "version": "1.0.0-beta.4.1",
+  "version": "1.0.0-beta.4.3",
   "main": "dist/server.js",
   "scripts": {
     "build": "rm -rf dist/ && npx tsc && npm run copy-graphql",

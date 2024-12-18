@@ -120,15 +120,7 @@ const initializeApp = async () => {
   app.use(express.urlencoded({limit: '50mb', extended: true}));
   app.use(
     cors({
-      origin: (origin, callback) => {
-        const allowedOrigins = [getWebsiteDomain()];
-        const regex =
-          /^(https:\/\/[a-zA-Z0-9-]+\.narrative\.tech|https?:\/\/localhost(:\d+)?|https:\/\/[a-zA-Z0-9-]+\.xspecs\.io)$/;
-
-        if (!origin || allowedOrigins.includes(origin) || regex.test(origin))
-          callback(null, true);
-        else callback(new Error('Not allowed by CORS'));
-      },
+      origin: '*',
       allowedHeaders: [
         'content-type',
         ...supertokens.getAllCORSHeaders(),
