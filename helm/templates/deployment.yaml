@@ -16,7 +16,10 @@ spec:
         - name: backend
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           ports:
-            - containerPort: 3007
+            - containerPort: 3033
+          env:
+            - name: NODE_ENV
+              value: "production"
           volumeMounts:
             - mountPath: /app/backend/data
               name: sqlite-storage
