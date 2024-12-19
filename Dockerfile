@@ -38,6 +38,7 @@ COPY --from=backend-builder /app/backend/package.json ./backend/
 COPY --from=backend-builder /app/backend/node_modules ./backend/node_modules
 COPY --from=frontend-builder /app/frontend/build ./frontend/build
 
-EXPOSE 3007
+ENV PORT=80
+EXPOSE 80
 CMD ["/bin/sh", "-c", "cd /app/backend && node dist/server.js"]
 
