@@ -1,7 +1,9 @@
 export const config = {
   env: process.env.NODE_ENV as 'development' | 'production' | 'test',
   backend: {
-    url: `${process.env.REACT_APP_BACKEND_URL || 'http://localhost'}:${process.env.REACT_APP_BACKEND_PORT || '3033'}`,
+    url: typeof window !== 'undefined' && window.__RUNTIME_CONFIG__
+      ? `${window.__RUNTIME_CONFIG__.BACKEND_URL}${window.__RUNTIME_CONFIG__.BACKEND_PORT ? `:${window.__RUNTIME_CONFIG__.BACKEND_PORT}` : ''}`
+      : `${process.env.REACT_APP_BACKEND_URL || 'http://localhost'}:${process.env.REACT_APP_BACKEND_PORT || '3033'}`,
   },
   frontend: {
     url: `${process.env.REACT_APP_FRONTEND_URL || 'http://localhost'}:${process.env.REACT_APP_FRONTEND_PORT || '3032'}`,

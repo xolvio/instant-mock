@@ -62,7 +62,7 @@ logger.startup('Checking APOLLO_API_KEY presence', {
   present: !!process.env.APOLLO_API_KEY,
 });
 
-const port = process.env.PORT || 3033;
+const port = process.env.NODE_ENV === 'production' ? 80 : (process.env.PORT || 3033);
 
 export const DI = {} as {
   orm: MikroORM;
@@ -177,15 +177,41 @@ const initializeApp = async () => {
     logger.api('Swagger API documentation served');
   });
 
-  app.use(express.static(path.join(__dirname, '../../frontend/build')));
-  app.get('*', (_, res) => {
-    res.sendFile(path.join(__dirname, '../../frontend/build', 'index.html'));
+  app.get('*', (req, res, next) => {
+    if (req.path === '/') {
+      const indexPath = path.join(__dirname, '../../frontend/build', 'index.html');
+      let html = fs.readFileSync(indexPath, 'utf8');
+      
+      const backendUrl = process.env.BACKEND_URL || 'localhost';
+      const port = process.env.NODE_ENV === 'production' 
+        ? '' 
+        : `:${process.env.PORT || '3033'}`;
+      
+      const runtimeConfig = {
+        BACKEND_URL: `http://${backendUrl}`,
+        BACKEND_PORT: port
+      };
+
+      html = html.replace(
+        '<head>',
+        `<head><script>window.__RUNTIME_CONFIG__=${JSON.stringify(runtimeConfig)};</script>`
+      );
+      
+      return res.send(html);
+    }
+    next();
   });
+
+  app.use(express.static(path.join(__dirname, '../../frontend/build')));
 
   app.use(authMiddleware.error);
 
   app.listen(port, () => {
-    logger.startup('Server running', {port, url: `http://localhost:${port}`});
+    logger.startup('Server running', {
+      port,
+      url: `http://localhost:${port}`,
+      env: process.env.NODE_ENV
+    });
   });
 };
 
