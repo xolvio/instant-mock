@@ -110,6 +110,7 @@ Create a `my-values.yaml` with your configuration:
 
 - Set ingress.hosts[0].host to your domain
 - Set env.BACKEND_URL to match your domain
+- Set env.BACKEND_PROTO to match your web server protocal (http or https, http is default)
 - Keep service.type as ClusterIP (Istio handles external access)
 - Port 80 is used internally (Istio handles SSL/TLS)
 

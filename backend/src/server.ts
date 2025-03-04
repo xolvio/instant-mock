@@ -182,13 +182,14 @@ const initializeApp = async () => {
       const indexPath = path.join(__dirname, '../../frontend/build', 'index.html');
       let html = fs.readFileSync(indexPath, 'utf8');
       
-      const backendUrl = process.env.BACKEND_URL || 'localhost';
+      const backendProto = process.env.BACKEND_PROTO || 'http';
+      const backendUrl = process.env.BACKEND_URL || '${backendProto}://localhost';
       const port = process.env.NODE_ENV === 'production' 
         ? '' 
         : `:${process.env.PORT || '3033'}`;
       
       const runtimeConfig = {
-        BACKEND_URL: `http://${backendUrl}`,
+        BACKEND_URL: backendUrl,
         BACKEND_PORT: port
       };
 
