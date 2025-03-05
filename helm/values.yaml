@@ -1,7 +1,7 @@
 replicaCount: 1
 image:
   repository: xolvio/instant-mock
-  tag: 1.0.0-beta.4.4
+  tag: 1.0.0-beta.4.5
   pullPolicy: Always
 service:
   type: ClusterIP
@@ -23,6 +23,8 @@ env:
     value: instant-mock.example.com
   - name: PORT
     value: '80'
+  - name: BACKEND_PROTO
+    value: https
 resources: {}
 persistence:
   enabled: true
