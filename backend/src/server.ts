@@ -193,7 +193,7 @@ const initializeApp = async () => {
       const port =
         process.env.NODE_ENV === 'production'
           ? ''
-          : `:${process.env.PORT || '3033'}`;
+          : `${process.env.PORT || '3033'}`;
 
       const runtimeConfig = {
         BACKEND_URL: backendUrl,
