@@ -15,7 +15,7 @@ import supertokens from 'supertokens-node';
 import swaggerJsdoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import * as Undici from 'undici';
-import {getWebsiteDomain, SuperTokensConfig} from './config/supertokens';
+import {SuperTokensConfig} from './config/supertokens';
 import Client from './graphql/client';
 import {authMiddleware} from './middleware/auth';
 import {ApolloApiKey} from './models/apolloApiKey';
@@ -62,7 +62,8 @@ logger.startup('Checking APOLLO_API_KEY presence', {
   present: !!process.env.APOLLO_API_KEY,
 });
 
-const port = process.env.NODE_ENV === 'production' ? 80 : (process.env.PORT || 3033);
+const port =
+  process.env.NODE_ENV === 'production' ? 80 : process.env.PORT || 3033;
 
 export const DI = {} as {
   orm: MikroORM;
@@ -179,25 +180,32 @@ const initializeApp = async () => {
 
   app.get('*', (req, res, next) => {
     if (req.path === '/') {
-      const indexPath = path.join(__dirname, '../../frontend/build', 'index.html');
+      const indexPath = path.join(
+        __dirname,
+        '../../frontend/build',
+        'index.html'
+      );
       let html = fs.readFileSync(indexPath, 'utf8');
-      
+
       const backendProto = process.env.BACKEND_PROTO || 'http';
-      const backendUrl = process.env.BACKEND_URL || '${backendProto}://localhost';
-      const port = process.env.NODE_ENV === 'production' 
-        ? '' 
-        : `:${process.env.PORT || '3033'}`;
-      
+      const backendUrl =
+        process.env.BACKEND_URL || '${backendProto}://localhost';
+      const port =
+        process.env.NODE_ENV === 'production'
+          ? ''
+          : `:${process.env.PORT || '3033'}`;
+
       const runtimeConfig = {
         BACKEND_URL: backendUrl,
-        BACKEND_PORT: port
+        BACKEND_PORT: port,
+        BACKEND_PROTO: backendProto,
       };
 
       html = html.replace(
         '<head>',
         `<head><script>window.__RUNTIME_CONFIG__=${JSON.stringify(runtimeConfig)};</script>`
       );
-      
+
       return res.send(html);
     }
     next();
@@ -211,7 +219,7 @@ const initializeApp = async () => {
     logger.startup('Server running', {
       port,
       url: `http://localhost:${port}`,
-      env: process.env.NODE_ENV
+      env: process.env.NODE_ENV,
     });
   });
 };

@@ -23,6 +23,8 @@ env:
     value: instant-mock.example.com
   - name: PORT
     value: '80'
+  - name: BACKEND_PROTO
+    value: https
 resources: {}
 persistence:
   enabled: true
