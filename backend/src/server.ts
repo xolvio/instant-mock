@@ -189,7 +189,7 @@ const initializeApp = async () => {
 
       const backendProto = process.env.BACKEND_PROTO || 'http';
       const backendUrl =
-        process.env.BACKEND_URL || '${backendProto}://localhost';
+        process.env.BACKEND_URL || `${backendProto}://localhost`;
       const port =
         process.env.NODE_ENV === 'production'
           ? ''
