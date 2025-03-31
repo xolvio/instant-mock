@@ -1,5 +1,5 @@
 apiVersion: v2
 name: instantmock
-description: A Helm chart for deploying InstantMock
-version: 0.2.0
-appVersion: '1.0.0-beta.4.3'
+description: A Helm chart for deploying InstantMock with PostgreSQL
+version: 0.3.0
+appVersion: '1.0.0-beta.4.6'

@@ -1,8 +1,8 @@
-import {defineConfig} from '@mikro-orm/postgresql';
-import {Seed} from './models/seed';
 import {Migrator} from '@mikro-orm/migrations';
-import {SeedGroup} from './models/seedGroup';
+import {defineConfig} from '@mikro-orm/postgresql';
 import {ApolloApiKey} from './models/apolloApiKey';
+import {Seed} from './models/seed';
+import {SeedGroup} from './models/seedGroup';
 import {logger} from './utilities/logger';
 
 export default defineConfig({
@@ -15,7 +15,8 @@ export default defineConfig({
   port: Number(process.env.POSTGRES_PORT),
   logger: (message) => logger.db(message),
   migrations: {
-    path: './src/migrations/postgres',
+    path: './dist/migrations/postgres',
+    pathTs: './src/migrations/postgres',
   },
   extensions: [Migrator],
 });

@@ -109,9 +109,9 @@ export default class Client {
         if (process.env.NODE_ENV === 'e2e-test') {
           _headers['seed-group'] = 'default';
         } else {
-          const apiKeyEntity = await em
-            .getRepository(ApolloApiKey)
-            .findOne({id: 1});
+          const apiKeyEntity = await em.getRepository(ApolloApiKey).findOne({
+            id: {$ne: null},
+          });
           if (apiKeyEntity) {
             _headers = {
               ..._headers,
@@ -232,7 +232,9 @@ export default class Client {
     logger.security('Updating Apollo API key');
     const em = DI.orm.em.fork();
     await RequestContext.create(em, async () => {
-      let apiKeyEntity = await em.getRepository(ApolloApiKey).findOne({id: 1});
+      let apiKeyEntity = await em.getRepository(ApolloApiKey).findOne({
+        id: {$ne: null},
+      });
       if (apiKeyEntity) {
         const newEntity = new ApolloApiKey(newApiKey, userId);
         apiKeyEntity.encryptedKey = newEntity.encryptedKey;

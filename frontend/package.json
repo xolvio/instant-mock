@@ -1,6 +1,6 @@
 {
   "name": "frontend",
-  "version": "1.0.0-beta.4.5",
+  "version": "1.0.0-beta.4.6",
   "private": true,
   "dependencies": {
     "@apollo/explorer": "^3.7.0",
