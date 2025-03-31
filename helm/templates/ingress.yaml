@@ -6,7 +6,7 @@ metadata:
     nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   rules:
-    - host: example.com 
+    - host: instant-mock.example.com
       http:
         paths:
           - path: /

@@ -6,6 +6,6 @@ spec:
   type: {{ .Values.service.type }}
   ports:
     - port: {{ .Values.service.port }}
-      targetPort: 3033
+      targetPort: 80
   selector:
     app: {{ .Release.Name }}-backend

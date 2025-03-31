@@ -1,7 +1,7 @@
 replicaCount: 1
 image:
   repository: xolvio/instant-mock
-  tag: 1.0.0-beta.4.5
+  tag: 1.0.0-beta.4.6
   pullPolicy: Always
 service:
   type: ClusterIP
@@ -25,8 +25,25 @@ env:
     value: '80'
   - name: BACKEND_PROTO
     value: https
+  - name: MIKRO_ORM_DRIVER
+    value: postgres
 resources: {}
 persistence:
   enabled: true
   accessMode: ReadWriteOnce
   size: 1Gi
+
+postgres:
+  image:
+    repository: postgres
+    tag: "15"
+    pullPolicy: Always
+  database: mydb
+  username: myuser
+  password: mypassword
+  persistence:
+    enabled: true
+    accessMode: ReadWriteOnce
+    size: 1Gi
+  service:
+    port: 5432

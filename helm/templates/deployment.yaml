@@ -15,15 +15,21 @@ spec:
       containers:
         - name: backend
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
-            - containerPort: 3033
+            - containerPort: 80
           env:
-            - name: NODE_ENV
-              value: "production"
-          volumeMounts:
-            - mountPath: /app/backend/data
-              name: sqlite-storage
-      volumes:
-        - name: sqlite-storage
-          persistentVolumeClaim:
-            claimName: {{ .Release.Name }}-pvc
+            {{- range .Values.env }}
+            - name: {{ .name }}
+              value: "{{ .value }}"
+            {{- end }}
+            - name: POSTGRES_DB
+              value: "{{ .Values.postgres.database }}"
+            - name: POSTGRES_USER
+              value: "{{ .Values.postgres.username }}"
+            - name: POSTGRES_PASSWORD
+              value: "{{ .Values.postgres.password }}"
+            - name: POSTGRES_HOST
+              value: "{{ .Release.Name }}-postgres"
+            - name: POSTGRES_PORT
+              value: "{{ .Values.postgres.service.port }}"
