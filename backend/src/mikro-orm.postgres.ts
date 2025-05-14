@@ -25,7 +25,7 @@ export default defineConfig({
     driverOptions: {
       connection: {
         ssl: {
-          rejectUnauthorized: false, // OK for self-signed certs; use true with valid CAs
+          rejectUnauthorized: false,
           minVersion: 'TLSv1.2',
         },
       },
