@@ -5,6 +5,8 @@ import {Seed} from './models/seed';
 import {SeedGroup} from './models/seedGroup';
 import {logger} from './utilities/logger';
 
+const isProduction = process.env.NODE_ENV === 'production';
+
 export default defineConfig({
   debug: process.env.MIKRO_ORM_DEBUG === 'true' || false,
   entities: [Seed, SeedGroup, ApolloApiKey],
@@ -19,4 +21,14 @@ export default defineConfig({
     pathTs: './src/migrations/postgres',
   },
   extensions: [Migrator],
+  ...(isProduction && {
+    driverOptions: {
+      connection: {
+        ssl: {
+          rejectUnauthorized: false,
+          minVersion: 'TLSv1.2',
+        },
+      },
+    },
+  }),
 });
